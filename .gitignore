@@ -1,0 +1,5 @@
+*.xlsx
+/target/
+/dados-pesquisa/
+/dados_pesquisa/
+/pesquisa/dados/
