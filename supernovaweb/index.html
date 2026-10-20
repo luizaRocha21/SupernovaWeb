@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f5ed">
+  <title>Manejo Caatingueiro</title>
+  <meta name="description" content="Painel de chuva hiperlocal e sugestão consultiva de plantio para o semiárido da Bahia">
+  <meta property="og:title" content="Manejo Caatingueiro">
+  <meta property="og:description" content="Painel de chuva hiperlocal e sugestão consultiva de plantio para o semiárido da Bahia">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <!-- CSS externo modularizado seguindo a estrutura do UniBus Web -->
+  <link rel="stylesheet" href="/assets/css/global.css">
+  <link rel="stylesheet" href="/assets/css/painel.css">
+  <link rel="stylesheet" href="/assets/css/comunidade.css">
+  <!-- Scripts externos modularizados -->
+  <script src="/assets/js/menu.js" defer></script>
+  <script src="/assets/js/clima-dinamico.js" defer></script>
+  <script src="/assets/js/app.js" defer></script>
+</head>
+<body>
+  <!-- ====================================================================
+       TELA DE AUTENTICAÇÃO (LOGIN E CADASTRO RF01 / RF02)
+       ==================================================================== -->
+  <section class="auth-shell" id="login-screen">
+    <div class="auth-story">
+      <a class="brand brand-light" href="/" aria-label="Manejo Caatingueiro, início">
+        <img class="auth-logo" src="/assets/images/logo.png" alt="Manejo Caatingueiro">
+      </a>
+      <div class="story-copy">
+        <p class="eyebrow">TERRA, TEMPO E CUIDADO · TERRITÓRIO DE IRECÊ (BA)</p>
+        <h1>O seu lugar.<br><em>O tempo de plantar.</em></h1>
+        <p>Chuva e água da sua localidade em linguagem de roça. O aplicativo orienta com dados reais, nunca determina, e continua útil mesmo quando o sinal oscila.</p>
+        <div class="story-metrics">
+          <div class="story-metric">
+            <strong>6 de 6</strong>
+            <span>agricultores já perderam safra por seca mais de uma vez</span>
+          </div>
+          <div class="story-metric">
+            <strong>9 de 10</strong>
+            <span>percebem o clima mudar sempre ou frequentemente</span>
+          </div>
+          <div class="story-metric">
+            <strong>83%</strong>
+            <span>afirmam que o painel de chuva apoia a decisão de plantio</span>
+          </div>
+        </div>
+      </div>
+      <div class="story-footer">
+        <span class="sun-symbol" aria-hidden="true">✳</span>
+        <span>Grupo Garimpeiros · IFBA Campus Irecê · Bahia</span>
+      </div>
+    </div>
+
+    <div class="auth-panel">
+      <div class="auth-form-wrap">
+        <div class="auth-tabs" role="tablist" aria-label="Acesso à conta">
+          <button class="auth-tab active" id="login-tab" type="button" role="tab" aria-selected="true" data-auth-view="login">Entrar</button>
+          <button class="auth-tab" id="signup-tab" type="button" role="tab" aria-selected="false" data-auth-view="signup">Criar cadastro</button>
+        </div>
+
+        <!-- Painel de Login -->
+        <div id="login-panel" role="tabpanel" aria-labelledby="login-tab">
+          <p class="eyebrow eyebrow-green">BEM-VINDO DE VOLTA</p>
+          <h2>Entre na sua conta</h2>
+          <p class="muted auth-intro">Acesse o painel de chuva e água da sua comunidade.</p>
+          <form id="login-form">
+            <label for="telefone">Telefone / WhatsApp</label>
+            <input id="telefone" name="telefone" type="tel" inputmode="numeric" autocomplete="username" placeholder="DDD + número (ex: 74988880000)" value="74988880000" required>
+            <label for="senha">Senha</label>
+            <input id="senha" name="senha" type="password" autocomplete="current-password" placeholder="Sua senha" value="senha123" required>
+            <p class="form-error hidden" id="login-error" role="alert" aria-live="polite"></p>
+            <button class="button button-primary button-wide" type="submit">
+              <span>Entrar no Painel</span>
+              <span aria-hidden="true">&#8594;</span>
+            </button>
+          </form>
+
+          <div class="demo-credentials">
+            <strong>Acesso rápido para avaliação (1 clique):</strong>
+            <div class="demo-quick-buttons">
+              <button type="button" class="demo-quick-btn" data-demo-phone="74988880000" data-demo-pass="senha123">
+                Zé Ronaldo (Agricultor · Irecê)
+              </button>
+              <button type="button" class="demo-quick-btn" data-demo-phone="74999990000" data-demo-pass="senha123">
+                Ana Carolina (Gestora · IFBA)
+              </button>
+            </div>
+            <p class="muted" style="margin: 10px 0 0;">
+              Quer ver direto o passo a passo de hospedagem?
+              <a href="/pages/plano-deploy.html" style="color: var(--green); font-weight: 700; text-decoration: underline;">Abrir Guia Vercel + Render + Supabase &#8599;</a>
+            </p>
+          </div>
+        </div>
+
+        <!-- Painel de Cadastro (RF01) -->
+        <div class="hidden" id="signup-panel" role="tabpanel" aria-labelledby="signup-tab">
+          <p class="eyebrow eyebrow-green">NOVO POR AQUI?</p>
+          <h2>Crie seu cadastro</h2>
+          <p class="muted auth-intro">Cadastro gratuito com coleta mínima de dados (LGPD).</p>
+          <form id="signup-form">
+            <label for="signup-name">Nome completo</label>
+            <input id="signup-name" name="nome" type="text" maxlength="120" autocomplete="name" placeholder="Como podemos chamar você?" required>
+            <label for="signup-phone">Telefone / WhatsApp com DDD</label>
+            <input id="signup-phone" name="telefone" type="tel" inputmode="numeric" minlength="10" maxlength="13" autocomplete="tel" placeholder="Somente números (ex: 74991234567)" required>
+            <label for="signup-password">Crie uma senha</label>
+            <input id="signup-password" name="senha" type="password" minlength="6" maxlength="72" autocomplete="new-password" placeholder="Pelo menos 6 caracteres" required>
+            <label for="signup-password-confirm">Confirme a senha</label>
+            <input id="signup-password-confirm" name="senhaConfirmacao" type="password" minlength="6" maxlength="72" autocomplete="new-password" placeholder="Repita a senha" required>
+            <label for="signup-locality">Município ou Povoado</label>
+            <select id="signup-locality" name="localidadeId" required>
+              <option value="">Carregando localidades…</option>
+            </select>
+            <label for="signup-water">Como você se abastece de água?</label>
+            <select id="signup-water" name="abastecimento" required>
+              <option value="CISTERNA">Cisterna</option>
+              <option value="POCO">Poço tubular / cacimba</option>
+              <option value="MISTO">Mais de uma fonte (misto)</option>
+              <option value="ENCANADA">Água encanada</option>
+            </select>
+            <label class="consent-control">
+              <input id="signup-consent" name="consentimentoLocalizacao" type="checkbox" checked>
+              <span>Autorizo o uso agregado e anônimo dos dados para apoiar o monitor comunitário da minha localidade (RN15 / LGPD).</span>
+            </label>
+            <p class="form-error hidden" id="signup-error" role="alert" aria-live="polite"></p>
+            <p class="form-success hidden" id="signup-success" role="status">Cadastro criado com sucesso! Clique na aba "Entrar" para acessar.</p>
+            <button class="button button-primary button-wide" type="submit">
+              <span>Concluir cadastro</span>
+              <span aria-hidden="true">&#8594;</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       APLICAÇÃO PRINCIPAL (RESPONSIVA MOBILE E DESKTOP)
+       ==================================================================== -->
+  <div class="app-shell hidden" id="app-screen">
+    <header class="topbar">
+      <a class="brand" href="#inicio" data-go-view="overview" aria-label="Manejo Caatingueiro, início">
+        <span class="brand-mark" aria-hidden="true"><img src="/assets/images/logo-mark.svg" alt=""></span>
+        <span>Manejo<br>Caatingueiro</span>
+      </a>
+
+      <!-- Botão Hambúrguer Mobile (controlado por assets/js/menu.js) -->
+      <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav">
+        <span aria-hidden="true">&#9776;</span>
+        <span class="menu-toggle-label">Menu</span>
+      </button>
+
+      <nav class="main-nav" id="main-nav" aria-label="Navegação principal">
+        <button class="nav-link active" data-view="overview" type="button">Painel de Chuva</button>
+        <button class="nav-link" data-view="suggestion-view" type="button">Sugestão de Plantio</button>
+        <button class="nav-link" data-view="rain-entry" type="button">Registrar Chuva</button>
+        <button class="nav-link" data-view="reservoir-entry" type="button">Poço e Comunidade</button>
+        <button class="nav-link" data-view="community-view" type="button">Alertas e Mural</button>
+        <button class="nav-link" data-view="deploy-guide-view" type="button">Plano de Deploy</button>
+      </nav>
+
+      <div class="account-area">
+        <div class="sync-status" title="Estado de sincronização e cache (RF17)">
+          <span class="sync-dot" id="sync-status-dot"></span>
+          <span id="sync-status-text">Sincronizado</span>
+          <button class="demo-quick-btn hidden" id="sync-now-button" type="button">Sincronizar</button>
+        </div>
+        <div class="account-copy">
+          <strong id="user-name">Zé Ronaldo</strong>
+          <span id="user-locality">Irecê</span>
+        </div>
+        <button class="avatar" id="logout-button" type="button" title="Sair da conta" aria-label="Sair da conta">Z</button>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="notice notice-demo hidden" id="demo-notice" role="status">
+        <span><strong>Fonte sintética ativa.</strong> Clique em "Atualizar Dados Reais (Open-Meteo)" para buscar a chuva real da microrregião de Irecê.</span>
+      </div>
+      <div class="notice notice-error hidden" id="dashboard-error" role="alert"></div>
+
+      <!-- ================================================================
+           1. VISÃO: PAINEL DE CHUVA HIPERLOCAL (RF04 + RF18)
+           ================================================================ -->
+      <section class="view" id="overview">
+        <div class="home-heading">
+          <div>
+            <p class="eyebrow eyebrow-green" id="today-label">PAINEL DA COMUNIDADE</p>
+            <h1 id="home-locality-name">Irecê</h1>
+          </div>
+          <div class="heading-controls">
+            <label class="locality-control">
+              <span>Localidade (Município / Povoado)</span>
+              <select id="locality-select" aria-label="Selecionar localidade"></select>
+            </label>
+            <label class="crop-control">
+              <span>Cultura de referência</span>
+              <select id="culture-select" aria-label="Selecionar cultura"></select>
+            </label>
+          </div>
+        </div>
+
+        <div class="rain-alert hidden" id="rain-alert" role="status">
+          <span aria-hidden="true">&#9888;</span>
+          <strong>Atenção: Chuva acumulada abaixo de 75% do normal esperado para este mês nesta localidade.</strong>
+        </div>
+
+        <div class="painel-top-grid">
+          <!-- Cartão Principal de Chuva -->
+          <article class="rain-card">
+            <div>
+              <p class="card-kicker">CHUVA ACUMULADA NESTE MÊS (RF04)</p>
+              <p class="rain-value"><span id="rain-total">--</span><small>mm</small></p>
+            </div>
+
+            <div class="rain-submetrics">
+              <div class="rain-submetric">
+                <span>Estação chuvosa</span>
+                <strong id="rain-season">-- mm</strong>
+              </div>
+              <div class="rain-submetric">
+                <span>Últimos 7 dias</span>
+                <strong id="rain-recent">-- mm</strong>
+              </div>
+              <div class="rain-submetric">
+                <span>Limiar da cultura</span>
+                <strong id="rain-culture-threshold">-- mm</strong>
+              </div>
+            </div>
+
+            <div class="rain-comparison">
+              <div class="comparison-label">
+                <span>O normal para este mês é</span>
+                <strong><span id="rain-normal">--</span> mm</strong>
+              </div>
+              <div class="progress-track">
+                <span id="rain-progress"></span>
+              </div>
+              <div class="comparison-foot">
+                <span id="rain-percent">-- da normal</span>
+                <span id="rain-month">Este mês</span>
+              </div>
+            </div>
+
+            <div class="rain-meta">
+              <span>Fonte: <strong id="rain-source">Carregando...</strong></span>
+              <span>·</span>
+              <span id="rain-updated">--</span>
+            </div>
+          </article>
+
+          <!-- Cartão de Ilustração Climática Dinâmica (estilo UniBus imagem-dinamica.js) -->
+          <aside class="clima-dinamico-card">
+            <div class="clima-dinamico-header">
+              <div>
+                <p class="eyebrow eyebrow-green">LEITURA VISUAL DO CAMPO</p>
+                <h2 id="clima-dinamico-titulo">Condição Hídrica da Roça</h2>
+              </div>
+            </div>
+            <div class="clima-dinamico-preview">
+              <img id="clima-dinamico-img" src="/assets/images/roca-favoravel.svg" alt="Estado hídrico da roça">
+            </div>
+            <p class="muted" id="clima-dinamico-desc" style="margin: 0; font-size: 13px;">
+              A ilustração se adapta automaticamente à relação entre chuva acumulada e normal histórica da localidade.
+            </p>
+            <div class="clima-dinamico-controls" aria-label="Simular visualização de cenários">
+              <button type="button" class="clima-btn active" data-clima-preview="favoravel">Cenário Favorável</button>
+              <button type="button" class="clima-btn" data-clima-preview="atencao">Cenário Atenção</button>
+              <button type="button" class="clima-btn" data-clima-preview="estiagem">Cenário Estiagem</button>
+            </div>
+          </aside>
+        </div>
+
+        <div class="home-actions-bar">
+          <button class="button button-primary" id="advice-button" type="button">
+            <span>Ver sugestão consultiva de plantio</span>
+            <span aria-hidden="true">&#8594;</span>
+          </button>
+          <button class="button button-outline" type="button" data-go-view="rain-entry">
+            <span>＋ Registrar chuva do meu pluviômetro</span>
+          </button>
+          <button class="button button-outline" id="reservoir-action" type="button" data-go-view="reservoir-entry">
+            <span>◉ Nível do poço e monitor comunitário</span>
+          </button>
+          <button class="button button-outline" id="refresh-real-weather-btn" type="button">
+            <span>↻ Atualizar dados reais (Open-Meteo BA)</span>
+          </button>
+        </div>
+
+        <p class="muted" id="history-note" role="status" style="margin-top: 8px; font-size: 13px;"></p>
+      </section>
+
+      <!-- ================================================================
+           2. VISÃO: SUGESTÃO CONSULTIVA DE PLANTIO E LIMIARES (RF05 / RF06 / RN09 / RN12)
+           ================================================================ -->
+      <section class="view hidden" id="suggestion-view">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow eyebrow-green">NÚCLEO CONSULTIVO · AUTONOMIA DO AGRICULTOR (RN12)</p>
+            <h2>Sugestão para <span id="suggestion-culture">milho</span></h2>
+          </div>
+          <button class="button button-outline" type="button" data-go-view="overview">&#8592; Voltar ao Painel</button>
+        </div>
+
+        <div class="suggestion-layout">
+          <article class="suggestion-copy">
+            <span class="status-label" id="suggestion-status">ANALISANDO</span>
+            <p id="suggestion-message" style="font-size: 16px; line-height: 1.65;">
+              Consultando série histórica e observações recentes da sua localidade...
+            </p>
+
+            <div class="evidence-box">
+              <span class="eyebrow">O DADO QUE FUNDAMENTA A INDICAÇÃO (RN16)</span>
+              <strong><span id="suggestion-data">--</span> mm observados</strong>
+              <p id="suggestion-reference" style="margin: 4px 0;">Limiar de referência: -- mm</p>
+              <small class="muted" id="suggestion-source">Fonte não informada</small>
+            </div>
+
+            <div class="confidence-box">
+              <div>
+                <span>Grau de confiança da série histórica e estação</span>
+                <strong id="suggestion-confidence-text">--%</strong>
+              </div>
+              <div class="progress-track">
+                <span id="suggestion-confidence"></span>
+              </div>
+            </div>
+
+            <div class="decision-note">
+              <strong>Princípio de Autonomia (RN12):</strong> O Manejo Caatingueiro orienta, nunca determina. A decisão final é sempre sua: se a sua leitura da terra, das trovoadas e da umidade do solo aponta outro caminho, a sua experiência tem a palavra final.
+            </div>
+          </article>
+
+          <aside class="threshold-card">
+            <p class="eyebrow eyebrow-green">CALIBRAGEM DO AGRICULTOR (RN09)</p>
+            <h3>Ajustar meu limiar de chuva</h3>
+            <p class="muted" style="font-size: 13px;">
+              O sistema traz um limiar agronômico padrão, mas você pode sobrescrevê-lo livremente conforme a variedade de semente que cultiva na sua roça.
+            </p>
+            <form id="threshold-form">
+              <label for="threshold-value">Meu limiar mínimo de chuva (mm)</label>
+              <div class="unit-input">
+                <input id="threshold-value" name="limiarMm" type="number" min="5" max="500" step="0.5" required>
+                <span>mm</span>
+              </div>
+              <p class="form-error hidden" id="threshold-error" role="alert"></p>
+              <button class="button button-primary button-wide" type="submit" style="margin-top: 12px;">
+                <span>Salvar meu limiar personalizado</span>
+                <span aria-hidden="true">&#8594;</span>
+              </button>
+              <p class="form-success hidden" id="threshold-success" role="status">
+                Limiar atualizado! A sugestão foi recalculada com o seu critério.
+              </p>
+            </form>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           3. VISÃO: REGISTRAR CHUVA OBSERVADA (RF03)
+           ================================================================ -->
+      <section class="view hidden" id="rain-entry">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow eyebrow-green">CIÊNCIA CIDADÃ NO SEMIÁRIDO (RF03)</p>
+            <h2>Registrar chuva observada</h2>
+          </div>
+          <button class="button button-outline" type="button" data-go-view="overview">&#8592; Voltar ao Painel</button>
+        </div>
+
+        <div class="entry-layout">
+          <div class="entry-heading">
+            <p class="muted" style="font-size: 15px; line-height: 1.65;">
+              No semiárido a chuva é muito localizada: às vezes chove forte num povoado e não chove na sede do município. O seu registro de pluviômetro ou estimativa refina os dados da sua comunidade.
+            </p>
+            <h3 style="font-family: var(--serif); font-size: 22px; margin-top: 28px;">Meus registros recentes</h3>
+            <div class="history-list" id="rain-history-list">
+              <p class="muted">Carregando histórico...</p>
+            </div>
+          </div>
+
+          <form class="entry-form" id="rain-form">
+            <label for="rain-volume" style="margin-top: 0;">Volume de chuva medido</label>
+            <div class="unit-input">
+              <input id="rain-volume" name="volumeMm" type="number" min="0" max="500" step="0.1" placeholder="Ex: 24,5" required>
+              <span>mm</span>
+            </div>
+
+            <label for="rain-date">Data do evento de chuva</label>
+            <input id="rain-date" name="dataEvento" type="date" required>
+
+            <label for="rain-source-select">Como foi medida?</label>
+            <select id="rain-source-select" name="fonte" required>
+              <option value="PLUVIOMETRO_PROPRIO">Pluviômetro próprio na roça</option>
+              <option value="ESTACAO">Pluviômetro comunitário / associação</option>
+              <option value="ESTIMATIVA">Estimativa visual de campo</option>
+            </select>
+
+            <p class="form-error hidden" id="rain-error" role="alert" aria-live="polite"></p>
+            <button class="button button-primary button-wide" type="submit" style="margin-top: 16px;">
+              <span>Salvar observação de chuva</span>
+              <span aria-hidden="true">&#8594;</span>
+            </button>
+            <p class="form-success hidden" id="rain-success" role="status"></p>
+          </form>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           4. VISÃO: POÇO, CHECKLIST SANITÁRIO E MONITOR COMUNITÁRIO (RF07, RF08, RF16, RN15)
+           ================================================================ -->
+      <section class="view hidden" id="reservoir-entry">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow eyebrow-green">SEGURANÇA HÍDRICA E SANITÁRIA (RF07 · RF08 · RF16)</p>
+            <h2>Poço, Cisterna e Monitor Comunitário</h2>
+          </div>
+          <button class="button button-outline" type="button" data-go-view="overview">&#8592; Voltar ao Painel</button>
+        </div>
+
+        <!-- Monitor Comunitário Agregado (RF08 / RN15) -->
+        <article class="card-box" style="margin-bottom: 24px;">
+          <p class="eyebrow eyebrow-green">PANORAMA DO POVOADO · SEM EXPOR FAMÍLIAS (RF08 / RN15)</p>
+          <h3>Monitor Comunitário de Reservatórios</h3>
+          <div id="monitor-comunitario-box">
+            <p class="muted">Carregando panorama agregado da localidade...</p>
+          </div>
+        </article>
+
+        <div class="two-col-grid">
+          <!-- Registro de Nível do Reservatório (RF07) -->
+          <div class="card-box">
+            <p class="eyebrow eyebrow-green">MEU RESERVATÓRIO (RF07 · RN01 · RN02)</p>
+            <h3>Registrar nível atual</h3>
+            <p class="muted" style="font-size: 13px;">
+              Escolha um atalho qualitativo ou informe a porcentagem aproximada de água armazenada.
+            </p>
+            <form id="reservoir-form">
+              <label for="reservoir-select">Reservatório responsável</label>
+              <select id="reservoir-select" required></select>
+
+              <label>Escala rápida (qualitativa)</label>
+              <div class="escala-selector">
+                <button type="button" class="escala-btn" data-escala-pct="85">Cheio (≥75%)</button>
+                <button type="button" class="escala-btn active" data-escala-pct="60">Médio (40–74%)</button>
+                <button type="button" class="escala-btn" data-escala-pct="25">Baixo (15–39%)</button>
+                <button type="button" class="escala-btn" data-escala-pct="10">Crítico (&lt;15%)</button>
+              </div>
+
+              <label for="reservoir-level">Nível estimado em porcentagem (%)</label>
+              <div class="unit-input">
+                <input id="reservoir-level" name="nivelPercentual" type="number" min="0" max="100" step="1" value="60" required>
+                <span>%</span>
+              </div>
+
+              <label for="reservoir-depth">Nível do lençol (opcional, apenas para poço tubular)</label>
+              <div class="unit-input">
+                <input id="reservoir-depth" name="nivelLencolMetros" type="number" min="0" max="300" step="0.5" placeholder="Ex: 14,5">
+                <span>m</span>
+              </div>
+
+              <label for="reservoir-date">Data da observação</label>
+              <input id="reservoir-date" name="dataRegistro" type="date" required>
+
+              <p class="form-error hidden" id="reservoir-error" role="alert"></p>
+              <button class="button button-primary button-wide" type="submit" style="margin-top: 14px;">
+                <span>Salvar nível do reservatório</span>
+                <span aria-hidden="true">&#8594;</span>
+              </button>
+              <p class="form-success hidden" id="reservoir-success" role="status"></p>
+            </form>
+          </div>
+
+          <!-- Checklist Sanitário Simplificado (RF16 / RN11) -->
+          <div class="card-box">
+            <p class="eyebrow eyebrow-green">QUALIDADE DA ÁGUA (RF16 · RN11)</p>
+            <h3>Checklist Sanitário Simplificado</h3>
+            <p class="muted" style="font-size: 13px;">
+              Verifique os 4 itens de proteção sanitária. Caso algum item esteja ausente, o sistema sinaliza alerta preventivo de potabilidade (RN11).
+            </p>
+            <div id="checklist-last-status" style="margin-bottom: 14px;"></div>
+
+            <form id="checklist-form">
+              <label for="checklist-reservoir-select">Reservatório avaliado</label>
+              <select id="checklist-reservoir-select" required></select>
+
+              <label style="margin-bottom: 10px;">Itens de verificação sanitária:</label>
+              <label class="check-item">
+                <input type="checkbox" name="protecaoEntrada" checked>
+                <span><strong>1. Tampa e proteção de entrada:</strong> Cisterna/poço bem tampado, com tela nas calhas para impedir entrada de insetos ou pequenos animais.</span>
+              </label>
+              <label class="check-item">
+                <input type="checkbox" name="aguaSemOdorOuCor" checked>
+                <span><strong>2. Aspecto da água:</strong> Água limpa, sem odor estranho, sem turbidez anormal ou coloração alterada.</span>
+              </label>
+              <label class="check-item">
+                <input type="checkbox" name="entornoLimpo" checked>
+                <span><strong>3. Entorno salubre:</strong> Área ao redor livre de lixo, curral, fossa próxima ou acúmulo de lama.</span>
+              </label>
+              <label class="check-item">
+                <input type="checkbox" name="estruturaIntegra" checked>
+                <span><strong>4. Estrutura íntegra:</strong> Paredes, placas e encanamento sem rachaduras ou infiltrações visíveis.</span>
+              </label>
+
+              <label for="checklist-obs">Observação adicional (opcional)</label>
+              <input id="checklist-obs" name="observacao" type="text" maxlength="300" placeholder="Ex: Calha limpa antes da última trovoada">
+
+              <p class="form-error hidden" id="checklist-error" role="alert"></p>
+              <button class="button button-primary button-wide" type="submit" style="margin-top: 14px;">
+                <span>Registrar inspeção sanitária</span>
+                <span aria-hidden="true">&#8594;</span>
+              </button>
+              <p class="form-success hidden" id="checklist-success" role="status">
+                Checklist sanitário registrado com sucesso!
+              </p>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           5. VISÃO: ALERTAS CLIMÁTICOS E MURAL COMUNITÁRIO (RF12 a RF15)
+           ================================================================ -->
+      <section class="view hidden" id="community-view">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow eyebrow-green">COMUNICAÇÃO COMUNITÁRIA (RF12 · RF13 · RF14 · RF15)</p>
+            <h2>Alertas Climáticos e Mural do Povoado</h2>
+          </div>
+          <button class="button button-outline" type="button" data-go-view="overview">&#8592; Voltar ao Painel</button>
+        </div>
+
+        <div class="two-col-grid">
+          <!-- Coluna 1: Alertas Climáticos da Localidade (RF12 / RF13 / RN07) -->
+          <div class="card-box">
+            <p class="eyebrow eyebrow-green">ALERTAS VIGENTES NA SUA LOCALIDADE (RF13 · RN07)</p>
+            <h3>Alertas Climáticos e Hidrológicos</h3>
+            <div class="feed-list" id="alertas-list">
+              <p class="muted">Carregando alertas da localidade...</p>
+            </div>
+
+            <!-- Formulário de emissão visível para GESTOR_PUBLICO e LIDERANCA_COMUNITARIA -->
+            <div id="alerta-form-box" class="hidden" style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line);">
+              <p class="eyebrow eyebrow-green">EXCLUSIVO GESTOR / LIDERANÇA (RF12)</p>
+              <h4>Emitir novo alerta para a localidade</h4>
+              <form id="alerta-form">
+                <label for="alerta-titulo">Título do alerta</label>
+                <input id="alerta-titulo" name="titulo" type="text" maxlength="140" placeholder="Ex: Previsão de veranico nos próximos 10 dias" required>
+                <label for="alerta-severidade">Severidade</label>
+                <select id="alerta-severidade" name="severidade" required>
+                  <option value="ATENCAO">Atenção</option>
+                  <option value="ALTA">Alta Prioridade</option>
+                  <option value="INFO">Informativo</option>
+                </select>
+                <label for="alerta-tipo">Categoria</label>
+                <select id="alerta-tipo" name="tipo" required>
+                  <option value="CHUVA_ABAIXO_ESPERADO">Chuva abaixo do esperado</option>
+                  <option value="INICIO_CHUVAS">Início das chuvas / trovoadas</option>
+                  <option value="RISCO_ESTIAGEM">Risco de estiagem prolongada</option>
+                </select>
+                <label for="alerta-mensagem">Orientação para os agricultores</label>
+                <textarea id="alerta-mensagem" name="mensagem" maxlength="500" placeholder="Descreva a orientação de forma clara..." required></textarea>
+                <p class="form-error hidden" id="alerta-error"></p>
+                <button class="button button-primary button-wide" type="submit" style="margin-top: 10px;">
+                  <span>Publicar alerta oficial</span>
+                  <span aria-hidden="true">&#8594;</span>
+                </button>
+                <p class="form-success hidden" id="alerta-success">Alerta publicado para a localidade!</p>
+              </form>
+            </div>
+          </div>
+
+          <!-- Coluna 2: Mural Comunitário de Avisos, Sementes e Trocas (RF14 / RF15 / RN08) -->
+          <div class="card-box">
+            <p class="eyebrow eyebrow-green">TROCA DE SEMENTES, MUTIRÕES E AVISOS (RF14 · RF15 · RN08)</p>
+            <h3>Mural Comunitário</h3>
+            <p class="muted" style="font-size: 13px;">
+              Avisos permanecem visíveis por 30 dias corridos (RN08) para toda a sua localidade.
+            </p>
+
+            <form id="mural-form" style="margin-bottom: 22px; padding-bottom: 20px; border-bottom: 1px solid var(--line);">
+              <label for="mural-titulo" style="margin-top: 8px;">Título do aviso ou troca</label>
+              <input id="mural-titulo" name="titulo" type="text" maxlength="120" placeholder="Ex: Troca de sementes crioulas de milho catingueiro" required>
+              <label for="mural-conteudo">Mensagem / Contato na comunidade</label>
+              <textarea id="mural-conteudo" name="conteudo" maxlength="500" placeholder="Informe detalhes, local ou horário na associação..." required></textarea>
+              <p class="form-error hidden" id="mural-error"></p>
+              <button class="button button-primary button-wide" type="submit" style="margin-top: 10px;">
+                <span>Publicar no mural da localidade</span>
+                <span aria-hidden="true">&#8594;</span>
+              </button>
+              <p class="form-success hidden" id="mural-success">Aviso publicado no mural comunitário!</p>
+            </form>
+
+            <div class="feed-list" id="mural-list">
+              <p class="muted">Carregando avisos da comunidade...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           6. VISÃO: PLANO PASSO A PASSO DE DEPLOY (GITHUB + SUPABASE + RENDER + VERCEL)
+           ================================================================ -->
+      <section class="view hidden" id="deploy-guide-view">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow eyebrow-green">ARQUITETURA WEB SEPARADA · PASSO A PASSO DE IMPLANTAÇÃO</p>
+            <h2>Guia Completo: GitHub + Supabase + Render + Vercel</h2>
+          </div>
+          <button class="button button-outline" type="button" data-go-view="overview">&#8592; Voltar ao Painel</button>
+        </div>
+
+        <div class="deploy-steps">
+          <article class="deploy-step-card">
+            <div class="deploy-step-header">
+              <span class="deploy-step-number">1</span>
+              <h3>Visão Geral da Nova Estrutura (Padrão UniBus Web)</h3>
+            </div>
+            <p class="muted">
+              O projeto foi organizado em duas frentes limpas e desacopladas conectadas pelo GitHub:
+            </p>
+            <div class="code-block">┌──────────────────────────────┐        HTTPS / JSON        ┌──────────────────────────────┐        JDBC PostgreSQL       ┌──────────────────────────────┐
+│   FRONTEND: supernovaweb     │ ─────────────────────────► │    BACKEND: Java 21 Spring   │ ───────────────────────────► │   BANCO: Supabase Postgres   │
+│  (HTML + CSS + JS Responsivo)│     /api/v1/* (JWT Auth)   │   (Docker + Open-Meteo API)  │      Pooler SSL Porta 6543   │  (13 Tabelas + Seed Irecê)   │
+│     Hospedado na VERCEL      │ ◄───────────────────────── │     Hospedado no RENDER      │ ◄─────────────────────────── │    Hospedado no SUPABASE     │
+└──────────────────────────────┘                            └──────────────────────────────┘                              └──────────────────────────────┘</div>
+          </article>
+
+          <article class="deploy-step-card">
+            <div class="deploy-step-header">
+              <span class="deploy-step-number">2</span>
+              <h3>Passo 1: Configurar o Banco de Dados no Supabase (PostgreSQL)</h3>
+            </div>
+            <ol style="line-height: 1.75; padding-left: 20px;">
+              <li>Acesse <strong>https://supabase.com</strong>, entre com sua conta do <strong>GitHub</strong> e clique em <strong>New Project</strong>.</li>
+              <li>Escolha o nome <code>manejo-caatingueiro-db</code>, defina uma senha forte para o banco (guarde essa senha!) e selecione a região <strong>South America (São Paulo)</strong>.</li>
+              <li>Assim que o banco iniciar, clique em <strong>SQL Editor</strong> no menu lateral esquerdo, clique em <strong>New Query</strong>, cole o conteúdo do arquivo <code>/supabase/schema.sql</code> deste projeto e clique em <strong>Run</strong>. Isso criará todas as 13 tabelas e já cadastrará <strong>Irecê, Presidente Dutra, Povoados, Culturas (Milho, Mamona, Feijão, Sorgo) e as Normais Climatológicas de 30 anos</strong>!</li>
+              <li>Clique no botão <strong>Connect</strong> (no topo do painel do Supabase) → aba <strong>Transaction Pooler (porta 6543)</strong> ou <strong>Session Pooler (porta 5432)</strong> → copie os dados JDBC:
+                <div class="code-block">DB_URL=jdbc:postgresql://aws-0-sa-east-1.pooler.supabase.com:6543/postgres?sslmode=require&amp;prepareThreshold=0
+DB_USER=postgres.SEU_PROJECT_REF
+DB_PASSWORD=SUA_SENHA_DO_SUPABASE</div>
+              </li>
+            </ol>
+          </article>
+
+          <article class="deploy-step-card">
+            <div class="deploy-step-header">
+              <span class="deploy-step-number">3</span>
+              <h3>Passo 2: Hospedar o Backend Java no Render.com</h3>
+            </div>
+            <ol style="line-height: 1.75; padding-left: 20px;">
+              <li>No seu repositório do backend no GitHub (ex: <code>Supernova</code>), mantenha os arquivos da pasta <code>/backend-java</code> na raiz (<code>Dockerfile</code>, <code>render.yaml</code>, <code>pom.xml</code> e <code>src/</code>).</li>
+              <li>Acesse <strong>https://render.com</strong>, faça login com seu <strong>GitHub</strong> e clique em <strong>New +</strong> → <strong>Web Service</strong>.</li>
+              <li>Selecione o repositório do Backend no GitHub. O Render detectará automaticamente o <strong>Runtime: Docker</strong> (usando o <code>Dockerfile</code> com Maven + Java 21 já pronto).</li>
+              <li>Na seção <strong>Environment Variables</strong> do Render, adicione as variáveis abaixo:</li>
+            </ol>
+            <table class="env-table">
+              <thead>
+                <tr><th>Variável no Render</th><th>Valor</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>PORT</code></td><td><code>8080</code></td></tr>
+                <tr><td><code>DB_URL</code></td><td><code>jdbc:postgresql://aws-0-sa-east-1.pooler.supabase.com:6543/postgres?sslmode=require&amp;prepareThreshold=0</code></td></tr>
+                <tr><td><code>DB_USER</code></td><td><code>postgres.SEU_PROJECT_REF</code> (copiado do Supabase)</td></tr>
+                <tr><td><code>DB_PASSWORD</code></td><td>Sua senha do banco no Supabase</td></tr>
+                <tr><td><code>JWT_SECRET</code></td><td><code>manejo-caatingueiro-chave-secreta-jwt-ifba-irece-2026</code> (mínimo 32 caracteres)</td></tr>
+                <tr><td><code>ALLOWED_ORIGINS</code></td><td><code>https://supernovaweb.vercel.app,http://localhost:3000</code></td></tr>
+                <tr><td><code>CLIMA_FONTE</code></td><td><code>open-meteo</code> (ativa a busca real de chuva de Irecê e Presidente Dutra)</td></tr>
+                <tr><td><code>BOOTSTRAP_GESTOR_TELEFONE</code></td><td><code>74999990000</code></td></tr>
+                <tr><td><code>BOOTSTRAP_GESTOR_SENHA</code></td><td><code>senha123</code></td></tr>
+              </tbody>
+            </table>
+            <p class="muted">Ao finalizar o deploy, o Render fornecerá uma URL pública como: <code>https://manejo-caatingueiro-api.onrender.com</code>.</p>
+          </article>
+
+          <article class="deploy-step-card">
+            <div class="deploy-step-header">
+              <span class="deploy-step-number">4</span>
+              <h3>Passo 3: Hospedar o Frontend (supernovaweb) na Vercel</h3>
+            </div>
+            <ol style="line-height: 1.75; padding-left: 20px;">
+              <li>No seu repositório GitHub <strong><code>supernovaweb</code></strong>, suba exatamente o conteúdo da pasta <code>/supernovaweb</code> deste projeto:
+                <div class="code-block">supernovaweb/
+├── index.html
+├── favicon.svg
+├── vercel.json
+├── README.md
+├── assets/
+│   ├── css/ (global.css, painel.css, comunidade.css)
+│   ├── js/  (menu.js, clima-dinamico.js, app.js)
+│   └── images/ (logo.png, logo-mark.svg, roca-favoravel.svg, roca-atencao.svg, roca-estiagem.svg)
+└── pages/
+    ├── plantio.html
+    ├── reservatorios.html
+    ├── comunidade.html
+    └── plano-deploy.html</div>
+              </li>
+              <li>No arquivo <code>vercel.json</code> da raiz do <code>supernovaweb</code>, aponte o destino do proxy para a URL do seu Render:
+                <div class="code-block">{
+  "version": 2,
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/api/v1/:path*",
+      "destination": "https://SEU-SERVICO-NO-RENDER.onrender.com/api/v1/:path*"
+    }
+  ]
+}</div>
+              </li>
+              <li>Acesse <strong>https://vercel.com</strong>, entre com seu <strong>GitHub</strong>, clique em <strong>Add New → Project</strong> e importe o repositório <strong><code>supernovaweb</code></strong>.</li>
+              <li>Em <strong>Framework Preset</strong>, deixe como <strong>Other</strong> (HTML/CSS/JS estático) e clique em <strong>Deploy</strong>. Em menos de 15 segundos seu site estará no ar com HTTPS, responsivo para celular e computador e conectado ao Render + Supabase!</li>
+            </ol>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="page-footer">
+      <span><strong>Manejo Caatingueiro</strong> · Informação para apoiar, nunca para determinar (RN12) · IFBA Campus Irecê</span>
+      <div class="page-footer-links">
+        <a href="/pages/plantio.html">Página Plantio</a>
+        <a href="/pages/reservatorios.html">Página Reservatórios</a>
+        <a href="/pages/comunidade.html">Página Comunidade</a>
+        <a href="/pages/plano-deploy.html">Guia de Deploy</a>
+        <a href="/swagger-ui.html" target="_blank" rel="noreferrer">Documentação da API (Swagger) &#8599;</a>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

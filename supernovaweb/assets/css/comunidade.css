@@ -1,0 +1,239 @@
+/* ==========================================================================
+   MANEJO CAATINGUEIRO (SUPERNOVAWEB) — COMUNIDADE.CSS
+   Poço/Cisterna, Checklist Sanitário, Monitor Comunitário, Alertas, Mural e Guia
+   ========================================================================== */
+
+.section-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.section-header h2 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: clamp(28px, 3.5vw, 38px);
+  font-weight: 500;
+}
+
+.two-col-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.card-box {
+  padding: 26px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-outer);
+  background: var(--white);
+}
+
+.card-box h3 {
+  margin: 0 0 8px;
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 500;
+}
+
+/* --- ESCALA QUALITATIVA DE RESERVATÓRIO (RF07) --- */
+.escala-selector {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 8px 0 14px;
+}
+
+.escala-btn {
+  padding: 10px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-inner);
+  background: var(--paper);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.escala-btn.active {
+  background: var(--green);
+  color: var(--white);
+  border-color: var(--green);
+}
+
+/* --- MONITOR COMUNITÁRIO AGREGADO (RF08 / RN15) --- */
+.monitor-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.monitor-stat {
+  padding: 16px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-inner);
+  text-align: center;
+}
+
+.monitor-stat strong {
+  display: block;
+  font-family: var(--serif);
+  font-size: 28px;
+  color: var(--green-dark);
+}
+
+.monitor-stat span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-inner);
+  background: var(--paper);
+  margin-bottom: 10px;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.check-item input {
+  width: 18px;
+  min-height: 18px;
+  margin-top: 2px;
+}
+
+/* --- ALERTAS CLIMÁTICOS E MURAL COMUNITÁRIO (RF12 a RF15) --- */
+.feed-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.feed-card {
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-inner);
+  background: var(--paper);
+}
+
+.feed-card.alerta-alta {
+  border-left: 4px solid var(--coral);
+  background: var(--coral-soft);
+}
+
+.feed-card.alerta-atencao {
+  border-left: 4px solid var(--sun);
+  background: var(--sun-soft);
+}
+
+.feed-card.alerta-info {
+  border-left: 4px solid var(--green);
+}
+
+.feed-card h4 {
+  margin: 0 0 6px;
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.feed-card p {
+  margin: 0 0 10px;
+  font-size: 14px;
+}
+
+.feed-meta {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* --- GUIA PASSO A PASSO DE ARQUITETURA E DEPLOY (SUPABASE + RENDER + VERCEL) --- */
+.deploy-steps {
+  display: grid;
+  gap: 20px;
+}
+
+.deploy-step-card {
+  padding: 26px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-outer);
+  background: var(--white);
+}
+
+.deploy-step-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.deploy-step-number {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--green-dark);
+  color: var(--lime);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.deploy-step-card h3 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.code-block {
+  margin: 12px 0;
+  padding: 14px 16px;
+  background: #17231a;
+  color: #e6ecdf;
+  border-radius: var(--radius-inner);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.55;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.env-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 13px;
+}
+
+.env-table th,
+.env-table td {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  text-align: left;
+}
+
+.env-table th {
+  background: var(--paper);
+  font-weight: 700;
+}
+
+@media (max-width: 860px) {
+  .two-col-grid {
+    grid-template-columns: 1fr;
+  }
+  .monitor-summary-grid,
+  .escala-selector {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
