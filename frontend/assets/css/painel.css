@@ -1,420 +1,427 @@
 /* ==========================================================================
    MANEJO CAATINGUEIRO (SUPERNOVAWEB) — PAINEL.CSS
-   Estilos do Painel de Chuva Hiperlocal, Imagem Dinâmica e Sugestão de Plantio
+   Painel de Chuva Limpo, Diagnóstico Automático da Situação da Roça e Plantio
    ========================================================================== */
 
-.home-heading {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 24px;
-}
-
-.home-heading h1 {
-  margin: 0;
-  font-family: var(--serif);
-  font-size: clamp(32px, 4vw, 44px);
-  line-height: 1.08;
-  font-weight: 500;
-}
-
-.heading-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
-  align-items: flex-end;
-}
-
-.locality-control,
-.crop-control {
+.hero-workspace {
   display: grid;
-  gap: 6px;
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  min-width: 210px;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  padding: clamp(20px, 3.5vw, 36px) clamp(16px, 4vw, 44px);
+  max-width: 1320px;
+  margin: 0 auto;
+  border-bottom: 1px solid var(--line);
 }
 
-.locality-control select,
-.crop-control select {
-  min-height: 42px;
-  font-size: 14px;
+.hero-pitch h1 {
+  margin: 0 0 14px;
+  font-family: var(--serif);
+  font-size: clamp(1.9rem, 3.4vw, 2.85rem);
+  line-height: 1.1;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.lead {
+  margin: 0 0 22px;
+  font-size: 1rem;
+  color: var(--muted);
+  max-width: 540px;
+}
+
+/* CARTÃO DE SITUAÇÃO AUTOMÁTICA E MANEJO RECOMENDADO */
+.clima-dinamico-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.clima-dinamico-top {
+  display: grid;
+  grid-template-columns: 145px 1fr;
+  gap: 18px;
+  align-items: center;
+}
+
+.clima-dinamico-card img {
+  width: 100%;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+}
+
+.clima-dinamico-info h3 {
+  margin: 6px 0 6px;
+  font-family: var(--serif);
+  font-size: 1.25rem;
   font-weight: 600;
 }
 
-.rain-alert {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
-  padding: 14px 18px;
-  border-left: 4px solid var(--coral);
-  background: var(--coral-soft);
-  color: #6b2919;
-  border-radius: var(--radius-inner);
-  font-size: 14px;
+.clima-dinamico-info p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
 }
 
-/* --- GRID PRINCIPAL DO PAINEL --- */
-.painel-top-grid {
+.manejo-guide-box {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.manejo-guide-title {
+  margin: 0 0 8px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--green);
+}
+
+.manejo-passos-list {
+  margin: 0;
+  padding-left: 18px;
   display: grid;
-  grid-template-columns: 1.25fr 0.95fr;
-  gap: 20px;
-  margin-bottom: 24px;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: var(--ink);
 }
 
+/* CARD DE ACESSO / CADASTRO SUCINTO */
+.auth-panel {
+  margin-top: 16px;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.auth-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 10px;
+}
+
+.auth-tab {
+  padding: 7px 14px;
+  background: transparent;
+  border: none;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--muted);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.auth-tab.active {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.demo-credentials {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.chip-demo {
+  padding: 5px 10px;
+  background: var(--paper-strong);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chip-demo:hover {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+/* PAINEL DE CHUVA LIMPO E DIRETO */
 .rain-card {
-  padding: 28px;
-  border-radius: var(--radius-outer);
+  background: var(--card-rain-bg);
+  color: var(--card-rain-text);
+  border-radius: 8px;
+  padding: clamp(20px, 3vw, 28px);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  color: #f5f5e7;
-  background: var(--green-dark);
-  position: relative;
-  overflow: hidden;
+  gap: 18px;
 }
 
-.rain-card::after {
-  content: "";
-  width: 240px;
-  height: 240px;
-  position: absolute;
-  top: -140px;
-  right: -60px;
-  border: 1px solid rgba(203, 215, 108, 0.25);
-  border-radius: 50%;
-  box-shadow: 0 0 0 24px rgba(203, 215, 108, 0.04);
-  pointer-events: none;
+.rain-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  flex-wrap: wrap;
 }
 
-.card-kicker {
-  margin: 0;
-  color: #b4c0af;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1.1px;
-  text-transform: uppercase;
-}
-
-.rain-value {
-  margin: 12px 0 4px;
+.rain-card-header h2 {
+  margin: 2px 0 0;
   font-family: var(--serif);
-  font-size: clamp(50px, 6vw, 68px);
-  line-height: 1;
+  font-size: clamp(1.45rem, 2.4vw, 1.85rem);
+  font-weight: 500;
 }
 
-.rain-value small {
-  margin-left: 8px;
-  color: #ced6c7;
-  font-family: var(--sans);
-  font-size: 18px;
+.locality-picker {
+  display: grid;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: #b7d8c3;
+  min-width: 210px;
 }
 
-.rain-submetrics {
+.locality-picker select {
+  height: 40px;
+  padding: 0 12px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.locality-picker select option {
+  color: #173d2c;
+  background: #fffefa;
+}
+
+.climate-quick-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #d7ebe0;
+}
+
+.climate-quick-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-weight: 600;
+}
+
+.rain-metrics {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
-  margin: 18px 0;
-  padding: 14px 0;
-  border-top: 1px solid rgba(255, 254, 250, 0.14);
-  border-bottom: 1px solid rgba(255, 254, 250, 0.14);
+  padding: 16px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
 }
 
-.rain-submetric span {
-  display: block;
-  font-size: 11px;
-  color: #b4c0af;
+.rain-metric {
+  display: grid;
+  gap: 4px;
 }
 
-.rain-submetric strong {
+.metric-label {
+  font-size: 0.78rem;
+  color: #b7d8c3;
+}
+
+.metric-value {
   font-family: var(--serif);
-  font-size: 20px;
-  color: #fffefa;
+  font-size: clamp(1.4rem, 2.2vw, 1.9rem);
+  font-weight: 600;
+  line-height: 1.05;
 }
 
-.rain-comparison {
-  margin-top: 8px;
-}
-
-.comparison-label,
-.comparison-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 12px;
-}
-
-.comparison-label {
-  color: #d0dbc8;
-}
-
-.comparison-label strong {
-  color: #fffefa;
+.metric-sub {
+  font-size: 0.78rem;
+  color: #cde3d5;
 }
 
 .progress-track {
   height: 8px;
-  margin: 10px 0 8px;
-  border-radius: 10px;
-  background: rgba(244, 245, 235, 0.16);
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
   overflow: hidden;
+  margin-top: 4px;
 }
 
-.progress-track span {
-  width: 0;
+.progress-fill {
   height: 100%;
-  display: block;
-  border-radius: inherit;
-  background: var(--lime);
-  transition: width 0.4s ease;
+  background: #67c587;
 }
 
-.comparison-foot {
-  color: #b4c0af;
-  font-size: 11px;
-}
-
-.rain-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin-top: 18px;
-  color: #b4c0af;
-  font-size: 11px;
-}
-
-/* --- CARTÃO DE ILUSTRAÇÃO CLIMÁTICA DINÂMICA (ESTILO UNIBUS IMAGEM-DINAMICA) --- */
-.clima-dinamico-card {
-  padding: 24px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-outer);
-  background: var(--white);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.clima-dinamico-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.clima-dinamico-header h2 {
-  margin: 4px 0 0;
-  font-family: var(--serif);
-  font-size: 24px;
-  font-weight: 500;
-}
-
-.clima-dinamico-preview {
-  width: 100%;
-  border-radius: var(--radius-inner);
-  overflow: hidden;
-  border: 1px solid var(--line);
-}
-
-.clima-dinamico-preview img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.clima-dinamico-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.clima-btn {
-  flex: 1;
-  min-height: 36px;
-  padding: 6px 10px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-inner);
-  background: var(--paper);
+.rain-decision {
+  background: var(--surface);
   color: var(--ink);
-  font-size: 12px;
+  border-radius: 6px;
+  padding: 18px;
+  display: grid;
+  gap: 8px;
+}
+
+.rain-decision h3 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 1.25rem;
   font-weight: 600;
 }
 
-.clima-btn.active {
-  background: var(--green);
-  color: var(--white);
-  border-color: var(--green);
+.rain-decision p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
 }
 
-/* --- AÇÕES RÁPIDAS DO PAINEL --- */
-.home-actions-bar {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 14px;
-  margin-bottom: 24px;
-}
-
-/* --- VISÃO DE SUGESTÃO CONSULTIVA DE PLANTIO (RF05 / RF06) --- */
-.suggestion-layout {
-  display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 24px;
-  margin-top: 16px;
-}
-
-.suggestion-copy {
-  padding: 28px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-outer);
-  background: var(--white);
-}
-
-.status-label {
-  display: inline-block;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: var(--coral);
-  margin-bottom: 10px;
-}
-
-.status-label.status-good {
-  color: var(--green);
-}
-
-.suggestion-copy h2 {
-  margin: 0 0 12px;
-  font-family: var(--serif);
-  font-size: 32px;
-  font-weight: 500;
-}
-
-.evidence-box {
-  margin: 20px 0;
-  padding: 18px;
-  background: var(--paper);
-  border-left: 4px solid var(--green);
-  border-radius: var(--radius-inner);
-}
-
-.evidence-box strong {
-  display: block;
-  font-family: var(--serif);
-  font-size: 32px;
-  margin: 4px 0;
-  color: var(--green-dark);
-}
-
-.confidence-box {
-  margin: 20px 0;
-}
-
-.confidence-box > div:first-child {
+.rain-card-footer {
   display: flex;
   justify-content: space-between;
-  font-size: 13px;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: #b7d8c3;
 }
 
-.decision-note {
-  padding: 14px 16px;
-  background: var(--sun-soft);
-  border: 1px solid #e2cfa0;
-  border-radius: var(--radius-inner);
-  color: #5f4d26;
-  font-size: 13px;
-  margin: 20px 0;
-}
-
-.threshold-card {
-  padding: 24px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-outer);
-  background: var(--white);
-  align-self: start;
-}
-
-.threshold-card h3 {
-  margin: 0 0 8px;
-  font-family: var(--serif);
-  font-size: 24px;
-  font-weight: 500;
-}
-
-/* --- REGISTRO DE CHUVA OBSERVADA (RF03) --- */
-.entry-layout {
+/* BARRA INFERIOR DE REGISTRO DE CHUVA E ATALHOS */
+.home-actions-bar {
   display: grid;
-  grid-template-columns: 0.95fr 1.05fr;
-  gap: 36px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  padding: 28px clamp(16px, 4vw, 44px);
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+/* MATRIZ DE CULTURAS E SUGESTÃO DE PLANTIO */
+.crop-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.crop-tab {
+  min-height: 40px;
+  padding: 8px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.crop-tab.active {
+  background: var(--green-deep);
+  color: #ffffff;
+  border-color: var(--green-deep);
+}
+
+.suggestion-layout {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 24px;
   align-items: start;
 }
 
-.entry-heading h2 {
-  margin: 0 0 10px;
-  font-family: var(--serif);
-  font-size: 36px;
-  font-weight: 500;
-}
-
-.entry-form {
-  padding: 28px;
+.suggestion-copy,
+.threshold-box {
+  background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius-outer);
-  background: var(--white);
+  border-radius: 8px;
+  padding: 24px;
 }
 
-.unit-input {
-  position: relative;
+.suggestion-copy h3 {
+  margin: 12px 0 10px;
+  font-family: var(--serif);
+  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+  font-weight: 500;
+  line-height: 1.2;
 }
 
-.unit-input input {
-  padding-right: 48px;
-}
-
-.unit-input span {
-  position: absolute;
-  top: 50%;
-  right: 14px;
-  transform: translateY(-50%);
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.history-list {
-  margin-top: 20px;
+.suggestion-Rule-list {
+  margin: 18px 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
   display: grid;
   gap: 10px;
 }
 
-.history-item {
-  padding: 12px 16px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-inner);
-  background: var(--white);
+.rule-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  font-size: 13px;
+  gap: 14px;
+  font-size: 0.9rem;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--line);
 }
 
-@media (max-width: 860px) {
-  .painel-top-grid,
+.decision-note {
+  padding: 12px 14px;
+  background: var(--ochre-soft);
+  border-left: 3px solid var(--ochre);
+  font-size: 0.86rem;
+  color: var(--ink);
+  border-radius: 0 4px 4px 0;
+}
+
+.threshold-box h4 {
+  margin: 4px 0 8px;
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  font-weight: 500;
+}
+
+.threshold-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 1024px) {
+  .hero-workspace,
   .suggestion-layout,
-  .entry-layout {
+  .home-actions-bar {
     grid-template-columns: 1fr;
   }
-  .locality-control,
-  .crop-control {
+}
+
+@media (max-width: 640px) {
+  .clima-dinamico-top {
+    grid-template-columns: 1fr;
+  }
+
+  .clima-dinamico-card img {
+    height: 140px;
+  }
+
+  .rain-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .locality-picker {
     width: 100%;
   }
-  .heading-controls {
-    width: 100%;
+
+  .rule-row {
+    flex-direction: column;
+    gap: 4px;
   }
 }

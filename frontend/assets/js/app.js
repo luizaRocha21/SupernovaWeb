@@ -1,984 +1,1455 @@
 /* ==========================================================================
    MANEJO CAATINGUEIRO (SUPERNOVAWEB) — APP.JS
-   Integração completa com Backend (Render / Local), Cache e Fila Offline (RF17)
+   - Clima e Chuva com Atualização Automática (INMET + Satélite + Pluviômetros)
+   - Diagnóstico Automático da Situação da Roça e Orientações de Manejo
+   - Login / Cadastro Sucinto com Google OAuth 2.0 e Validação de E-mail
+   - Tela de Perfil do Usuário com Edição de Dados (PUT /api/v1/usuarios/me)
+   - Chat Assistente de Plantio Integrado à API de Clima e IA (/api/v1/ia/chat)
+   - Persistência Offline (IndexedDB + LocalStorage + Service Worker)
    ========================================================================== */
 
-const API_BASE = localStorage.getItem("manejo-api-base") || "/api/v1";
-const TOKEN_KEY = "manejo-caatingueiro-token";
-const CACHE_KEY = "manejo-caatingueiro-cache-v2";
-const QUEUE_KEY = "manejo-caatingueiro-offline-queue";
+const API_BASE =
+  window.location.hostname.includes("vercel.app") ||
+  window.location.hostname.includes("github.io")
+    ? "https://supernovaweb-1.onrender.com"
+    : "";
 
-let currentUser = null;
-let localities = [];
-let cultures = [];
-let reservoirs = [];
-let currentPanel = null;
+window.MC_API_BASE = API_BASE;
 
-// --- CACHE E FILA DE SINCRONIZAÇÃO OFFLINE (RF17 / RN10 / RN13) ---
-function lerCache(chave) {
-  try {
-    const raw = localStorage.getItem(CACHE_KEY);
-    const data = raw ? JSON.parse(raw) : {};
-    return data[chave] || null;
-  } catch {
-    return null;
+const STORAGE_KEYS = {
+  AUTH: "mc_auth_session_v2",
+  QUEUE: "mc_offline_queue_v2",
+  CACHE_PAINEL: "mc_cache_painel_v2",
+  CACHE_LOCALIDADES: "mc_cache_localidades_v2"
+};
+
+/* ==========================================================================
+   BANCO DE DADOS OFFLINE (INDEXEDDB) + FILA RESILIENTE
+   ========================================================================== */
+const OfflineDB = {
+  dbName: "ManejoCaatingueiroOfflineDB",
+  version: 1,
+  db: null,
+
+  async open() {
+    if (this.db) return this.db;
+    if (!("indexedDB" in window)) return null;
+    return new Promise((resolve) => {
+      const req = indexedDB.open(this.dbName, this.version);
+      req.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains("kv_cache")) {
+          db.createObjectStore("kv_cache", { keyPath: "key" });
+        }
+        if (!db.objectStoreNames.contains("sync_queue")) {
+          db.createObjectStore("sync_queue", { keyPath: "idClienteSync" });
+        }
+      };
+      req.onsuccess = (e) => {
+        this.db = e.target.result;
+        resolve(this.db);
+      };
+      req.onerror = () => resolve(null);
+    });
+  },
+
+  async setCache(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch {}
+    const db = await this.open();
+    if (!db) return;
+    return new Promise((resolve) => {
+      try {
+        const tx = db.transaction("kv_cache", "readwrite");
+        tx.objectStore("kv_cache").put({ key, value, updatedAt: Date.now() });
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => resolve(false);
+      } catch {
+        resolve(false);
+      }
+    });
+  },
+
+  async getCache(key) {
+    const db = await this.open();
+    if (db) {
+      const fromIdb = await new Promise((resolve) => {
+        try {
+          const tx = db.transaction("kv_cache", "readonly");
+          const req = tx.objectStore("kv_cache").get(key);
+          req.onsuccess = () => resolve(req.result ? req.result.value : null);
+          req.onerror = () => resolve(null);
+        } catch {
+          resolve(null);
+        }
+      });
+      if (fromIdb !== null) return fromIdb;
+    }
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
+};
+
+const state = {
+  token: null,
+  user: null,
+  localidades: [],
+  localidadeId: 1,
+  culturaSelecionada: "milho",
+  reservatorios: [],
+  offlineQueue: {
+    precipitacoes: [],
+    niveis: [],
+    checklists: [],
+    avisos: [],
+    limiares: []
+  },
+  autoRefreshTimer: null,
+  chatHistory: [],
+  ultimoDiagnostico: null
+};
+
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+function escapeHtml(value) {
+  if (value === null || value === undefined) return "";
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function registerServiceWorker() {
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/sw.js").catch(() => {});
   }
 }
 
-function salvarCache(chave, valor) {
+/* ==========================================================================
+   PERSISTÊNCIA DE SESSÃO E FILA OFFLINE
+   ========================================================================== */
+function loadPersistedState() {
   try {
-    const raw = localStorage.getItem(CACHE_KEY);
-    const data = raw ? JSON.parse(raw) : {};
-    data[chave] = valor;
-    localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+    const rawAuth = localStorage.getItem(STORAGE_KEYS.AUTH);
+    if (rawAuth) {
+      const parsed = JSON.parse(rawAuth);
+      state.token = parsed.token;
+      state.user = parsed.user;
+      if (parsed.user?.localidadeId) {
+        state.localidadeId = Number(parsed.user.localidadeId);
+      }
+    }
+    const rawQueue = localStorage.getItem(STORAGE_KEYS.QUEUE);
+    if (rawQueue) {
+      const parsedQueue = JSON.parse(rawQueue);
+      state.offlineQueue = {
+        precipitacoes: parsedQueue.precipitacoes || [],
+        niveis: parsedQueue.niveis || [],
+        checklists: parsedQueue.checklists || [],
+        avisos: parsedQueue.avisos || [],
+        limiares: parsedQueue.limiares || []
+      };
+    }
   } catch {}
 }
 
-function lerFilaOffline() {
-  try {
-    return JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]");
-  } catch {
-    return [];
-  }
-}
-
-function adicionarFilaOffline(item) {
-  const fila = lerFilaOffline();
-  fila.push({
-    ...item,
-    idClienteSync: `sync-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-    criadoOfflineEm: new Date().toISOString()
-  });
-  localStorage.setItem(QUEUE_KEY, JSON.stringify(fila));
-  atualizarIndicadorSync();
-}
-
-function atualizarIndicadorSync() {
-  const fila = lerFilaOffline();
-  const statusText = document.querySelector("#sync-status-text");
-  const statusDot = document.querySelector("#sync-status-dot");
-  const syncBtn = document.querySelector("#sync-now-button");
-
-  if (!statusText || !statusDot) return;
-
-  if (fila.length > 0) {
-    statusDot.classList.add("offline");
-    statusText.textContent = `${fila.length} pendência(s) para sincronizar`;
-    if (syncBtn) syncBtn.classList.remove("hidden");
+function saveAuthSession(authPayload) {
+  if (!authPayload) {
+    state.token = null;
+    state.user = null;
+    localStorage.removeItem(STORAGE_KEYS.AUTH);
   } else {
-    statusDot.classList.remove("offline");
-    statusText.textContent = navigator.onLine ? "Sincronizado" : "Modo offline (cache ativo)";
-    if (syncBtn) syncBtn.classList.add("hidden");
+    state.token = authPayload.token || state.token;
+    state.user = {
+      id: authPayload.usuarioId || authPayload.id || state.user?.id || 2,
+      nome: authPayload.nome,
+      telefone: authPayload.telefone || state.user?.telefone || "",
+      email: authPayload.email || null,
+      emailVerificado: Boolean(authPayload.emailVerificado),
+      provedorAuth: authPayload.provedorAuth || "LOCAL",
+      perfil: authPayload.perfil || "AGRICULTOR",
+      abastecimento: authPayload.abastecimento || "CISTERNA",
+      localidadeId: authPayload.localidadeId || 1,
+      localidadeNome: authPayload.localidadeNome || "Irecê",
+      consentimentoLocalizacao:
+        authPayload.consentimentoLocalizacao !== undefined
+          ? Boolean(authPayload.consentimentoLocalizacao)
+          : true
+    };
+    state.localidadeId = Number(state.user.localidadeId);
+    OfflineDB.setCache(STORAGE_KEYS.AUTH, { token: state.token, user: state.user });
+  }
+  updateAuthUI();
+  populateProfileScreen();
+}
+
+function saveOfflineQueue() {
+  OfflineDB.setCache(STORAGE_KEYS.QUEUE, state.offlineQueue);
+  updateSyncBadge();
+}
+
+function updateSyncBadge() {
+  const badge = $("#sync-queue-badge");
+  if (!badge) return;
+  const q = state.offlineQueue;
+  const total =
+    (q.precipitacoes?.length || 0) +
+    (q.niveis?.length || 0) +
+    (q.checklists?.length || 0) +
+    (q.avisos?.length || 0) +
+    (q.limiares?.length || 0);
+  if (total > 0) {
+    badge.hidden = false;
+    badge.textContent = navigator.onLine
+      ? `Sincronizando: ${total}`
+      : `Salvo offline: ${total}`;
+  } else {
+    badge.hidden = true;
   }
 }
 
-async function sincronizarFilaOffline() {
-  const fila = lerFilaOffline();
-  if (fila.length === 0) return;
-
-  const precipitacoesBatch = fila.filter(i => i.tipoItem === "PRECIPITACAO");
-  const niveisBatch = fila.filter(i => i.tipoItem === "NIVEL");
-
-  try {
-    await api("/sync/registros", {
-      method: "POST",
-      body: JSON.stringify({
-        precipitacoes: precipitacoesBatch,
-        niveis: niveisBatch
-      })
-    });
-    localStorage.removeItem(QUEUE_KEY);
-    atualizarIndicadorSync();
-    await loadPanel();
-  } catch (err) {
-    console.warn("Ainda sem conexão para sincronizar:", err.message);
+async function apiFetch(path, options = {}) {
+  const headers = {
+    "Content-Type": "application/json",
+    ...(options.headers || {})
+  };
+  if (state.token) {
+    headers["Authorization"] = `Bearer ${state.token}`;
   }
-}
-
-// --- CLIENTE HTTP COM SUPORTE A CACHE DE LEITURA ---
-async function api(path, options = {}) {
-  const headers = new Headers(options.headers || {});
-  const token = sessionStorage.getItem(TOKEN_KEY) || localStorage.getItem(TOKEN_KEY);
-  if (token) headers.set("Authorization", `Bearer ${token}`);
-  if (options.body) headers.set("Content-Type", "application/json");
-
-  const metodo = (options.method || "GET").toUpperCase();
-
-  try {
-    const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
-    if (response.status === 401) {
-      signOut();
-      throw new Error("Sua sessão terminou. Entre novamente para continuar.");
-    }
-    const payload = response.status === 204 ? null : await response.json().catch(() => null);
-    if (!response.ok) {
-      throw new Error(payload?.mensagem || "Não foi possível concluir a solicitação.");
-    }
-    if (metodo === "GET" && payload !== null) {
-      salvarCache(path, payload);
-    }
-    return payload;
-  } catch (error) {
-    // RN13: Em caso de falha de rede em leitura GET, retorna último snapshot em cache
-    if (metodo === "GET") {
-      const emCache = lerCache(path);
-      if (emCache !== null) {
-        return emCache;
-      }
-    }
-    throw error;
-  }
-}
-
-function showError(element, message) {
-  if (!element) return;
-  element.textContent = message || "";
-  element.classList.toggle("hidden", !message);
-}
-
-function setLoading(button, loading, label) {
-  if (!button) return;
-  button.disabled = loading;
-  if (loading) {
-    button.dataset.label = button.innerHTML;
-    button.textContent = label;
-  } else if (button.dataset.label) {
-    button.innerHTML = button.dataset.label;
-    delete button.dataset.label;
-  }
-}
-
-function formatNumber(value) {
-  return Number(value).toLocaleString("pt-BR", { maximumFractionDigits: 1 });
-}
-
-function formatDateTime(value) {
-  if (!value) return "--";
-  return new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
-}
-
-function formatDate(value) {
-  if (!value) return "--";
-  const parts = String(value).slice(0, 10).split("-");
-  if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
-  return value;
-}
-
-function monthName(month) {
-  const date = new Date(2026, month - 1, 1);
-  return date.toLocaleDateString("pt-BR", { month: "long" });
-}
-
-function setAuthView(viewName) {
-  const signup = viewName === "signup";
-  document.querySelector("#login-panel")?.classList.toggle("hidden", signup);
-  document.querySelector("#signup-panel")?.classList.toggle("hidden", !signup);
-  document.querySelector("#login-tab")?.classList.toggle("active", !signup);
-  document.querySelector("#signup-tab")?.classList.toggle("active", signup);
-  document.querySelector("#login-tab")?.setAttribute("aria-selected", String(!signup));
-  document.querySelector("#signup-tab")?.setAttribute("aria-selected", String(signup));
-}
-
-function setView(viewName) {
-  document.querySelectorAll(".view").forEach(view => {
-    view.classList.toggle("hidden", view.id !== viewName);
+  const response = await fetch(`${API_BASE}${path}`, {
+    ...options,
+    headers
   });
-  document.querySelectorAll(".nav-link").forEach(link => {
-    link.classList.toggle("active", link.dataset.view === viewName);
+  if (response.status === 204) return null;
+  const data = await response.json().catch(() => null);
+  if (!response.ok) {
+    const errMsg = data?.mensagem || `Erro HTTP ${response.status}`;
+    throw new Error(errMsg);
+  }
+  return data;
+}
+
+/* ==========================================================================
+   NAVEGAÇÃO ENTRE SEÇÕES E MENU LATERAL
+   ========================================================================== */
+function switchView(viewId) {
+  $$(".view-section").forEach((sec) => {
+    sec.classList.toggle("active", sec.id === viewId);
   });
-  showError(document.querySelector("#dashboard-error"), "");
-
-  if (viewName === "suggestion-view") {
-    consultarSugestaoPlantio();
-  } else if (viewName === "reservoir-entry") {
-    carregarDadosReservatoriosEMonitor();
-  } else if (viewName === "community-view") {
-    carregarAlertasEMural();
-  } else if (viewName === "rain-entry") {
-    carregarHistoricoPrecipitacoes();
-  }
-}
-
-function addOptions(select, items, valueFor, labelFor) {
-  if (!select) return;
-  select.replaceChildren();
-  items.forEach(item => {
-    const option = document.createElement("option");
-    option.value = valueFor(item);
-    option.textContent = labelFor(item);
-    select.append(option);
+  $$(".nav-link").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.view === viewId);
   });
+  $$(".sidebar-nav-btn").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.view === viewId);
+  });
+  if (viewId === "view-perfil") {
+    populateProfileScreen();
+  }
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-async function loadSignupLocalities() {
-  const select = document.querySelector("#signup-locality");
-  if (!select) return;
-  try {
-    const items = await api("/localidades");
-    select.replaceChildren(new Option("Selecione sua localidade (Município ou Povoado)", ""));
-    items.forEach(item => {
-      const label = item.tipo === "POVOADO" && item.paiNome ? `${item.nome} (${item.paiNome})` : `${item.nome} · Município`;
-      select.add(new Option(label, item.id));
-    });
-  } catch (error) {
-    select.replaceChildren(new Option("Não foi possível carregar localidades", ""));
-  }
+function showFeedback(selector, message, isError = false) {
+  const el = $(selector);
+  if (!el) return;
+  el.hidden = false;
+  el.textContent = message;
+  el.classList.toggle("error", isError);
+  setTimeout(() => {
+    el.hidden = true;
+  }, 6000);
 }
 
-function signOut() {
-  sessionStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(TOKEN_KEY);
-  currentUser = null;
-  document.querySelector("#app-screen")?.classList.add("hidden");
-  document.querySelector("#login-screen")?.classList.remove("hidden");
-}
+function updateAuthUI() {
+  const userBadge = $("#user-badge");
+  const btnOpenAuth = $("#btn-open-auth");
+  const btnLogout = $("#btn-logout");
+  const authPanel = $("#auth-panel");
+  const formAlerta = $("#form-alerta");
 
-// --- CARREGAMENTO DO PAINEL PRINCIPAL ---
-async function loadDashboard() {
-  const dashboardError = document.querySelector("#dashboard-error");
-  showError(dashboardError, "");
-
-  const [user, localityData, cultureData, reservoirData] = await Promise.all([
-    api("/usuarios/me"),
-    api("/localidades"),
-    api("/culturas"),
-    api("/reservatorios")
-  ]);
-
-  currentUser = user;
-  localities = localityData;
-  cultures = cultureData;
-  reservoirs = reservoirData;
-
-  const userNameEl = document.querySelector("#user-name");
-  const userLocalityEl = document.querySelector("#user-locality");
-  const homeLocalityEl = document.querySelector("#home-locality-name");
-  const logoutBtn = document.querySelector("#logout-button");
-
-  if (userNameEl) userNameEl.textContent = `${user.nome} · ${user.perfil === "GESTOR_PUBLICO" ? "Gestor" : "Agricultor"}`;
-  if (userLocalityEl) userLocalityEl.textContent = user.localidadeNome;
-  if (homeLocalityEl) homeLocalityEl.textContent = user.localidadeNome;
-  if (logoutBtn) logoutBtn.textContent = user.nome.trim().charAt(0).toLocaleUpperCase("pt-BR");
-
-  const localitySelect = document.querySelector("#locality-select");
-  const cultureSelect = document.querySelector("#culture-select");
-
-  addOptions(localitySelect, localities, item => item.id, item => item.nome);
-  if (localitySelect) localitySelect.value = String(user.localidadeId);
-
-  addOptions(cultureSelect, cultures, item => item.nome, item => item.nome.charAt(0).toUpperCase() + item.nome.slice(1));
-
-  // RF07: Oculta registro individual de poço apenas se o usuário só tem água encanada e nenhum reservatório,
-  // mas permite acessar o Monitor Comunitário ou cadastrar novo poço/cisterna
-  const temPocoOuCisterna = user.abastecimento !== "ENCANADA" || reservoirs.length > 0;
-  document.querySelector("#reservoir-action")?.classList.toggle("hidden", !temPocoOuCisterna);
-
-  // Preenche select de reservatórios
-  const resSelect = document.querySelector("#reservoir-select");
-  const checkResSelect = document.querySelector("#checklist-reservoir-select");
-  if (reservoirs.length > 0) {
-    addOptions(resSelect, reservoirs, item => item.id, item => `${item.apelido || item.tipo} (${item.ultimoNivelPercentual ?? 0}%)`);
-    addOptions(checkResSelect, reservoirs, item => item.id, item => `${item.apelido || item.tipo}`);
-  }
-
-  // Exibe formulário de emissão de alerta se for GESTOR ou LIDERANCA
-  const formAlerta = document.querySelector("#alerta-form-box");
-  if (formAlerta) {
-    formAlerta.classList.toggle("hidden", user.perfil === "AGRICULTOR");
-  }
-
-  atualizarIndicadorSync();
-  await loadPanel();
-
-  document.querySelector("#login-screen")?.classList.add("hidden");
-  document.querySelector("#app-screen")?.classList.remove("hidden");
-}
-
-async function loadPanel() {
-  const dashboardError = document.querySelector("#dashboard-error");
-  const localitySelect = document.querySelector("#locality-select");
-  const cultureSelect = document.querySelector("#culture-select");
-  if (!localitySelect || !localitySelect.value) return;
-
-  showError(dashboardError, "");
-  const params = new URLSearchParams();
-  if (cultureSelect?.value) params.set("cultura", cultureSelect.value);
-  const query = params.size ? `?${params}` : "";
-
-  try {
-    const panel = await api(`/localidades/${localitySelect.value}/painel-chuva${query}`);
-    currentPanel = panel;
-    renderPanel(panel);
-  } catch (error) {
-    showError(dashboardError, error.message);
-  }
-}
-
-function renderPanel(panel) {
-  const total = panel.acumuladoMesMm;
-  const normal = panel.normalMesMm;
-  const percent = panel.percentualDaNormal;
-
-  document.querySelector("#rain-total").textContent = total == null ? "—" : formatNumber(total);
-  document.querySelector("#rain-normal").textContent = normal == null ? "—" : formatNumber(normal);
-  document.querySelector("#rain-percent").textContent = percent == null ? "Sem comparação" : `${formatNumber(percent)}% da normal`;
-  document.querySelector("#rain-progress").style.width = `${Math.min(Math.max(percent || 0, 0), 100)}%`;
-  document.querySelector("#rain-source").textContent = panel.fonte || "Fonte não informada";
-  document.querySelector("#rain-updated").textContent = panel.atualizadoEm ? `Atualizado ${formatDateTime(panel.atualizadoEm)}` : "Atualização indisponível";
-  document.querySelector("#rain-month").textContent = panel.mes ? monthName(panel.mes) : "Este mês";
-
-  const estacaoEl = document.querySelector("#rain-season");
-  const recenteEl = document.querySelector("#rain-recent");
-  const limiarEl = document.querySelector("#rain-culture-threshold");
-  if (estacaoEl) estacaoEl.textContent = panel.acumuladoEstacaoMm == null ? "—" : `${formatNumber(panel.acumuladoEstacaoMm)} mm`;
-  if (recenteEl) recenteEl.textContent = panel.acumuladoRecenteMm == null ? "—" : `${formatNumber(panel.acumuladoRecenteMm)} mm`;
-  if (limiarEl) {
-    limiarEl.textContent = panel.comparacaoCultura
-      ? `${formatNumber(panel.comparacaoCultura.limiarMm)} mm (${panel.comparacaoCultura.culturaNome})`
-      : "—";
-  }
-
-  const localitySelect = document.querySelector("#locality-select");
-  document.querySelector("#home-locality-name").textContent =
-    panel.localidadeNome || localitySelect?.selectedOptions[0]?.textContent || "Sua localidade";
-
-  const abaixoDoEsperado = percent != null && percent < 75;
-  document.querySelector("#rain-alert")?.classList.toggle("hidden", !abaixoDoEsperado);
-
-  // Atualiza a ilustração climática dinâmica automaticamente conforme os dados
-  if (window.atualizarIlustracaoClimatica) {
-    if (percent != null && percent >= 90) {
-      window.atualizarIlustracaoClimatica("favoravel");
-    } else if (percent != null && percent >= 55) {
-      window.atualizarIlustracaoClimatica("atencao");
-    } else {
-      window.atualizarIlustracaoClimatica("estiagem");
+  if (state.user) {
+    if (userBadge) {
+      userBadge.hidden = false;
+      userBadge.textContent = `${state.user.nome} · ${state.user.localidadeNome}`;
     }
-  }
+    if (btnOpenAuth) btnOpenAuth.hidden = true;
+    if (btnLogout) btnLogout.hidden = false;
+    if (authPanel) authPanel.hidden = true;
 
-  const historyNote = document.querySelector("#history-note");
-  if (historyNote) {
-    historyNote.textContent = panel.historicoSuficiente
-      ? `Série histórica validada (30 anos) · ${panel.resumoComparativo || ""}`
-      : "Ainda não temos histórico suficiente para esta região. Registros locais ajudam a melhorar as próximas indicações.";
-    historyNote.classList.remove("hidden");
-  }
-
-  const comparison = panel.comparacaoCultura;
-  const synthetic = /stub|sint[eé]tic|fict[ií]ci/i.test(panel.fonte || "");
-  document.querySelector("#demo-notice")?.classList.toggle("hidden", !synthetic);
-
-  const thresholdInput = document.querySelector("#threshold-value");
-  if (thresholdInput && comparison?.limiarMm != null) {
-    thresholdInput.value = comparison.limiarMm;
+    if (formAlerta) {
+      formAlerta.hidden = state.user.perfil === "AGRICULTOR";
+    }
+  } else {
+    if (userBadge) userBadge.hidden = true;
+    if (btnOpenAuth) btnOpenAuth.hidden = false;
+    if (btnLogout) btnLogout.hidden = true;
+    if (authPanel) authPanel.hidden = false;
+    if (formAlerta) formAlerta.hidden = true;
   }
 }
 
-// --- SUGESTÃO CONSULTIVA DE PLANTIO (RF05 / RF06 / RN09 / RN12) ---
-async function consultarSugestaoPlantio() {
-  const localitySelect = document.querySelector("#locality-select");
-  const cultureSelect = document.querySelector("#culture-select");
-  const dashboardError = document.querySelector("#dashboard-error");
+/* ==========================================================================
+   TELA DE PERFIL DO USUÁRIO E EDIÇÃO DE DADOS
+   ========================================================================== */
+function populateProfileScreen() {
+  const avatarEl = $("#perfil-avatar-letra");
+  const papelEl = $("#perfil-papel-badge");
+  const nomeResumoEl = $("#perfil-resumo-nome");
+  const locResumoEl = $("#perfil-resumo-localidade");
+  const telResumoEl = $("#perfil-resumo-telefone");
+  const emailResumoEl = $("#perfil-resumo-email");
+  const aguaResumoEl = $("#perfil-resumo-agua");
+  const consentResumoEl = $("#perfil-resumo-consent");
 
-  if (!cultureSelect?.value || !localitySelect?.value) return;
+  const inputNome = $("#perfil-input-nome");
+  const inputTel = $("#perfil-input-telefone");
+  const inputEmail = $("#perfil-input-email");
+  const inputLoc = $("#perfil-input-localidade");
+  const inputAgua = $("#perfil-input-abastecimento");
+  const inputConsent = $("#perfil-input-consent");
+  const inputSenha = $("#perfil-input-senha");
 
-  try {
-    const result = await api(`/localidades/${localitySelect.value}/sugestao-plantio?cultura=${encodeURIComponent(cultureSelect.value)}`);
-    const insufficient = result.resultado === "DADOS_INSUFICIENTES";
-    const status = document.querySelector("#suggestion-status");
-    if (status) {
-      status.textContent = insufficient
-        ? "DADOS INSUFICIENTES"
-        : result.resultado === "CONDICAO_FAVORAVEL"
-        ? "CONDIÇÃO FAVORÁVEL PARA PLANTIO"
-        : result.resultado === "ATENCAO_CONSIDERE_ADIAR"
-        ? "ATENÇÃO · CONSIDERE AGUARDAR MAIS CHUVA"
-        : "ALERTA DE SECA · CONSIDERE CULTURA ALTERNATIVA";
-      status.classList.toggle("status-good", result.resultado === "CONDICAO_FAVORAVEL");
-    }
-
-    document.querySelector("#suggestion-culture").textContent = result.cultura || cultureSelect.value;
-    document.querySelector("#suggestion-message").textContent = result.mensagem || "";
-    document.querySelector("#suggestion-data").textContent = result.dadoUsadoMm == null ? "Sem dado" : formatNumber(result.dadoUsadoMm);
-    document.querySelector("#suggestion-reference").textContent =
-      result.referenciaMm == null ? "Referência: indisponível" : `Limiar de referência para ${result.cultura}: ${formatNumber(result.referenciaMm)} mm`;
-    document.querySelector("#suggestion-source").textContent =
-      `${result.fonte || "Fonte não informada"}${result.dataDado ? ` · atualizado ${formatDateTime(result.dataDado)}` : ""}`;
-
-    const confidence = result.grauConfianca == null ? 0 : Math.round(result.grauConfianca * 100);
-    document.querySelector("#suggestion-confidence-text").textContent = `${confidence}%`;
-    document.querySelector("#suggestion-confidence").style.width = `${Math.min(Math.max(confidence, 0), 100)}%`;
-
-    const thresholdInput = document.querySelector("#threshold-value");
-    if (thresholdInput) {
-      thresholdInput.value = result.referenciaMm ?? currentPanel?.comparacaoCultura?.limiarMm ?? "";
-    }
-  } catch (error) {
-    showError(dashboardError, error.message);
-  }
-}
-
-// --- HISTÓRICO DE PRECIPITAÇÕES DO AGRICULTOR (RF03) ---
-async function carregarHistoricoPrecipitacoes() {
-  const container = document.querySelector("#rain-history-list");
-  if (!container) return;
-  try {
-    const pagina = await api("/precipitacoes");
-    const itens = pagina?.content || [];
-    if (itens.length === 0) {
-      container.innerHTML = `<p class="muted">Nenhum registro manual enviado ainda.</p>`;
-      return;
-    }
-    container.innerHTML = itens
-      .slice(0, 6)
-      .map(
-        item => `
-        <div class="history-item">
-          <div>
-            <strong>${formatNumber(item.volumeMm)} mm</strong>
-            <span> · ${formatDate(item.dataEvento)}</span>
-          </div>
-          <span class="muted">${item.fonte === "PLUVIOMETRO_PROPRIO" ? "Pluviômetro próprio" : item.fonte === "ESTACAO" ? "Estação comunitária" : "Estimativa visual"}</span>
-        </div>
-      `
-      )
-      .join("");
-  } catch {
-    container.innerHTML = `<p class="muted">Histórico disponível em cache.</p>`;
-  }
-}
-
-// --- RESERVATÓRIOS, CHECKLIST SANITÁRIO E MONITOR COMUNITÁRIO (RF07, RF08, RF16, RN15) ---
-async function carregarDadosReservatoriosEMonitor() {
-  const localitySelect = document.querySelector("#locality-select");
-  if (!localitySelect?.value) return;
-
-  try {
-    const [resList, monitor] = await Promise.all([
-      api("/reservatorios"),
-      api(`/localidades/${localitySelect.value}/monitor-reservatorios`)
-    ]);
-    reservoirs = resList;
-
-    const resSelect = document.querySelector("#reservoir-select");
-    const checkResSelect = document.querySelector("#checklist-reservoir-select");
-    if (reservoirs.length > 0) {
-      addOptions(resSelect, reservoirs, item => item.id, item => `${item.apelido || item.tipo} (${item.ultimoNivelPercentual ?? 0}%)`);
-      addOptions(checkResSelect, reservoirs, item => item.id, item => `${item.apelido || item.tipo}`);
-    }
-
-    renderMonitorComunitario(monitor);
-
-    if (reservoirs.length > 0) {
-      await carregarUltimoChecklist(reservoirs[0].id);
-    }
-  } catch (err) {
-    console.warn("Erro ao carregar monitor de reservatórios:", err.message);
-  }
-}
-
-function renderMonitorComunitario(monitor) {
-  const container = document.querySelector("#monitor-comunitario-box");
-  if (!container || !monitor) return;
-
-  if (!monitor.suficiente) {
-    container.innerHTML = `
-      <div class="decision-note">
-        <strong>Privacidade Comunitária (RN15):</strong> ${monitor.mensagem || "A localidade ainda não atingiu o número mínimo de participantes para exibição agregada sem expor famílias."}
-      </div>
-    `;
+  const u = state.user;
+  if (!u) {
+    if (avatarEl) avatarEl.textContent = "V";
+    if (papelEl) papelEl.textContent = "Visitante";
+    if (nomeResumoEl) nomeResumoEl.textContent = "Entre na sua conta";
+    if (locResumoEl) locResumoEl.textContent = "Faça login para editar seu perfil";
+    if (telResumoEl) telResumoEl.textContent = "--";
+    if (emailResumoEl) emailResumoEl.textContent = "--";
     return;
   }
 
-  const dist = monitor.distribuicaoEscala || { CHEIO: 0, MEDIO: 0, BAIXO: 0, CRITICO: 0 };
-  container.innerHTML = `
-    <p class="muted">Visão agregada e anônima de <strong>${monitor.totalReservatorios || monitor.totalParticipantes}</strong> reservatórios comunitários em <strong>${monitor.localidadeNome || "sua localidade"}</strong> (Média: <strong>${monitor.resumoNivelPercentual ?? "--"}%</strong> · Risco sanitário sinalizado em <strong>${monitor.comRiscoSanitario || 0}</strong>).</p>
-    <div class="monitor-summary-grid">
-      <div class="monitor-stat">
-        <strong>${dist.CHEIO || 0}</strong>
-        <span>Cheios (≥75%)</span>
-      </div>
-      <div class="monitor-stat">
-        <strong>${dist.MEDIO || 0}</strong>
-        <span>Médios (40–74%)</span>
-      </div>
-      <div class="monitor-stat">
-        <strong>${dist.BAIXO || 0}</strong>
-        <span>Baixos (15–39%)</span>
-      </div>
-      <div class="monitor-stat">
-        <strong>${dist.CRITICO || 0}</strong>
-        <span>Críticos (<15%)</span>
-      </div>
-    </div>
-    <small class="muted">Última sincronização agregada: ${formatDateTime(monitor.ultimaSincronizacao || new Date().toISOString())} · Nenhum dado individual de família é exibido (RN15).</small>
-  `;
+  const mapAgua = {
+    CISTERNA: "Cisterna",
+    POCO: "Poço tubular / cacimba",
+    ENCANADA: "Água encanada"
+  };
+
+  if (avatarEl) avatarEl.textContent = (u.nome || "A").trim().charAt(0).toUpperCase();
+  if (papelEl) papelEl.textContent = u.perfil === "GESTOR" ? "Gestor(a)" : "Agricultor(a)";
+  if (nomeResumoEl) nomeResumoEl.textContent = u.nome || "Agricultor(a)";
+  if (locResumoEl) locResumoEl.textContent = `Localidade: ${u.localidadeNome || "Irecê"}`;
+  if (telResumoEl) telResumoEl.textContent = u.telefone || "--";
+  if (emailResumoEl) emailResumoEl.textContent = u.email || "Não informado";
+  if (aguaResumoEl) aguaResumoEl.textContent = mapAgua[u.abastecimento] || "Cisterna";
+  if (consentResumoEl) consentResumoEl.textContent = u.consentimentoLocalizacao ? "Sim" : "Não";
+
+  if (inputNome) inputNome.value = u.nome || "";
+  if (inputTel) inputTel.value = u.telefone || "";
+  if (inputEmail) inputEmail.value = u.email || "";
+  if (inputLoc && u.localidadeId) inputLoc.value = String(u.localidadeId);
+  if (inputAgua && u.abastecimento) inputAgua.value = u.abastecimento;
+  if (inputConsent) inputConsent.checked = Boolean(u.consentimentoLocalizacao);
+  if (inputSenha) inputSenha.value = "";
 }
 
-async function carregarUltimoChecklist(reservatorioId) {
-  const statusEl = document.querySelector("#checklist-last-status");
-  if (!statusEl || !reservatorioId) return;
+/* ==========================================================================
+   LOCALIDADES E GEOLOCALIZAÇÃO ATUAL DO USUÁRIO (GPS)
+   ========================================================================== */
+async function loadLocalidades() {
   try {
-    const ultimo = await api(`/reservatorios/${reservatorioId}/checklists/ultimo`);
-    if (!ultimo || !ultimo.id) {
-      statusEl.innerHTML = `<span class="muted">Nenhuma inspeção sanitária registrada para este reservatório.</span>`;
-      return;
-    }
-    statusEl.innerHTML = ultimo.riscoPotabilidade
-      ? `<div class="rain-alert"><strong>Atenção Sanitária (RN11):</strong> Última revisão (${formatDate(ultimo.dataAvaliacao)}) identificou ponto não conforme com risco à potabilidade. Verifique calhas, tampa e vedação.</div>`
-      : `<div class="form-success">Última revisão (${formatDate(ultimo.dataAvaliacao)}): Reservatório em conformidade sanitária, sem risco aparente de contaminação.</div>`;
+    const list = await apiFetch("/api/v1/localidades");
+    state.localidades = list;
+    await OfflineDB.setCache(STORAGE_KEYS.CACHE_LOCALIDADES, list);
   } catch {
-    statusEl.innerHTML = "";
+    const cached = await OfflineDB.getCache(STORAGE_KEYS.CACHE_LOCALIDADES);
+    state.localidades = cached || [
+      { id: 1, nome: "Irecê", tipo: "MUNICIPIO", latitude: -11.3042, longitude: -41.8558 },
+      { id: 2, nome: "Presidente Dutra", tipo: "MUNICIPIO", latitude: -11.2958, longitude: -41.9869 },
+      { id: 3, nome: "Achado (Irecê)", tipo: "POVOADO", latitude: -11.335, longitude: -41.821 },
+      { id: 4, nome: "Queimada dos Rodrigues (Pres. Dutra)", tipo: "POVOADO", latitude: -11.312, longitude: -41.965 },
+      { id: 5, nome: "Angical (Irecê)", tipo: "POVOADO", latitude: -11.278, longitude: -41.889 }
+    ];
   }
+
+  populateLocalidadesSelectors();
 }
 
-// --- ALERTAS CLIMÁTICOS E MURAL COMUNITÁRIO (RF12, RF13, RF14, RF15) ---
-async function carregarAlertasEMural() {
-  const localitySelect = document.querySelector("#locality-select");
-  const locId = localitySelect?.value || currentUser?.localidadeId || 1;
+function populateLocalidadesSelectors() {
+  const selectPainel = $("#select-localidade");
+  const selectCadastro = $("#cadastro-localidade");
+  const selectPerfil = $("#perfil-input-localidade");
+
+  const optionsHtml = state.localidades
+    .map(
+      (loc) =>
+        `<option value="${loc.id}" ${
+          loc.id === state.localidadeId ? "selected" : ""
+        }>${escapeHtml(loc.nome)}</option>`
+    )
+    .join("");
+
+  if (selectPainel) selectPainel.innerHTML = optionsHtml;
+  if (selectCadastro) selectCadastro.innerHTML = optionsHtml;
+  if (selectPerfil) selectPerfil.innerHTML = optionsHtml;
+}
+
+function detectarLocalizacaoGps(atualizarPainel = true) {
+  const gpsStatus = $("#gps-status-banner");
+  const btnGps = $("#btn-detectar-localizacao");
+
+  if (!("geolocation" in navigator)) {
+    if (gpsStatus) {
+      gpsStatus.hidden = false;
+      gpsStatus.textContent = "Seu navegador não possui suporte a GPS.";
+    }
+    return;
+  }
+
+  if (btnGps) {
+    btnGps.disabled = true;
+    btnGps.textContent = "📍 Localizando...";
+  }
+  if (gpsStatus) {
+    gpsStatus.hidden = false;
+    gpsStatus.textContent = "Obtendo localização atual do seu aparelho...";
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
+      try {
+        const res = await apiFetch(`/api/v1/localidades/proxima?lat=${lat}&lon=${lon}`);
+        if (res && res.localidade) {
+          const locEncontrada = res.localidade;
+          if (!state.localidades.some((l) => l.id === locEncontrada.id)) {
+            state.localidades.push(locEncontrada);
+          }
+          state.localidadeId = locEncontrada.id;
+          populateLocalidadesSelectors();
+
+          const selectCadastro = $("#cadastro-localidade");
+          if (selectCadastro) selectCadastro.value = String(locEncontrada.id);
+
+          if (gpsStatus) {
+            gpsStatus.hidden = false;
+            gpsStatus.textContent = `📍 Localização definida: ${locEncontrada.nome}`;
+            setTimeout(() => {
+              gpsStatus.hidden = true;
+            }, 6000);
+          }
+
+          if (atualizarPainel) {
+            await loadAllLocalityData();
+          }
+        }
+      } catch {
+        if (gpsStatus) {
+          gpsStatus.hidden = false;
+          gpsStatus.textContent = `📍 Coordenadas obtidas (${lat.toFixed(3)}°, ${lon.toFixed(3)}°).`;
+        }
+      } finally {
+        if (btnGps) {
+          btnGps.disabled = false;
+          btnGps.textContent = "📍 Usar minha localização";
+        }
+      }
+    },
+    () => {
+      if (btnGps) {
+        btnGps.disabled = false;
+        btnGps.textContent = "📍 Usar minha localização";
+      }
+      if (gpsStatus) {
+        gpsStatus.hidden = false;
+        gpsStatus.textContent = "Permissão de localização não concedida. Escolha a localidade na lista.";
+      }
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+  );
+}
+
+/* ==========================================================================
+   PAINEL DE CHUVA, DIAGNÓSTICO AUTOMÁTICO DA SITUAÇÃO E SUGESTÃO DE PLANTIO
+   ========================================================================== */
+async function loadPainelChuvaAndSugestao() {
+  const locId = state.localidadeId;
+  const cultura = state.culturaSelecionada;
 
   try {
-    const [listaAlertas, listaAvisos] = await Promise.all([
-      api(`/alertas?localidadeId=${locId}`),
-      api(`/avisos?localidadeId=${locId}`)
+    const [painel, sugestao] = await Promise.all([
+      apiFetch(`/api/v1/localidades/${locId}/painel-chuva?cultura=${encodeURIComponent(cultura)}`),
+      apiFetch(`/api/v1/localidades/${locId}/sugestao-plantio?cultura=${encodeURIComponent(cultura)}`)
     ]);
 
-    const alertasContainer = document.querySelector("#alertas-list");
-    if (alertasContainer) {
-      if (!listaAlertas || listaAlertas.length === 0) {
-        alertasContainer.innerHTML = `<p class="muted">Nenhum alerta climático extraordinário vigente para esta localidade.</p>`;
-      } else {
-        alertasContainer.innerHTML = listaAlertas
-          .map(
-            a => `
-            <article class="feed-card alerta-${(a.severidade || "INFO").toLowerCase()}">
-              <p class="eyebrow">${a.severidade || "ATENÇÃO"} · ${a.tipo || "CLIMÁTICO"}</p>
-              <h4>${a.titulo || "Alerta da Localidade"}</h4>
-              <p>${a.mensagem}</p>
-              <div class="feed-meta">Fonte: ${a.fonte || "Defesa Civil / Painel"} · Vigente até ${formatDate(a.vigenteAte)}</div>
-            </article>
-          `
-          )
-          .join("");
-      }
-    }
+    await OfflineDB.setCache(`${STORAGE_KEYS.CACHE_PAINEL}_${locId}_${cultura}`, {
+      painel,
+      sugestao,
+      savedAt: new Date().toISOString()
+    });
 
-    const muralContainer = document.querySelector("#mural-list");
-    if (muralContainer) {
-      const itens = listaAvisos?.content || listaAvisos || [];
-      if (itens.length === 0) {
-        muralContainer.innerHTML = `<p class="muted">Nenhum aviso publicado nos últimos 30 dias. Seja o primeiro a compartilhar!</p>`;
-      } else {
-        muralContainer.innerHTML = itens
-          .map(
-            m => `
-            <article class="feed-card">
-              <h4>${m.titulo}</h4>
-              <p>${m.conteudo}</p>
-              <div class="feed-meta">Publicado por <strong>${m.autorNome || "Agricultor da Comunidade"}</strong> · Visível até ${formatDate(m.visivelAte)} (RN08)</div>
-            </article>
-          `
-          )
-          .join("");
-      }
+    renderPainelAndSugestao(painel, sugestao, false);
+  } catch {
+    const cached = await OfflineDB.getCache(`${STORAGE_KEYS.CACHE_PAINEL}_${locId}_${cultura}`);
+    if (cached) {
+      renderPainelAndSugestao(cached.painel, cached.sugestao, true);
     }
-  } catch (err) {
-    console.warn("Erro ao carregar comunidade:", err.message);
   }
 }
 
-// --- INICIALIZAÇÃO DE EVENTOS ---
-document.addEventListener("DOMContentLoaded", () => {
-  const loginForm = document.querySelector("#login-form");
-  const signupForm = document.querySelector("#signup-form");
-  const localitySelect = document.querySelector("#locality-select");
-  const cultureSelect = document.querySelector("#culture-select");
+function renderPainelAndSugestao(painel, sugestao, isOfflineCache) {
+  if (!painel) return;
 
-  // Data atual no cabeçalho e campos date
-  const todayStr = new Date().toISOString().slice(0, 10);
-  const todayLabel = document.querySelector("#today-label");
-  if (todayLabel) {
-    todayLabel.textContent = new Intl.DateTimeFormat("pt-BR", {
-      weekday: "long",
-      day: "numeric",
-      month: "long"
-    })
-      .format(new Date())
-      .toLocaleUpperCase("pt-BR");
+  const tituloEl = $("#painel-localidade-titulo");
+  if (tituloEl) tituloEl.textContent = painel.localidadeNome;
+
+  const m7d = $("#metric-7d");
+  const mMonth = $("#metric-month");
+  const mNormal = $("#metric-normal");
+  const mSeason = $("#metric-season");
+  const mPct = $("#metric-pct");
+  const pLabel = $("#progress-label");
+  const pBar = $("#rain-progress-bar");
+  const fonteLabel = $("#painel-fonte-label");
+
+  if (m7d) m7d.textContent = `${painel.acumuladoRecenteMm} mm`;
+  if (mMonth) mMonth.textContent = `${painel.acumuladoMesMm} mm`;
+  if (mNormal) mNormal.textContent = `Média do mês: ${painel.normalMesMm} mm`;
+  if (mSeason) mSeason.textContent = `${painel.acumuladoEstacaoMm} mm`;
+  if (mPct) mPct.textContent = `${painel.percentualDaNormal}% da média`;
+
+  const pct = Math.min(100, Math.round(painel.percentualDaNormal || 0));
+  if (pLabel) pLabel.textContent = `${painel.percentualDaNormal}%`;
+  if (pBar) pBar.style.width = `${pct}%`;
+
+  if (painel.estacaoInmet) {
+    const tVal = $("#inmet-temp-val");
+    const uVal = $("#inmet-umid-val");
+    const vVal = $("#inmet-vento-val");
+    const sBadge = $("#inmet-sync-badge");
+    if (tVal) tVal.textContent = `${painel.estacaoInmet.temperaturaC} °C`;
+    if (uVal) uVal.textContent = `${painel.estacaoInmet.umidadePct}%`;
+    if (vVal) vVal.textContent = `${painel.estacaoInmet.ventoKmh} km/h`;
+    if (sBadge) {
+      const hora = painel.atualizadoEm
+        ? new Date(painel.atualizadoEm).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+        : "agora";
+      sBadge.textContent = isOfflineCache ? "Modo Offline" : `Atualizado às ${hora}`;
+    }
   }
-  document.querySelectorAll('input[type="date"]').forEach(inp => {
-    if (!inp.value) inp.value = todayStr;
-  });
 
-  // Botões de acesso rápido para demonstração (Zé Ronaldo e Gestor IFBA)
-  document.querySelectorAll("[data-demo-phone]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const phoneInput = document.querySelector("#telefone");
-      const passInput = document.querySelector("#senha");
-      if (phoneInput && passInput) {
-        phoneInput.value = btn.dataset.demoPhone;
-        passInput.value = btn.dataset.demoPass || "senha123";
-        loginForm?.requestSubmit();
+  if (fonteLabel) {
+    fonteLabel.textContent = isOfflineCache
+      ? "Exibindo dados salvos no aparelho (sem internet)"
+      : "Dados meteorológicos atualizados automaticamente";
+  }
+
+  // Diagnóstico automático da situação da roça e orientações de manejo
+  const diag = painel.diagnosticoSituacao;
+  let climaEstadoVisual = diag?.chaveVisual || "atencao";
+
+  if (!diag && sugestao) {
+    if (sugestao.resultado === "CONDICAO_FAVORAVEL") climaEstadoVisual = "favoravel";
+    else if (sugestao.resultado === "CONSIDERE_CULTURA_ALTERNATIVA") climaEstadoVisual = "estiagem";
+  }
+
+  if (typeof window.atualizarIlustracaoClimatica === "function") {
+    window.atualizarIlustracaoClimatica(climaEstadoVisual, diag);
+  }
+
+  state.ultimoDiagnostico = {
+    localidadeNome: painel.localidadeNome,
+    acumuladoMesMm: painel.acumuladoMesMm,
+    acumuladoRecenteMm: painel.acumuladoRecenteMm,
+    temperaturaC: painel.estacaoInmet?.temperaturaC ?? 27,
+    rotuloSituacao: diag?.rotulo || "Situação de Transição"
+  };
+
+  // Atualiza barra de contexto da IA no Chat
+  const chatCtx = $("#chat-climate-context");
+  const chatPill = $("#chat-situacao-pill");
+  const sideLoc = $("#chat-side-loc");
+  const sideMes = $("#chat-side-mes");
+  const side7d = $("#chat-side-7d");
+  const sideSit = $("#chat-side-sit");
+
+  if (chatCtx) {
+    chatCtx.innerHTML = `📍 <strong>${escapeHtml(painel.localidadeNome)}</strong> · ${painel.acumuladoMesMm} mm no mês · ${painel.estacaoInmet?.temperaturaC ?? 27} °C`;
+  }
+  if (chatPill && diag) {
+    chatPill.textContent = diag.rotulo;
+    chatPill.className = `status-label ${
+      diag.codigo === "FAVORAVEL"
+        ? "status-good"
+        : diag.codigo === "ESTIAGEM"
+        ? "status-alert"
+        : "status-warn"
+    }`;
+  }
+  if (sideLoc) sideLoc.textContent = painel.localidadeNome;
+  if (sideMes) sideMes.textContent = `${painel.acumuladoMesMm} mm`;
+  if (side7d) side7d.textContent = `${painel.acumuladoRecenteMm} mm`;
+  if (sideSit) sideSit.textContent = diag?.rotulo || "Em análise";
+
+  if (!sugestao) return;
+
+  const badgeMap = {
+    CONDICAO_FAVORAVEL: {
+      text: "Situação Favorável · Plantio Recomendado",
+      cls: "status-good"
+    },
+    ATENCAO_CONSIDERE_ADIAR: {
+      text: "Situação de Atenção · Avalie Aguardar",
+      cls: "status-warn"
+    },
+    CONSIDERE_CULTURA_ALTERNATIVA: {
+      text: "Situação de Estiagem · Cultura Resistente",
+      cls: "status-alert"
+    }
+  };
+
+  const statusInfo = badgeMap[sugestao.resultado] || badgeMap.ATENCAO_CONSIDERE_ADIAR;
+
+  const decBadge = $("#decision-badge");
+  const decTitle = $("#decision-title");
+  const decCopy = $("#decision-copy");
+
+  if (decBadge) {
+    decBadge.className = `status-label ${statusInfo.cls}`;
+    decBadge.textContent = statusInfo.text;
+  }
+  if (decTitle) {
+    decTitle.textContent = `${sugestao.cultura}: ${sugestao.dadoUsadoMm} mm observados (referência: ${sugestao.referenciaMm} mm)`;
+  }
+  if (decCopy) {
+    decCopy.textContent = sugestao.mensagem;
+  }
+
+  const sugBadge = $("#sug-status-badge");
+  const sugHeadline = $("#sug-headline");
+  const sugExplanation = $("#sug-explanation");
+  const sugCultura = $("#sug-cultura-nome");
+  const sugCriterio = $("#sug-criterio-tipo");
+  const sugObs = $("#sug-observado-mm");
+  const sugLimiar = $("#sug-limiar-mm");
+
+  if (sugBadge) {
+    sugBadge.className = `status-label ${statusInfo.cls}`;
+    sugBadge.textContent = statusInfo.text;
+  }
+  if (sugHeadline) sugHeadline.textContent = sugestao.mensagem;
+  if (sugExplanation) {
+    sugExplanation.textContent = painel.resumoComparativo;
+  }
+  if (sugCultura) sugCultura.textContent = sugestao.cultura;
+  if (sugCriterio) {
+    const tipo = painel.comparacaoCultura?.tipoCriterio || "ACUMULADO_JANELA";
+    sugCriterio.textContent =
+      tipo === "ACUMULADO_ESTACAO"
+        ? "Acumulado na estação chuvosa"
+        : "Acumulado nos últimos 30 dias";
+  }
+  if (sugObs) sugObs.textContent = `${sugestao.dadoUsadoMm} mm`;
+  if (sugLimiar) sugLimiar.textContent = `${sugestao.referenciaMm} mm`;
+}
+
+/* ==========================================================================
+   HISTÓRICO DE CHUVAS, RESERVATÓRIOS, ALERTAS E MURAL
+   ========================================================================== */
+async function loadPrecipitacoes() {
+  const container = $("#precipitacoes-list");
+  if (!container) return;
+
+  if (!state.token) {
+    container.innerHTML = `<p class="muted">Entre na sua conta para anotar e consultar o histórico do seu pluviômetro.</p>`;
+    return;
+  }
+
+  try {
+    const page = await apiFetch("/api/v1/precipitacoes?size=6");
+    const items = page?.content || [];
+    if (items.length === 0) {
+      container.innerHTML = `<p class="muted">Nenhum registro de chuva anotado ainda.</p>`;
+      return;
+    }
+    container.innerHTML = items
+      .slice(0, 5)
+      .map(
+        (p) => `
+      <div class="rule-row">
+        <span>📅 ${escapeHtml(p.dataEvento)}</span>
+        <strong style="color: var(--green);">${Number(p.volumeMm).toFixed(1)} mm</strong>
+      </div>`
+      )
+      .join("");
+  } catch {
+    container.innerHTML = `<p class="muted">Histórico disponível assim que reconectar.</p>`;
+  }
+}
+
+async function loadReservatoriosAndMonitor() {
+  const selectRes = $("#select-reservatorio");
+  if (state.token) {
+    try {
+      const list = await apiFetch("/api/v1/reservatorios");
+      state.reservatorios = list || [];
+      if (selectRes) {
+        if (state.reservatorios.length > 0) {
+          selectRes.innerHTML = state.reservatorios
+            .map(
+              (r) =>
+                `<option value="${r.id}">${escapeHtml(r.apelido)} (${escapeHtml(
+                  r.tipo
+                )} · Atual: ${r.ultimoNivelPercentual ?? "--"}%)</option>`
+            )
+            .join("");
+        } else {
+          selectRes.innerHTML = `<option value="1">Cisterna Principal da Propriedade</option>`;
+        }
       }
+    } catch {
+      if (selectRes) selectRes.innerHTML = `<option value="1">Cisterna Principal (Modo Offline)</option>`;
+    }
+  } else if (selectRes) {
+    selectRes.innerHTML = `<option value="1">Cisterna de Demonstração (Entre para salvar)</option>`;
+  }
+
+  try {
+    const mon = await apiFetch(`/api/v1/localidades/${state.localidadeId}/monitor-reservatorios`);
+    if (mon) {
+      const mediaEl = $("#mon-media-pct");
+      const partEl = $("#mon-total-part");
+      const cheiosEl = $("#mon-cheios-medios");
+      const baixosEl = $("#mon-baixo-critico");
+      const badgeEl = $("#monitor-quorum-badge");
+
+      if (mediaEl) mediaEl.textContent = mon.resumoNivelPercentual != null ? `${mon.resumoNivelPercentual}%` : "--%";
+      if (partEl) partEl.textContent = String(mon.totalParticipantes ?? 0);
+
+      const dist = mon.distribuicaoEscala || {};
+      const bons = (dist.CHEIO || 0) + (dist.MEDIO || 0);
+      const criticos = (dist.BAIXO || 0) + (dist.CRITICO || 0);
+
+      if (cheiosEl) cheiosEl.textContent = String(bons);
+      if (baixosEl) baixosEl.textContent = String(criticos);
+      if (badgeEl) {
+        badgeEl.textContent = mon.suficiente ? "Dados Agregados da Comunidade" : "Amostra Parcial";
+      }
+    }
+  } catch {}
+}
+
+async function loadAlertasAndMural() {
+  const alertasContainer = $("#alertas-list");
+  const muralContainer = $("#mural-list");
+
+  try {
+    const respInmet = await apiFetch("/api/v1/inmet/avisos");
+    const listAlertas = respInmet?.avisos || [];
+
+    if (alertasContainer) {
+      if (!listAlertas || listAlertas.length === 0) {
+        alertasContainer.innerHTML = `<p class="muted">Nenhum alerta climático ativo para esta localidade.</p>`;
+      } else {
+        alertasContainer.innerHTML = listAlertas
+          .map((a) => {
+            const sev = (a.corInmet || a.severidade || "INFO").toUpperCase();
+            const cls =
+              sev === "VERMELHO" || sev === "ALTA"
+                ? "alerta-vermelho"
+                : sev === "LARANJA"
+                ? "alerta-laranja"
+                : sev === "AMARELO" || sev === "ATENCAO"
+                ? "alerta-amarelo"
+                : "alerta-info";
+            return `
+            <article class="feed-card ${cls}">
+              <h4>${escapeHtml(a.titulo)}</h4>
+              <p>${escapeHtml(a.mensagem)}</p>
+              <div class="feed-meta">Vigência até ${escapeHtml(a.vigenteAte)}</div>
+            </article>`;
+          })
+          .join("");
+      }
+    }
+  } catch {
+    if (alertasContainer) {
+      alertasContainer.innerHTML = `<p class="muted">Alertas indisponíveis no momento.</p>`;
+    }
+  }
+
+  try {
+    const pageMural = await apiFetch(`/api/v1/avisos?localidadeId=${state.localidadeId}`);
+    const avisos = pageMural?.content || [];
+    if (muralContainer) {
+      if (avisos.length === 0) {
+        muralContainer.innerHTML = `<p class="muted">Nenhum aviso publicado no mural desta localidade.</p>`;
+      } else {
+        muralContainer.innerHTML = avisos
+          .map(
+            (m) => `
+          <article class="feed-card">
+            <h4>${escapeHtml(m.titulo)}</h4>
+            <p>${escapeHtml(m.conteudo)}</p>
+            <div class="feed-meta">Publicado por <strong>${escapeHtml(m.autorNome)}</strong></div>
+          </article>`
+          )
+          .join("");
+      }
+    }
+  } catch {}
+}
+
+/* ==========================================================================
+   CHAT ASSISTENTE DE PLANTIO (CONECTADO ÀS APIS DE CLIMA E IA)
+   ========================================================================== */
+function appendChatMessage(autor, texto) {
+  const container = $("#chat-messages");
+  if (!container) return;
+
+  const bubble = document.createElement("div");
+  bubble.className = `chat-bubble ${autor === "usuario" ? "user" : "bot"}`;
+
+  if (autor === "usuario") {
+    bubble.textContent = texto;
+  } else {
+    const textDiv = document.createElement("div");
+    textDiv.textContent = texto;
+    bubble.appendChild(textDiv);
+
+    const actionsDiv = document.createElement("div");
+    actionsDiv.className = "chat-bubble-actions";
+
+    const speakBtn = document.createElement("button");
+    speakBtn.type = "button";
+    speakBtn.className = "chat-speak-btn";
+    speakBtn.title = "Ouvir esta resposta";
+    speakBtn.textContent = "🔊";
+    speakBtn.addEventListener("click", () => {
+      if (window.MC_Voz && typeof window.MC_Voz.lerTexto === "function") {
+        window.MC_Voz.lerTexto(texto);
+      }
+    });
+
+    actionsDiv.appendChild(speakBtn);
+    bubble.appendChild(actionsDiv);
+  }
+
+  container.appendChild(bubble);
+  container.scrollTop = container.scrollHeight;
+}
+
+async function enviarPerguntaChatIa(perguntaTexto) {
+  const pergunta = String(perguntaTexto || "").trim();
+  if (!pergunta) return;
+
+  appendChatMessage("usuario", pergunta);
+  state.chatHistory.push({ autor: "usuario", texto: pergunta });
+
+  const btnSend = $("#btn-chat-send");
+  if (btnSend) {
+    btnSend.disabled = true;
+    btnSend.textContent = "Consultando...";
+  }
+
+  try {
+    const res = await apiFetch("/api/v1/ia/chat", {
+      method: "POST",
+      body: JSON.stringify({
+        mensagem: pergunta,
+        localidadeId: state.localidadeId,
+        cultura: state.culturaSelecionada,
+        historico: state.chatHistory.slice(-6)
+      })
+    });
+
+    const resposta = res?.resposta || "Estou acompanhando os dados da sua localidade. Verifique a umidade do solo antes de semear.";
+    appendChatMessage("assistente", resposta);
+    state.chatHistory.push({ autor: "assistente", texto: resposta });
+  } catch {
+    const diag = state.ultimoDiagnostico;
+    const msgOffline = diag
+      ? `Modo offline: em ${diag.localidadeNome}, o acumulado do mês é de ${diag.acumuladoMesMm} mm (${diag.rotuloSituacao}). Mantenha a cobertura do solo com palhada e ajuste o plantio conforme a umidade da terra.`
+      : "Sem conexão no momento. Verifique a umidade da terra a 15 cm de profundidade antes de semear.";
+    appendChatMessage("assistente", msgOffline);
+  } finally {
+    if (btnSend) {
+      btnSend.disabled = false;
+      btnSend.textContent = "Perguntar";
+    }
+  }
+}
+
+/* ==========================================================================
+   AUTENTICAÇÃO GOOGLE E SINCRONIZAÇÃO OFFLINE
+   ========================================================================== */
+async function iniciarLoginGoogleOidc() {
+  try {
+    const selectCad = $("#cadastro-localidade");
+    const locId = selectCad && selectCad.value ? Number(selectCad.value) : state.localidadeId;
+    const data = await apiFetch(`/api/v1/auth/google/url?localidadeId=${locId}`);
+    if (data && data.url) {
+      const width = 480;
+      const height = 640;
+      const left = Math.max(0, (window.screen.width - width) / 2);
+      const top = Math.max(0, (window.screen.height - height) / 2);
+      window.open(
+        data.url,
+        "google_oidc_login",
+        `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+      );
+    }
+  } catch (err) {
+    showFeedback("#auth-feedback", err.message || "Não foi possível abrir o login Google.", true);
+  }
+}
+
+window.addEventListener("message", async (event) => {
+  const msg = event.data;
+  if (msg && msg.type === "GOOGLE_OAUTH_SUCCESS" && msg.payload) {
+    saveAuthSession(msg.payload);
+    const selectPainel = $("#select-localidade");
+    if (selectPainel) selectPainel.value = String(state.localidadeId);
+    showFeedback("#auth-feedback", `Bem-vindo(a), ${msg.payload.nome}!`);
+    await loadAllLocalityData();
+  }
+});
+
+async function flushOfflineQueue() {
+  if (!state.token || !navigator.onLine) return;
+  const q = state.offlineQueue;
+  const total =
+    (q.precipitacoes?.length || 0) +
+    (q.niveis?.length || 0) +
+    (q.checklists?.length || 0) +
+    (q.avisos?.length || 0) +
+    (q.limiares?.length || 0);
+  if (total === 0) return;
+
+  try {
+    await apiFetch("/api/v1/sync/registros", {
+      method: "POST",
+      body: JSON.stringify(q)
+    });
+    state.offlineQueue = {
+      precipitacoes: [],
+      niveis: [],
+      checklists: [],
+      avisos: [],
+      limiares: []
+    };
+    saveOfflineQueue();
+    await loadAllLocalityData();
+  } catch {}
+}
+
+async function loadAllLocalityData() {
+  await Promise.all([
+    loadPainelChuvaAndSugestao(),
+    loadPrecipitacoes(),
+    loadReservatoriosAndMonitor(),
+    loadAlertasAndMural()
+  ]);
+}
+
+function iniciarAtualizacaoAutomaticaClima() {
+  if (state.autoRefreshTimer) clearInterval(state.autoRefreshTimer);
+  state.autoRefreshTimer = setInterval(() => {
+    if (navigator.onLine) {
+      loadPainelChuvaAndSugestao().catch(() => {});
+      flushOfflineQueue().catch(() => {});
+    }
+  }, 60 * 1000);
+}
+
+/* ==========================================================================
+   EVENTOS DA INTERFACE
+   ========================================================================== */
+function bindEvents() {
+  // Navegação principal e menu lateral
+  $$("[data-view]").forEach((btn) => {
+    btn.addEventListener("click", () => switchView(btn.dataset.view));
+  });
+  $$("[data-go-view]").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      switchView(btn.dataset.goView);
     });
   });
 
-  // Login
-  loginForm?.addEventListener("submit", async event => {
-    event.preventDefault();
-    const loginError = document.querySelector("#login-error");
-    showError(loginError, "");
-    const button = loginForm.querySelector("button[type=submit]");
-    setLoading(button, true, "Entrando…");
-    const formData = new FormData(loginForm);
+  // Seletor de localidade
+  const selectLoc = $("#select-localidade");
+  if (selectLoc) {
+    selectLoc.addEventListener("change", (e) => {
+      state.localidadeId = Number(e.target.value);
+      loadAllLocalityData();
+    });
+  }
+
+  // Botões GPS
+  const btnGpsPainel = $("#btn-detectar-localizacao");
+  if (btnGpsPainel) {
+    btnGpsPainel.addEventListener("click", () => detectarLocalizacaoGps(true));
+  }
+  const btnGpsCadastro = $("#btn-gps-cadastro");
+  if (btnGpsCadastro) {
+    btnGpsCadastro.addEventListener("click", () => detectarLocalizacaoGps(false));
+  }
+
+  // Abas de cultura
+  $$(".crop-tab").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      $$(".crop-tab").forEach((t) => t.classList.remove("active"));
+      tab.classList.add("active");
+      state.culturaSelecionada = tab.dataset.crop;
+      loadPainelChuvaAndSugestao();
+    });
+  });
+
+  // Abas Login / Cadastro
+  $$("[data-auth-tab]").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      $$("[data-auth-tab]").forEach((t) => t.classList.remove("active"));
+      tab.classList.add("active");
+      const mode = tab.dataset.authTab;
+      const fLogin = $("#form-login");
+      const fCad = $("#form-cadastro");
+      if (fLogin) fLogin.hidden = mode !== "login";
+      if (fCad) fCad.hidden = mode !== "cadastro";
+    });
+  });
+
+  // Botões Entrar com Google
+  const btnGoogleLogin = $("#btn-google-login");
+  const btnGoogleSignup = $("#btn-google-signup");
+  if (btnGoogleLogin) btnGoogleLogin.addEventListener("click", iniciarLoginGoogleOidc);
+  if (btnGoogleSignup) btnGoogleSignup.addEventListener("click", iniciarLoginGoogleOidc);
+
+  // Envio e validação de código de e-mail
+  const btnEnviarCodigo = $("#btn-enviar-codigo-email");
+  if (btnEnviarCodigo) {
+    btnEnviarCodigo.addEventListener("click", async () => {
+      const emailInput = $("#cadastro-email");
+      const email = emailInput ? emailInput.value.trim() : "";
+      if (!email || !email.includes("@")) {
+        showFeedback("#auth-feedback", "Informe um e-mail válido para enviar o código.", true);
+        return;
+      }
+      btnEnviarCodigo.disabled = true;
+      btnEnviarCodigo.textContent = "Enviando...";
+      try {
+        const res = await apiFetch("/api/v1/auth/email/enviar-codigo", {
+          method: "POST",
+          body: JSON.stringify({ email })
+        });
+        const box = $("#email-verification-box");
+        const msgEl = $("#email-verification-msg");
+        const linkPreview = $("#link-webmail-preview");
+        if (box) box.hidden = false;
+        if (msgEl) msgEl.textContent = res.mensagem || `Código enviado para ${email}.`;
+        if (linkPreview) {
+          if (res.previewUrl) {
+            linkPreview.href = res.previewUrl;
+            linkPreview.hidden = false;
+          } else {
+            linkPreview.hidden = true;
+          }
+        }
+      } catch (err) {
+        showFeedback("#auth-feedback", err.message, true);
+      } finally {
+        btnEnviarCodigo.disabled = false;
+        btnEnviarCodigo.textContent = "Enviar Código";
+      }
+    });
+  }
+
+  const btnConfirmarCodigo = $("#btn-confirmar-codigo-email");
+  if (btnConfirmarCodigo) {
+    btnConfirmarCodigo.addEventListener("click", async () => {
+      const email = $("#cadastro-email")?.value?.trim() || "";
+      const codigo = $("#input-codigo-email")?.value?.trim() || "";
+      if (!email || !codigo) return;
+      try {
+        const res = await apiFetch("/api/v1/auth/email/verificar-codigo", {
+          method: "POST",
+          body: JSON.stringify({ email, codigo })
+        });
+        showFeedback("#auth-feedback", res.mensagem || "E-mail validado com sucesso!");
+        const box = $("#email-verification-box");
+        if (box) box.hidden = true;
+      } catch (err) {
+        showFeedback("#auth-feedback", err.message, true);
+      }
+    });
+  }
+
+  // Chips de demonstração
+  $$(".chip-demo").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      const tel = $("#login-telefone");
+      const pass = $("#login-senha");
+      if (tel) tel.value = chip.dataset.demoPhone;
+      if (pass) pass.value = chip.dataset.demoPass;
+      $("#form-login")?.requestSubmit();
+    });
+  });
+
+  // Botões Entrar / Sair com confirmação
+  $("#btn-open-auth")?.addEventListener("click", () => {
+    switchView("view-inicio");
+    const authPanel = $("#auth-panel");
+    if (authPanel) {
+      authPanel.hidden = false;
+      authPanel.scrollIntoView({ behavior: "smooth" });
+    }
+  });
+
+  const logoutModal = $("#logout-confirm-modal");
+  const logoutCancelBtn = $("#logout-cancel-btn");
+  const logoutConfirmBtn = $("#logout-confirm-btn");
+
+  $("#btn-logout")?.addEventListener("click", () => {
+    if (logoutModal) logoutModal.hidden = false;
+  });
+
+  logoutCancelBtn?.addEventListener("click", () => {
+    if (logoutModal) logoutModal.hidden = true;
+  });
+
+  logoutConfirmBtn?.addEventListener("click", () => {
+    if (logoutModal) logoutModal.hidden = true;
+    saveAuthSession(null);
+    loadAllLocalityData();
+    switchView("view-inicio");
+  });
+
+  // Login Submit
+  $("#form-login")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
     try {
-      const result = await api("/auth/login", {
+      const res = await apiFetch("/api/v1/auth/login", {
         method: "POST",
         body: JSON.stringify({
-          telefone: formData.get("telefone"),
-          senha: formData.get("senha")
+          telefone: fd.get("telefone"),
+          senha: fd.get("senha")
         })
       });
-      sessionStorage.setItem(TOKEN_KEY, result.token);
-      localStorage.setItem(TOKEN_KEY, result.token);
-      await loadDashboard();
-    } catch (error) {
-      sessionStorage.removeItem(TOKEN_KEY);
-      showError(loginError, error.message);
-    } finally {
-      setLoading(button, false);
-    }
-  });
-
-  // Alternar abas Login / Cadastro
-  document.querySelectorAll("[data-auth-view]").forEach(button => {
-    button.addEventListener("click", () => setAuthView(button.dataset.authView));
-  });
-
-  // Cadastro (RF01)
-  signupForm?.addEventListener("submit", async event => {
-    event.preventDefault();
-    const button = signupForm.querySelector("button[type=submit]");
-    const errorElement = document.querySelector("#signup-error");
-    const successElement = document.querySelector("#signup-success");
-    const formData = new FormData(signupForm);
-    const senha = String(formData.get("senha"));
-    const confirmation = String(formData.get("senhaConfirmacao"));
-    showError(errorElement, "");
-    successElement?.classList.add("hidden");
-
-    if (senha !== confirmation) {
-      showError(errorElement, "As senhas não conferem.");
-      return;
-    }
-
-    setLoading(button, true, "Criando cadastro…");
-    try {
-      await api("/usuarios", {
-        method: "POST",
-        body: JSON.stringify({
-          nome: formData.get("nome"),
-          telefone: String(formData.get("telefone")).replace(/\D/g, ""),
-          senha,
-          perfil: "AGRICULTOR",
-          abastecimento: formData.get("abastecimento"),
-          localidadeId: Number(formData.get("localidadeId")),
-          consentimentoLocalizacao: formData.get("consentimentoLocalizacao") === "on"
-        })
-      });
-      signupForm.reset();
-      successElement?.classList.remove("hidden");
-    } catch (error) {
-      showError(errorElement, error.message);
-    } finally {
-      setLoading(button, false);
-    }
-  });
-
-  // Navegação principal
-  document.querySelectorAll(".nav-link").forEach(link => {
-    if (link.dataset.view) {
-      link.addEventListener("click", e => {
-        e.preventDefault();
-        setView(link.dataset.view);
-      });
-    }
-  });
-
-  document.querySelectorAll("[data-go-view]").forEach(button => {
-    button.addEventListener("click", () => setView(button.dataset.goView));
-  });
-
-  localitySelect?.addEventListener("change", () => {
-    loadPanel();
-  });
-
-  cultureSelect?.addEventListener("change", () => {
-    loadPanel();
-  });
-
-  document.querySelector("#logout-button")?.addEventListener("click", signOut);
-
-  // Botão Consultar Sugestão de Plantio
-  document.querySelector("#advice-button")?.addEventListener("click", () => {
-    setView("suggestion-view");
-  });
-
-  // Botão Ingerir Dados Climáticos Reais (Open-Meteo RF18)
-  document.querySelector("#refresh-real-weather-btn")?.addEventListener("click", async e => {
-    const btn = e.currentTarget;
-    setLoading(btn, true, "Consultando satélite/estação…");
-    try {
-      await api("/admin/ingestao/todas", { method: "POST" });
-      await loadPanel();
+      saveAuthSession(res);
+      const selectPainel = $("#select-localidade");
+      if (selectPainel) selectPainel.value = String(state.localidadeId);
+      showFeedback("#auth-feedback", `Bem-vindo(a), ${res.nome}!`);
+      await flushOfflineQueue();
+      await loadAllLocalityData();
     } catch (err) {
-      showError(document.querySelector("#dashboard-error"), err.message);
-    } finally {
-      setLoading(btn, false);
+      showFeedback("#auth-feedback", err.message, true);
     }
   });
 
-  // Salvar limiar personalizado do agricultor (RN09)
-  document.querySelector("#threshold-form")?.addEventListener("submit", async event => {
-    event.preventDefault();
-    const form = event.currentTarget;
-    const button = form.querySelector("button[type=submit]");
-    const errorElement = document.querySelector("#threshold-error");
-    const successElement = document.querySelector("#threshold-success");
-    showError(errorElement, "");
-    successElement?.classList.add("hidden");
+  // Cadastro Submit
+  $("#form-cadastro")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const payload = {
+      nome: fd.get("nome"),
+      telefone: fd.get("telefone"),
+      email: fd.get("email") || undefined,
+      localidadeId: Number(fd.get("localidadeId")),
+      abastecimento: fd.get("abastecimento"),
+      senha: fd.get("senha"),
+      consentimentoLocalizacao: fd.get("consentimentoLocalizacao") === "on"
+    };
+    try {
+      await apiFetch("/api/v1/usuarios", {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
+      const loginRes = await apiFetch("/api/v1/auth/login", {
+        method: "POST",
+        body: JSON.stringify({
+          telefone: payload.telefone,
+          senha: payload.senha
+        })
+      });
+      saveAuthSession(loginRes);
+      const selectPainel = $("#select-localidade");
+      if (selectPainel) selectPainel.value = String(state.localidadeId);
+      showFeedback("#auth-feedback", "Conta criada com sucesso!");
+      await loadAllLocalityData();
+    } catch (err) {
+      showFeedback("#auth-feedback", err.message, true);
+    }
+  });
 
-    const culture = cultures.find(item => item.nome.toLowerCase() === (cultureSelect?.value || "").toLowerCase());
-    if (!culture) {
-      showError(errorElement, "Selecione uma cultura válida.");
+  // Edição de Perfil do Usuário (PUT /api/v1/usuarios/me)
+  $("#form-perfil-usuario")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!state.token) {
+      showFeedback("#perfil-feedback", "Entre na sua conta primeiro para editar seu perfil.", true);
+      return;
+    }
+    const fd = new FormData(e.target);
+    const payload = {
+      nome: fd.get("nome"),
+      telefone: fd.get("telefone"),
+      email: fd.get("email"),
+      localidadeId: Number(fd.get("localidadeId")),
+      abastecimento: fd.get("abastecimento"),
+      consentimentoLocalizacao: $("#perfil-input-consent")?.checked ?? true,
+      novaSenha: fd.get("novaSenha") || undefined
+    };
+    try {
+      const updated = await apiFetch("/api/v1/usuarios/me", {
+        method: "PUT",
+        body: JSON.stringify(payload)
+      });
+      saveAuthSession(updated);
+      const selectPainel = $("#select-localidade");
+      if (selectPainel) selectPainel.value = String(state.localidadeId);
+      showFeedback("#perfil-feedback", updated.mensagem || "Seus dados foram atualizados com sucesso!");
+      await loadAllLocalityData();
+    } catch (err) {
+      showFeedback("#perfil-feedback", err.message || "Erro ao atualizar perfil.", true);
+    }
+  });
+
+  // Registro de Chuva
+  $("#form-chuva")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const registro = {
+      localidadeId: state.localidadeId,
+      volumeMm: Number(fd.get("volumeMm")),
+      dataEvento: fd.get("dataEvento"),
+      fonte: "PLUVIOMETRO_PROPRIO",
+      idClienteSync: `sync-precip-${Date.now()}`
+    };
+
+    if (!state.token) {
+      showFeedback("#chuva-feedback", "Entre na sua conta para salvar o registro de chuva.", true);
       return;
     }
 
-    setLoading(button, true, "Salvando…");
     try {
-      const limiarMm = Number(new FormData(form).get("limiarMm"));
-      await api(`/culturas/${culture.id}/limiar-usuario`, {
+      await apiFetch("/api/v1/precipitacoes", {
+        method: "POST",
+        body: JSON.stringify(registro)
+      });
+      showFeedback("#chuva-feedback", "Chuva registrada com sucesso!");
+      e.target.reset();
+      initDefaultDates();
+      await loadAllLocalityData();
+    } catch {
+      state.offlineQueue.precipitacoes.push(registro);
+      saveOfflineQueue();
+      showFeedback("#chuva-feedback", "Sem internet: chuva salva no aparelho e será sincronizada automaticamente.");
+    }
+  });
+
+  // Ajuste de Limiar de Plantio
+  $("#form-limiar")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!state.token) {
+      showFeedback("#limiar-feedback", "Entre na sua conta para salvar seu limiar personalizado.", true);
+      return;
+    }
+    const fd = new FormData(e.target);
+    const culturaId = Number(fd.get("culturaId"));
+    const limiarMm = Number(fd.get("limiarMm"));
+    try {
+      await apiFetch(`/api/v1/culturas/${culturaId}/limiar-usuario`, {
         method: "PUT",
         body: JSON.stringify({ limiarMm })
       });
-      successElement?.classList.remove("hidden");
-      await loadPanel();
-      await consultarSugestaoPlantio();
-    } catch (error) {
-      showError(errorElement, error.message);
-    } finally {
-      setLoading(button, false);
+      showFeedback("#limiar-feedback", `Limiar ajustado para ${limiarMm} mm!`);
+      await loadPainelChuvaAndSugestao();
+    } catch {
+      state.offlineQueue.limiares.push({ culturaId, limiarMm, idClienteSync: `sync-limiar-${Date.now()}` });
+      saveOfflineQueue();
+      showFeedback("#limiar-feedback", "Limiar salvo no aparelho para sincronizar.");
     }
   });
 
-  // Registrar chuva observada (RF03 + suporte a fila offline RF17)
-  document.querySelector("#rain-form")?.addEventListener("submit", async event => {
-    event.preventDefault();
-    const form = event.currentTarget;
-    const button = form.querySelector("button[type=submit]");
-    const formData = new FormData(form);
-    const errorElement = document.querySelector("#rain-error");
-    const successElement = document.querySelector("#rain-success");
-    showError(errorElement, "");
-    successElement?.classList.add("hidden");
-
-    const payload = {
-      localidadeId: Number(localitySelect?.value || currentUser?.localidadeId || 1),
-      volumeMm: Number(formData.get("volumeMm")),
-      dataEvento: formData.get("dataEvento"),
-      fonte: formData.get("fonte")
-    };
-
-    setLoading(button, true, "Salvando…");
-    try {
-      await api("/precipitacoes", {
-        method: "POST",
-        body: JSON.stringify(payload)
-      });
-      form.reset();
-      document.querySelector("#rain-date").value = todayStr;
-      if (successElement) {
-        successElement.textContent = "Registro salvo no painel da comunidade. Obrigado por contribuir!";
-        successElement.classList.remove("hidden");
-      }
-      await loadPanel();
-      await carregarHistoricoPrecipitacoes();
-    } catch (error) {
-      // RN13 / RF17: guarda na fila offline se estiver sem conexão
-      adicionarFilaOffline({ tipoItem: "PRECIPITACAO", ...payload });
-      if (successElement) {
-        successElement.textContent = "Sem sinal no momento: registro salvo na fila do aparelho e será sincronizado assim que a conexão voltar (RF17).";
-        successElement.classList.remove("hidden");
-      }
-    } finally {
-      setLoading(button, false);
-    }
-  });
-
-  // Botões de escala qualitativa de reservatório (CHEIO / MEDIO / BAIXO / CRITICO)
-  document.querySelectorAll("[data-escala-pct]").forEach(btn => {
+  // Escala rápida de reservatório
+  $$(".escala-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
-      document.querySelectorAll("[data-escala-pct]").forEach(b => b.classList.remove("active"));
+      $$(".escala-btn").forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
-      const levelInput = document.querySelector("#reservoir-level");
-      if (levelInput) levelInput.value = btn.dataset.escalaPct;
+      const inputPct = $("#input-nivel-pct");
+      if (inputPct) inputPct.value = btn.dataset.nivelPct;
     });
   });
 
-  // Registrar nível do poço / cisterna (RF07)
-  document.querySelector("#reservoir-form")?.addEventListener("submit", async event => {
-    event.preventDefault();
-    const form = event.currentTarget;
-    const button = form.querySelector("button[type=submit]");
-    const formData = new FormData(form);
-    const errorElement = document.querySelector("#reservoir-error");
-    const successElement = document.querySelector("#reservoir-success");
-    showError(errorElement, "");
-    successElement?.classList.add("hidden");
-
-    const reservatorioId = Number(document.querySelector("#reservoir-select")?.value);
+  // Salvar Nível de Reservatório
+  $("#form-nivel-reservatorio")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!state.token) {
+      showFeedback("#nivel-feedback", "Entre na sua conta para registrar o nível da cisterna/poço.", true);
+      return;
+    }
+    const fd = new FormData(e.target);
+    const reservatorioId = Number(fd.get("reservatorioId") || 1);
     const payload = {
       reservatorioId,
-      nivelPercentual: Number(formData.get("nivelPercentual")),
-      nivelLencolMetros: formData.get("nivelLencolMetros") ? Number(formData.get("nivelLencolMetros")) : null,
-      dataRegistro: formData.get("dataRegistro")
+      nivelPercentual: Number(fd.get("nivelPercentual")),
+      nivelLencolMetros: fd.get("nivelLencolMetros") ? Number(fd.get("nivelLencolMetros")) : null,
+      idClienteSync: `sync-nivel-${Date.now()}`
     };
 
-    setLoading(button, true, "Salvando…");
     try {
-      await api(`/reservatorios/${reservatorioId}/niveis`, {
+      await apiFetch(`/api/v1/reservatorios/${reservatorioId}/niveis`, {
         method: "POST",
         body: JSON.stringify(payload)
       });
-      if (successElement) {
-        successElement.textContent = "Nível do reservatório atualizado (RN02: 1 registro consolidado por dia).";
-        successElement.classList.remove("hidden");
+      showFeedback("#nivel-feedback", "Nível de água atualizado!");
+      await loadReservatoriosAndMonitor();
+    } catch {
+      state.offlineQueue.niveis.push(payload);
+      saveOfflineQueue();
+      showFeedback("#nivel-feedback", "Nível salvo no aparelho e será sincronizado quando houver conexão.");
+    }
+  });
+
+  // Checklist Sanitário
+  $("#form-checklist")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!state.token) {
+      showFeedback("#checklist-feedback", "Entre na sua conta para salvar a vistoria.", true);
+      return;
+    }
+    const fd = new FormData(e.target);
+    const reservatorioId = Number($("#select-reservatorio")?.value || 1);
+    const payload = {
+      reservatorioId,
+      protecaoEntrada: fd.get("protecaoEntrada") === "on",
+      aguaSemOdorOuCor: fd.get("aguaSemOdorOuCor") === "on",
+      entornoLimpo: fd.get("entornoLimpo") === "on",
+      estruturaIntegra: fd.get("estruturaIntegra") === "on",
+      observacao: fd.get("observacao") || "",
+      idClienteSync: `sync-check-${Date.now()}`
+    };
+    try {
+      const res = await apiFetch(`/api/v1/reservatorios/${reservatorioId}/checklists`, {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
+      if (res.riscoPotabilidade) {
+        showFeedback("#checklist-feedback", "Atenção: há risco à qualidade da água. Revise a proteção e limpeza.", true);
+      } else {
+        showFeedback("#checklist-feedback", "Vistoria registrada: reservatório protegido!");
       }
-      await carregarDadosReservatoriosEMonitor();
-    } catch (error) {
-      adicionarFilaOffline({ tipoItem: "NIVEL", ...payload });
-      if (successElement) {
-        successElement.textContent = "Salvo na fila offline do aparelho (RF17).";
-        successElement.classList.remove("hidden");
+      await loadReservatoriosAndMonitor();
+    } catch {
+      state.offlineQueue.checklists.push(payload);
+      saveOfflineQueue();
+      showFeedback("#checklist-feedback", "Vistoria salva no aparelho para sincronizar.");
+    }
+  });
+
+  // Publicar Aviso no Mural
+  $("#form-aviso-mural")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!state.token) {
+      showFeedback("#mural-feedback", "Entre na sua conta para publicar no mural.", true);
+      return;
+    }
+    const fd = new FormData(e.target);
+    const payload = {
+      localidadeId: state.localidadeId,
+      titulo: fd.get("titulo"),
+      conteudo: fd.get("conteudo"),
+      idClienteSync: `sync-aviso-${Date.now()}`
+    };
+    try {
+      await apiFetch("/api/v1/avisos", {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
+      e.target.reset();
+      showFeedback("#mural-feedback", "Aviso publicado no mural!");
+      await loadAlertasAndMural();
+    } catch {
+      state.offlineQueue.avisos.push(payload);
+      saveOfflineQueue();
+      e.target.reset();
+      showFeedback("#mural-feedback", "Aviso salvo no aparelho para publicar assim que reconectar.");
+    }
+  });
+
+  // Emitir Alerta
+  $("#form-alerta")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    try {
+      await apiFetch("/api/v1/alertas", {
+        method: "POST",
+        body: JSON.stringify({
+          localidadeId: state.localidadeId,
+          titulo: fd.get("titulo"),
+          mensagem: fd.get("mensagem"),
+          severidade: "AMARELO"
+        })
+      });
+      e.target.reset();
+      await loadAlertasAndMural();
+    } catch {}
+  });
+
+  // Chat Assistente de Plantio (IA + Clima)
+  $("#form-chat-ia")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const input = $("#chat-input-text");
+    if (!input || !input.value.trim()) return;
+    const texto = input.value.trim();
+    input.value = "";
+    await enviarPerguntaChatIa(texto);
+  });
+
+  $$("[data-quick-ask]").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      const q = chip.getAttribute("data-quick-ask");
+      if (q) enviarPerguntaChatIa(q);
+    });
+  });
+
+  $$("[data-speak-text]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const t = btn.getAttribute("data-speak-text");
+      if (t && window.MC_Voz && typeof window.MC_Voz.lerTexto === "function") {
+        window.MC_Voz.lerTexto(t);
       }
-    } finally {
-      setLoading(button, false);
-    }
+    });
   });
 
-  // Registrar Checklist Sanitário do Reservatório (RF16 / RN11)
-  document.querySelector("#checklist-form")?.addEventListener("submit", async event => {
-    event.preventDefault();
-    const form = event.currentTarget;
-    const button = form.querySelector("button[type=submit]");
-    const formData = new FormData(form);
-    const errorElement = document.querySelector("#checklist-error");
-    const successElement = document.querySelector("#checklist-success");
-    showError(errorElement, "");
-    successElement?.classList.add("hidden");
-
-    const reservatorioId = Number(document.querySelector("#checklist-reservoir-select")?.value || reservoirs[0]?.id || 1);
-
-    setLoading(button, true, "Avaliando…");
-    try {
-      await api(`/reservatorios/${reservatorioId}/checklists`, {
-        method: "POST",
-        body: JSON.stringify({
-          dataAvaliacao: todayStr,
-          protecaoEntrada: formData.get("protecaoEntrada") === "on",
-          aguaSemOdorOuCor: formData.get("aguaSemOdorOuCor") === "on",
-          entornoLimpo: formData.get("entornoLimpo") === "on",
-          estruturaIntegra: formData.get("estruturaIntegra") === "on",
-          observacao: formData.get("observacao") || ""
-        })
-      });
-      successElement?.classList.remove("hidden");
-      await carregarUltimoChecklist(reservatorioId);
-      await carregarDadosReservatoriosEMonitor();
-    } catch (error) {
-      showError(errorElement, error.message);
-    } finally {
-      setLoading(button, false);
-    }
-  });
-
-  // Publicar Aviso no Mural Comunitário (RF14)
-  document.querySelector("#mural-form")?.addEventListener("submit", async event => {
-    event.preventDefault();
-    const form = event.currentTarget;
-    const button = form.querySelector("button[type=submit]");
-    const formData = new FormData(form);
-    const errorElement = document.querySelector("#mural-error");
-    const successElement = document.querySelector("#mural-success");
-    showError(errorElement, "");
-    successElement?.classList.add("hidden");
-
-    setLoading(button, true, "Publicando…");
-    try {
-      await api("/avisos", {
-        method: "POST",
-        body: JSON.stringify({
-          localidadeId: Number(localitySelect?.value || currentUser?.localidadeId || 1),
-          titulo: formData.get("titulo"),
-          conteudo: formData.get("conteudo")
-        })
-      });
-      form.reset();
-      successElement?.classList.remove("hidden");
-      await carregarAlertasEMural();
-    } catch (error) {
-      showError(errorElement, error.message);
-    } finally {
-      setLoading(button, false);
-    }
-  });
-
-  // Emitir Alerta Climático (RF12 - Gestor / Liderança)
-  document.querySelector("#alerta-form")?.addEventListener("submit", async event => {
-    event.preventDefault();
-    const form = event.currentTarget;
-    const button = form.querySelector("button[type=submit]");
-    const formData = new FormData(form);
-    const errorElement = document.querySelector("#alerta-error");
-    const successElement = document.querySelector("#alerta-success");
-    showError(errorElement, "");
-    successElement?.classList.add("hidden");
-
-    setLoading(button, true, "Emitindo alerta…");
-    try {
-      await api("/alertas", {
-        method: "POST",
-        body: JSON.stringify({
-          localidadeId: Number(localitySelect?.value || currentUser?.localidadeId || 1),
-          titulo: formData.get("titulo"),
-          mensagem: formData.get("mensagem"),
-          severidade: formData.get("severidade"),
-          tipo: formData.get("tipo")
-        })
-      });
-      form.reset();
-      successElement?.classList.remove("hidden");
-      await carregarAlertasEMural();
-    } catch (error) {
-      showError(errorElement, error.message);
-    } finally {
-      setLoading(button, false);
-    }
-  });
-
-  // Sincronizar fila offline manualmente
-  document.querySelector("#sync-now-button")?.addEventListener("click", sincronizarFilaOffline);
   window.addEventListener("online", () => {
-    atualizarIndicadorSync();
-    sincronizarFilaOffline();
+    updateSyncBadge();
+    flushOfflineQueue();
+    loadPainelChuvaAndSugestao();
   });
-  window.addEventListener("offline", atualizarIndicadorSync);
+  window.addEventListener("offline", () => {
+    updateSyncBadge();
+  });
+}
 
-  loadSignupLocalities();
-  atualizarIndicadorSync();
-
-  const savedToken = sessionStorage.getItem(TOKEN_KEY) || localStorage.getItem(TOKEN_KEY);
-  if (savedToken) {
-    loadDashboard().catch(() => signOut());
+function initDefaultDates() {
+  const inputDate = $("#chuva-data");
+  if (inputDate) {
+    inputDate.value = new Date().toISOString().slice(0, 10);
   }
-});
+}
+
+async function initApp() {
+  registerServiceWorker();
+  loadPersistedState();
+  updateAuthUI();
+  updateSyncBadge();
+  initDefaultDates();
+  bindEvents();
+  await loadLocalidades();
+  populateProfileScreen();
+  await flushOfflineQueue();
+  await loadAllLocalityData();
+  iniciarAtualizacaoAutomaticaClima();
+}
+
+document.addEventListener("DOMContentLoaded", initApp);
