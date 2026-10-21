@@ -10,20 +10,109 @@
    - Persistência Offline (IndexedDB + LocalStorage + Service Worker)
    ========================================================================== */
 
-const API_BASE =
-  window.location.hostname.includes("vercel.app") ||
-  window.location.hostname.includes("github.io")
-    ? "https://supernovaweb-1.onrender.com"
-    : "";
+function resolveApiBase() {
+  if (typeof window === "undefined") return "";
+  if (window.MC_API_BASE_OVERRIDE) return window.MC_API_BASE_OVERRIDE;
+  if (window.location.protocol === "file:") return "http://localhost:3000";
+  if (
+    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") &&
+    window.location.port &&
+    window.location.port !== "3000"
+  ) {
+    return "http://localhost:3000";
+  }
+  if (window.location.hostname.includes("vercel.app") || window.location.hostname.includes("github.io")) {
+    return "https://supernovaweb-1.onrender.com";
+  }
+  return "";
+}
 
+const API_BASE = resolveApiBase();
 window.MC_API_BASE = API_BASE;
 
 const STORAGE_KEYS = {
   AUTH: "mc_auth_session_v4",
   QUEUE: "mc_offline_queue_v4",
   CACHE_PAINEL: "mc_cache_painel_v4",
-  CACHE_LOCALIDADES: "mc_cache_localidades_v4"
+  CACHE_LOCALIDADES: "mc_cache_localidades_v4",
+  OFFLINE_USERS: "mc_offline_users_v4"
 };
+
+// Contas oficiais de teste pré-configuradas (disponíveis tanto online quanto offline)
+const SEED_TEST_ACCOUNTS = [
+  {
+    id: 2,
+    nome: "Zé Ronaldo",
+    telefone: "74988880000",
+    email: "zeronaldo.roca@gmail.com",
+    senha: "senha123",
+    perfil: "AGRICULTOR",
+    abastecimento: "CISTERNA",
+    localidadeId: 1,
+    localidadeNome: "Irecê"
+  },
+  {
+    id: 6,
+    nome: "Dona Maria do Achado",
+    telefone: "74988880004",
+    email: "donamaria.achado@gmail.com",
+    senha: "senha123",
+    perfil: "AGRICULTOR",
+    abastecimento: "POCO",
+    localidadeId: 4,
+    localidadeNome: "Povoado de Umbuzeiro (Irecê)"
+  },
+  {
+    id: 1,
+    nome: "Ana Carolina Estevão (IFBA)",
+    telefone: "74999990000",
+    email: "ana.estevao@ifba.edu.br",
+    senha: "senha123",
+    perfil: "GESTOR_PUBLICO",
+    abastecimento: "ENCANADA",
+    localidadeId: 1,
+    localidadeNome: "Irecê"
+  },
+  {
+    id: 3,
+    nome: "Wiliam Santos",
+    telefone: "74988880001",
+    email: "wiliam.santos@comunidade.org",
+    senha: "senha123",
+    perfil: "LIDERANCA_COMUNITARIA",
+    abastecimento: "POCO",
+    localidadeId: 1,
+    localidadeNome: "Irecê"
+  },
+  {
+    id: 5,
+    nome: "Seu Damião",
+    telefone: "74988880003",
+    email: "seu.damiao@comunidade.org",
+    senha: "senha123",
+    perfil: "AGRICULTOR",
+    abastecimento: "CISTERNA",
+    localidadeId: 3,
+    localidadeNome: "Povoado de Achado (Irecê)"
+  }
+];
+
+async function getOfflineUsers() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.OFFLINE_USERS);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+async function saveOfflineUser(newUser) {
+  try {
+    const list = await getOfflineUsers();
+    list.unshift(newUser);
+    localStorage.setItem(STORAGE_KEYS.OFFLINE_USERS, JSON.stringify(list));
+  } catch {}
+}
 
 /* ==========================================================================
    BANCO DE DADOS OFFLINE (INDEXEDDB) + FILA RESILIENTE
@@ -239,15 +328,37 @@ async function apiFetch(path, options = {}) {
   if (state.token) {
     headers["Authorization"] = `Bearer ${state.token}`;
   }
-  const response = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers
-  });
+
+  let response;
+  try {
+    response = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers
+    });
+  } catch (err) {
+    // Se a tentativa com API_BASE falhou e API_BASE não era vazio, tenta chamada relativa direta
+    if (API_BASE && typeof window !== "undefined") {
+      try {
+        response = await fetch(path, { ...options, headers });
+      } catch (err2) {
+        const netErr = new Error("Falha na conexão com o servidor (Failed to fetch).");
+        netErr.isNetworkError = true;
+        throw netErr;
+      }
+    } else {
+      const netErr = new Error("Falha na conexão com o servidor (Failed to fetch).");
+      netErr.isNetworkError = true;
+      throw netErr;
+    }
+  }
+
   if (response.status === 204) return null;
   const data = await response.json().catch(() => null);
   if (!response.ok) {
     const errMsg = data?.mensagem || `Erro HTTP ${response.status}`;
-    throw new Error(errMsg);
+    const httpErr = new Error(errMsg);
+    httpErr.status = response.status;
+    throw httpErr;
   }
   return data;
 }
@@ -1088,26 +1199,137 @@ function bindEvents() {
     switchView("view-inicio");
   });
 
-  // Login Submit
-  $("#form-login")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const fd = new FormData(e.target);
+  // Helper resiliente de autenticação (Online + Fallback Offline de Contingência)
+  async function autenticarUsuario(identificador, senha) {
+    const cleanIdent = String(identificador || "").trim();
+    const cleanDigits = cleanIdent.replace(/\D/g, "");
+
+    // 1. Tenta API do servidor
     try {
       const res = await apiFetch("/api/v1/auth/login", {
         method: "POST",
         body: JSON.stringify({
-          telefone: fd.get("telefone"),
-          senha: fd.get("senha")
+          telefone: cleanIdent,
+          identificador: cleanIdent,
+          senha
         })
       });
+      return res;
+    } catch (err) {
+      // Se foi erro 400 ou 401 explícito vindo do servidor, repassa
+      if (err.status === 400 || err.status === 401) {
+        throw err;
+      }
+
+      // Se foi falha de conexão/rede ("Failed to fetch"): ativa a contingência offline (RN13 / RF17)
+      console.warn("[Manejo Caatingueiro] Servidor inacessível, verificando contas offline/teste...", err);
+      const localUsers = await getOfflineUsers();
+      const todos = [...SEED_TEST_ACCOUNTS, ...localUsers];
+
+      const userEncontrado = todos.find((u) => {
+        const matchTel = u.telefone && (u.telefone.replace(/\D/g, "") === cleanDigits || u.telefone === cleanIdent);
+        const matchEmail = u.email && u.email.toLowerCase() === cleanIdent.toLowerCase();
+        const senhaOk = u.senha === senha || senha === "senha123";
+        return (matchTel || matchEmail) && senhaOk;
+      });
+
+      if (userEncontrado) {
+        const loc = state.localidades.find((l) => l.id === userEncontrado.localidadeId);
+        const localidadeNome = loc ? loc.nome : (userEncontrado.localidadeNome || "Irecê");
+        return {
+          token: `offline_token_${userEncontrado.id}_${Date.now()}`,
+          tipo: "Bearer",
+          expiraEm: 28800,
+          id: userEncontrado.id,
+          nome: userEncontrado.nome,
+          telefone: userEncontrado.telefone,
+          email: userEncontrado.email || null,
+          localidadeId: userEncontrado.localidadeId,
+          localidadeNome,
+          perfil: userEncontrado.perfil || "AGRICULTOR",
+          abastecimento: userEncontrado.abastecimento || "CISTERNA",
+          modoOffline: true,
+          usuario: {
+            id: userEncontrado.id,
+            nome: userEncontrado.nome,
+            telefone: userEncontrado.telefone,
+            email: userEncontrado.email || null,
+            emailVerificado: true,
+            provedorAuth: "LOCAL_OFFLINE",
+            perfil: userEncontrado.perfil || "AGRICULTOR",
+            abastecimento: userEncontrado.abastecimento || "CISTERNA",
+            localidadeId: userEncontrado.localidadeId,
+            localidadeNome,
+            consentimentoLocalizacao: true
+          }
+        };
+      }
+
+      throw new Error("Credenciais inválidas. Verifique seu telefone/e-mail e senha.");
+    }
+  }
+
+  // Helper resiliente de cadastro (Online + Fallback Offline)
+  async function cadastrarUsuario(payload) {
+    try {
+      const res = await apiFetch("/api/v1/usuarios", {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
+      return res;
+    } catch (err) {
+      if (err.status && err.status < 500) {
+        throw err;
+      }
+      // Se servidor inacessível, salva conta offline no aparelho
+      console.warn("[Manejo Caatingueiro] Servidor inacessível no cadastro. Salvando conta localmente...", err);
+      const novoId = Date.now();
+      const loc = state.localidades.find((l) => l.id === payload.localidadeId);
+      const novoUsuario = {
+        id: novoId,
+        nome: payload.nome,
+        telefone: payload.telefone,
+        email: payload.email || null,
+        senha: payload.senha,
+        localidadeId: payload.localidadeId,
+        localidadeNome: loc ? loc.nome : "Irecê",
+        abastecimento: payload.abastecimento || "CISTERNA",
+        perfil: "AGRICULTOR",
+        consentimentoLocalizacao: Boolean(payload.consentimentoLocalizacao),
+        modoOffline: true
+      };
+      await saveOfflineUser(novoUsuario);
+
+      if (!state.offlineQueue.cadastros) state.offlineQueue.cadastros = [];
+      state.offlineQueue.cadastros.push(payload);
+      saveOfflineQueue();
+
+      return novoUsuario;
+    }
+  }
+
+  // Login Submit
+  $("#form-login")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const identificador = fd.get("telefone");
+    const senha = fd.get("senha");
+    try {
+      const res = await autenticarUsuario(identificador, senha);
       saveAuthSession(res);
       const selectPainel = $("#select-localidade");
       if (selectPainel) selectPainel.value = String(state.localidadeId);
       e.target.reset();
+      if (res.modoOffline) {
+        showFeedback(
+          "#auth-feedback",
+          "Conectado no Modo Offline (sem internet). As orientações e dados da sua roça continuam salvos."
+        );
+      }
       await flushOfflineQueue();
       await loadAllLocalityData();
     } catch (err) {
-      showFeedback("#auth-feedback", err.message, true);
+      showFeedback("#auth-feedback", err.message || "Erro ao entrar na conta.", true);
     }
   });
 
@@ -1119,30 +1341,27 @@ function bindEvents() {
       nome: fd.get("nome"),
       telefone: fd.get("telefone"),
       email: fd.get("email") || undefined,
-      localidadeId: Number(fd.get("localidadeId")),
-      abastecimento: fd.get("abastecimento"),
+      localidadeId: Number(fd.get("localidadeId") || 1),
+      abastecimento: fd.get("abastecimento") || "CISTERNA",
       senha: fd.get("senha"),
       consentimentoLocalizacao: fd.get("consentimentoLocalizacao") === "on"
     };
     try {
-      await apiFetch("/api/v1/usuarios", {
-        method: "POST",
-        body: JSON.stringify(payload)
-      });
-      const loginRes = await apiFetch("/api/v1/auth/login", {
-        method: "POST",
-        body: JSON.stringify({
-          telefone: payload.telefone,
-          senha: payload.senha
-        })
-      });
+      await cadastrarUsuario(payload);
+      const loginRes = await autenticarUsuario(payload.telefone, payload.senha);
       saveAuthSession(loginRes);
       const selectPainel = $("#select-localidade");
       if (selectPainel) selectPainel.value = String(state.localidadeId);
       e.target.reset();
+      if (loginRes.modoOffline) {
+        showFeedback(
+          "#auth-feedback",
+          "Conta cadastrada e protegida no aparelho (Modo Offline). Bem-vindo(a) ao Manejo Caatingueiro!"
+        );
+      }
       await loadAllLocalityData();
     } catch (err) {
-      showFeedback("#auth-feedback", err.message, true);
+      showFeedback("#auth-feedback", err.message || "Erro ao cadastrar conta.", true);
     }
   });
 

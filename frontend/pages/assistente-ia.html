@@ -183,11 +183,24 @@
 
   <script>
     (function () {
-      const API_BASE =
-        window.location.hostname.includes("vercel.app") ||
-        window.location.hostname.includes("github.io")
-          ? "https://supernovaweb-1.onrender.com"
-          : "";
+      function resolveApiBase() {
+        if (typeof window === "undefined") return "";
+        if (window.MC_API_BASE_OVERRIDE) return window.MC_API_BASE_OVERRIDE;
+        if (window.location.protocol === "file:") return "http://localhost:3000";
+        if (
+          (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") &&
+          window.location.port &&
+          window.location.port !== "3000"
+        ) {
+          return "http://localhost:3000";
+        }
+        if (window.location.hostname.includes("vercel.app") || window.location.hostname.includes("github.io")) {
+          return "https://supernovaweb-1.onrender.com";
+        }
+        return "";
+      }
+
+      const API_BASE = resolveApiBase();
 
       const AUTH_KEY = "mc_auth_session_v4";
       let session = null;

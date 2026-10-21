@@ -10,14 +10,19 @@ const PORT = process.env.PORT || 10000;
 const HOST = '0.0.0.0';
 const JWT_SECRET = process.env.JWT_SECRET || 'manejo-caatingueiro-jwt-secret-key-2026-min-32-chars';
 
-app.use(cors());
+app.use(cors({
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
+}));
+app.options('*', cors());
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
-// Skills de Segurança (Headers HTTP defensivos + Permissão de Geolocalização e Áudio)
+// Skills de Segurança (Headers defensivos sem travar iframes)
 app.use((_req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy', 'geolocation=(self), microphone=(self), camera=()');
@@ -29,7 +34,7 @@ const loginRateLimiter = (req, res, next) => {
   const ip = req.ip || req.socket?.remoteAddress || 'unknown';
   const now = Date.now();
   const windowMs = 60 * 1000;
-  const maxAttempts = 20;
+  const maxAttempts = 120;
 
   const record = loginRateLimitMap.get(ip);
   if (!record || now > record.resetTime) {
