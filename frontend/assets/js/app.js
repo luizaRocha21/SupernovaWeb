@@ -1,10 +1,12 @@
 /* ==========================================================================
    MANEJO CAATINGUEIRO (SUPERNOVAWEB) — APP.JS
-   - Clima e Chuva com Atualização Automática (INMET + Satélite + Pluviômetros)
+   - Página Inicial:
+       * Deslogado: apenas apresentação do app + login/cadastro (sem dados de outras contas)
+       * Logado: painel completo de manejo da roça exclusivo da conta conectada
+   - Ícone de Chat do Assistente de IA ao lado do botão de áudio (acesso somente logado -> /pages/assistente-ia.html)
+   - Clima e Chuva com Atualização Automática (INMET + Satélite + Pluviômetros do próprio usuário)
    - Diagnóstico Automático da Situação da Roça e Orientações de Manejo
-   - Login / Cadastro Sucinto com Google OAuth 2.0 e Validação de E-mail
    - Tela de Perfil do Usuário com Edição de Dados (PUT /api/v1/usuarios/me)
-   - Chat Assistente de Plantio Integrado à API de Clima e IA (/api/v1/ia/chat)
    - Persistência Offline (IndexedDB + LocalStorage + Service Worker)
    ========================================================================== */
 
@@ -17,10 +19,10 @@ const API_BASE =
 window.MC_API_BASE = API_BASE;
 
 const STORAGE_KEYS = {
-  AUTH: "mc_auth_session_v2",
-  QUEUE: "mc_offline_queue_v2",
-  CACHE_PAINEL: "mc_cache_painel_v2",
-  CACHE_LOCALIDADES: "mc_cache_localidades_v2"
+  AUTH: "mc_auth_session_v4",
+  QUEUE: "mc_offline_queue_v4",
+  CACHE_PAINEL: "mc_cache_painel_v4",
+  CACHE_LOCALIDADES: "mc_cache_localidades_v4"
 };
 
 /* ==========================================================================
@@ -110,7 +112,6 @@ const state = {
     limiares: []
   },
   autoRefreshTimer: null,
-  chatHistory: [],
   ultimoDiagnostico: null
 };
 
@@ -134,17 +135,24 @@ function registerServiceWorker() {
 }
 
 /* ==========================================================================
-   PERSISTÊNCIA DE SESSÃO E FILA OFFLINE
+   PERSISTÊNCIA DE SESSÃO ISOLADA E FILA OFFLINE
    ========================================================================== */
 function loadPersistedState() {
   try {
+    // Remove chaves antigas de demonstração para nunca carregar dados de outras contas
+    localStorage.removeItem("mc_auth_session_v1");
+    localStorage.removeItem("mc_auth_session_v2");
+    localStorage.removeItem("mc_auth_session_v3");
+
     const rawAuth = localStorage.getItem(STORAGE_KEYS.AUTH);
     if (rawAuth) {
       const parsed = JSON.parse(rawAuth);
-      state.token = parsed.token;
-      state.user = parsed.user;
-      if (parsed.user?.localidadeId) {
-        state.localidadeId = Number(parsed.user.localidadeId);
+      if (parsed && parsed.token && parsed.user && parsed.user.id) {
+        state.token = parsed.token;
+        state.user = parsed.user;
+        if (parsed.user.localidadeId) {
+          state.localidadeId = Number(parsed.user.localidadeId);
+        }
       }
     }
     const rawQueue = localStorage.getItem(STORAGE_KEYS.QUEUE);
@@ -165,23 +173,30 @@ function saveAuthSession(authPayload) {
   if (!authPayload) {
     state.token = null;
     state.user = null;
+    state.reservatorios = [];
+    state.ultimoDiagnostico = null;
     localStorage.removeItem(STORAGE_KEYS.AUTH);
+    const precipList = $("#precipitacoes-list");
+    if (precipList) {
+      precipList.innerHTML = `<p class="muted">Nenhum registro de chuva anotado na sua conta ainda.</p>`;
+    }
   } else {
+    const u = authPayload.usuario || authPayload;
     state.token = authPayload.token || state.token;
     state.user = {
-      id: authPayload.usuarioId || authPayload.id || state.user?.id || 2,
-      nome: authPayload.nome,
-      telefone: authPayload.telefone || state.user?.telefone || "",
-      email: authPayload.email || null,
-      emailVerificado: Boolean(authPayload.emailVerificado),
-      provedorAuth: authPayload.provedorAuth || "LOCAL",
-      perfil: authPayload.perfil || "AGRICULTOR",
-      abastecimento: authPayload.abastecimento || "CISTERNA",
-      localidadeId: authPayload.localidadeId || 1,
-      localidadeNome: authPayload.localidadeNome || "Irecê",
+      id: u.usuarioId || u.id || state.user?.id,
+      nome: u.nome || state.user?.nome || "Agricultor(a)",
+      telefone: u.telefone || state.user?.telefone || "",
+      email: u.email || state.user?.email || null,
+      emailVerificado: Boolean(u.emailVerificado ?? state.user?.emailVerificado),
+      provedorAuth: u.provedorAuth || state.user?.provedorAuth || "LOCAL",
+      perfil: u.perfil || state.user?.perfil || "AGRICULTOR",
+      abastecimento: u.abastecimento || state.user?.abastecimento || "CISTERNA",
+      localidadeId: Number(u.localidadeId || state.user?.localidadeId || 1),
+      localidadeNome: u.localidadeNome || state.user?.localidadeNome || "Irecê",
       consentimentoLocalizacao:
-        authPayload.consentimentoLocalizacao !== undefined
-          ? Boolean(authPayload.consentimentoLocalizacao)
+        u.consentimentoLocalizacao !== undefined
+          ? Boolean(u.consentimentoLocalizacao)
           : true
     };
     state.localidadeId = Number(state.user.localidadeId);
@@ -206,7 +221,7 @@ function updateSyncBadge() {
     (q.checklists?.length || 0) +
     (q.avisos?.length || 0) +
     (q.limiares?.length || 0);
-  if (total > 0) {
+  if (total > 0 && state.user) {
     badge.hidden = false;
     badge.textContent = navigator.onLine
       ? `Sincronizando: ${total}`
@@ -238,16 +253,21 @@ async function apiFetch(path, options = {}) {
 }
 
 /* ==========================================================================
-   NAVEGAÇÃO ENTRE SEÇÕES E MENU LATERAL
+   NAVEGAÇÃO ENTRE SEÇÕES E CONTROLE DE ACESSO LOGADO X VISITANTE
    ========================================================================== */
 function switchView(viewId) {
+  // Se não estiver logado, mantém sempre na página de início (apresentação + login)
+  if (!state.user || !state.token) {
+    viewId = "view-inicio";
+  }
+
   $$(".view-section").forEach((sec) => {
     sec.classList.toggle("active", sec.id === viewId);
   });
   $$(".nav-link").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.view === viewId);
   });
-  $$(".sidebar-nav-btn").forEach((btn) => {
+  $$(".sidebar-nav-btn[data-view]").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.view === viewId);
   });
   if (viewId === "view-perfil") {
@@ -271,17 +291,38 @@ function updateAuthUI() {
   const userBadge = $("#user-badge");
   const btnOpenAuth = $("#btn-open-auth");
   const btnLogout = $("#btn-logout");
-  const authPanel = $("#auth-panel");
+  const guestHomeSection = $("#guest-home-section");
+  const loggedManejoWorkspace = $("#logged-manejo-workspace");
+  const loggedWelcomeTitle = $("#logged-welcome-title");
+  const mainNav = $("#main-nav");
+  const sidebarNavLogged = $("#sidebar-nav-logged");
+  const btnChatIcon = $("#btn-chat-ia-icon");
   const formAlerta = $("#form-alerta");
 
-  if (state.user) {
+  const isLogged = Boolean(state.user && state.token);
+
+  if (isLogged) {
     if (userBadge) {
       userBadge.hidden = false;
       userBadge.textContent = `${state.user.nome} · ${state.user.localidadeNome}`;
     }
     if (btnOpenAuth) btnOpenAuth.hidden = true;
     if (btnLogout) btnLogout.hidden = false;
-    if (authPanel) authPanel.hidden = true;
+
+    // Esconde apresentação de visitante e exibe as informações de manejo da conta logada
+    if (guestHomeSection) guestHomeSection.hidden = true;
+    if (loggedManejoWorkspace) loggedManejoWorkspace.hidden = false;
+    if (loggedWelcomeTitle) {
+      loggedWelcomeTitle.textContent = `Olá, ${state.user.nome}! Acompanhe o manejo da sua roça em ${state.user.localidadeNome || "sua localidade"}.`;
+    }
+
+    // Libera navegação de manejo e ícone do Assistente de IA
+    if (mainNav) mainNav.hidden = false;
+    if (sidebarNavLogged) sidebarNavLogged.hidden = false;
+    if (btnChatIcon) {
+      btnChatIcon.classList.remove("is-locked");
+      btnChatIcon.title = "Abrir página do seu Chat com o Assistente de IA";
+    }
 
     if (formAlerta) {
       formAlerta.hidden = state.user.perfil === "AGRICULTOR";
@@ -290,7 +331,19 @@ function updateAuthUI() {
     if (userBadge) userBadge.hidden = true;
     if (btnOpenAuth) btnOpenAuth.hidden = false;
     if (btnLogout) btnLogout.hidden = true;
-    if (authPanel) authPanel.hidden = false;
+
+    // Mostra apenas as informações gerais do app + login/cadastro; oculta manejo
+    if (guestHomeSection) guestHomeSection.hidden = false;
+    if (loggedManejoWorkspace) loggedManejoWorkspace.hidden = true;
+
+    // Oculta abas de manejo e bloqueia o acesso ao Assistente de IA enquanto deslogado
+    if (mainNav) mainNav.hidden = true;
+    if (sidebarNavLogged) sidebarNavLogged.hidden = true;
+    if (btnChatIcon) {
+      btnChatIcon.classList.add("is-locked");
+      btnChatIcon.title = "Entre na sua conta para acessar o Assistente de IA";
+    }
+
     if (formAlerta) formAlerta.hidden = true;
   }
 }
@@ -317,15 +370,7 @@ function populateProfileScreen() {
   const inputSenha = $("#perfil-input-senha");
 
   const u = state.user;
-  if (!u) {
-    if (avatarEl) avatarEl.textContent = "V";
-    if (papelEl) papelEl.textContent = "Visitante";
-    if (nomeResumoEl) nomeResumoEl.textContent = "Entre na sua conta";
-    if (locResumoEl) locResumoEl.textContent = "Faça login para editar seu perfil";
-    if (telResumoEl) telResumoEl.textContent = "--";
-    if (emailResumoEl) emailResumoEl.textContent = "--";
-    return;
-  }
+  if (!u) return;
 
   const mapAgua = {
     CISTERNA: "Cisterna",
@@ -334,7 +379,7 @@ function populateProfileScreen() {
   };
 
   if (avatarEl) avatarEl.textContent = (u.nome || "A").trim().charAt(0).toUpperCase();
-  if (papelEl) papelEl.textContent = u.perfil === "GESTOR" ? "Gestor(a)" : "Agricultor(a)";
+  if (papelEl) papelEl.textContent = u.perfil === "GESTOR" || u.perfil === "GESTOR_PUBLICO" ? "Gestor(a)" : "Agricultor(a)";
   if (nomeResumoEl) nomeResumoEl.textContent = u.nome || "Agricultor(a)";
   if (locResumoEl) locResumoEl.textContent = `Localidade: ${u.localidadeNome || "Irecê"}`;
   if (telResumoEl) telResumoEl.textContent = u.telefone || "--";
@@ -438,7 +483,7 @@ function detectarLocalizacaoGps(atualizarPainel = true) {
             }, 6000);
           }
 
-          if (atualizarPainel) {
+          if (atualizarPainel && state.user && state.token) {
             await loadAllLocalityData();
           }
         }
@@ -470,10 +515,14 @@ function detectarLocalizacaoGps(atualizarPainel = true) {
 
 /* ==========================================================================
    PAINEL DE CHUVA, DIAGNÓSTICO AUTOMÁTICO DA SITUAÇÃO E SUGESTÃO DE PLANTIO
+   (CARREGADO SOMENTE QUANDO O USUÁRIO ESTIVER LOGADO)
    ========================================================================== */
 async function loadPainelChuvaAndSugestao() {
+  if (!state.user || !state.token) return;
+
   const locId = state.localidadeId;
   const cultura = state.culturaSelecionada;
+  const userCacheKey = `${STORAGE_KEYS.CACHE_PAINEL}_u${state.user.id}_${locId}_${cultura}`;
 
   try {
     const [painel, sugestao] = await Promise.all([
@@ -481,7 +530,7 @@ async function loadPainelChuvaAndSugestao() {
       apiFetch(`/api/v1/localidades/${locId}/sugestao-plantio?cultura=${encodeURIComponent(cultura)}`)
     ]);
 
-    await OfflineDB.setCache(`${STORAGE_KEYS.CACHE_PAINEL}_${locId}_${cultura}`, {
+    await OfflineDB.setCache(userCacheKey, {
       painel,
       sugestao,
       savedAt: new Date().toISOString()
@@ -489,7 +538,7 @@ async function loadPainelChuvaAndSugestao() {
 
     renderPainelAndSugestao(painel, sugestao, false);
   } catch {
-    const cached = await OfflineDB.getCache(`${STORAGE_KEYS.CACHE_PAINEL}_${locId}_${cultura}`);
+    const cached = await OfflineDB.getCache(userCacheKey);
     if (cached) {
       renderPainelAndSugestao(cached.painel, cached.sugestao, true);
     }
@@ -497,7 +546,7 @@ async function loadPainelChuvaAndSugestao() {
 }
 
 function renderPainelAndSugestao(painel, sugestao, isOfflineCache) {
-  if (!painel) return;
+  if (!painel || !state.user) return;
 
   const tituloEl = $("#painel-localidade-titulo");
   if (tituloEl) tituloEl.textContent = painel.localidadeNome;
@@ -564,32 +613,6 @@ function renderPainelAndSugestao(painel, sugestao, isOfflineCache) {
     rotuloSituacao: diag?.rotulo || "Situação de Transição"
   };
 
-  // Atualiza barra de contexto da IA no Chat
-  const chatCtx = $("#chat-climate-context");
-  const chatPill = $("#chat-situacao-pill");
-  const sideLoc = $("#chat-side-loc");
-  const sideMes = $("#chat-side-mes");
-  const side7d = $("#chat-side-7d");
-  const sideSit = $("#chat-side-sit");
-
-  if (chatCtx) {
-    chatCtx.innerHTML = `📍 <strong>${escapeHtml(painel.localidadeNome)}</strong> · ${painel.acumuladoMesMm} mm no mês · ${painel.estacaoInmet?.temperaturaC ?? 27} °C`;
-  }
-  if (chatPill && diag) {
-    chatPill.textContent = diag.rotulo;
-    chatPill.className = `status-label ${
-      diag.codigo === "FAVORAVEL"
-        ? "status-good"
-        : diag.codigo === "ESTIAGEM"
-        ? "status-alert"
-        : "status-warn"
-    }`;
-  }
-  if (sideLoc) sideLoc.textContent = painel.localidadeNome;
-  if (sideMes) sideMes.textContent = `${painel.acumuladoMesMm} mm`;
-  if (side7d) side7d.textContent = `${painel.acumuladoRecenteMm} mm`;
-  if (sideSit) sideSit.textContent = diag?.rotulo || "Em análise";
-
   if (!sugestao) return;
 
   const badgeMap = {
@@ -653,14 +676,14 @@ function renderPainelAndSugestao(painel, sugestao, isOfflineCache) {
 }
 
 /* ==========================================================================
-   HISTÓRICO DE CHUVAS, RESERVATÓRIOS, ALERTAS E MURAL
+   HISTÓRICO DE CHUVAS, RESERVATÓRIOS, ALERTAS E MURAL (SOMENTE LOGADO)
    ========================================================================== */
 async function loadPrecipitacoes() {
   const container = $("#precipitacoes-list");
   if (!container) return;
 
-  if (!state.token) {
-    container.innerHTML = `<p class="muted">Entre na sua conta para anotar e consultar o histórico do seu pluviômetro.</p>`;
+  if (!state.token || !state.user) {
+    container.innerHTML = `<p class="muted">Nenhum registro de chuva anotado na sua conta ainda.</p>`;
     return;
   }
 
@@ -668,7 +691,7 @@ async function loadPrecipitacoes() {
     const page = await apiFetch("/api/v1/precipitacoes?size=6");
     const items = page?.content || [];
     if (items.length === 0) {
-      container.innerHTML = `<p class="muted">Nenhum registro de chuva anotado ainda.</p>`;
+      container.innerHTML = `<p class="muted">Você ainda não anotou registros de chuva no seu pluviômetro.</p>`;
       return;
     }
     container.innerHTML = items
@@ -687,30 +710,28 @@ async function loadPrecipitacoes() {
 }
 
 async function loadReservatoriosAndMonitor() {
+  if (!state.token || !state.user) return;
+
   const selectRes = $("#select-reservatorio");
-  if (state.token) {
-    try {
-      const list = await apiFetch("/api/v1/reservatorios");
-      state.reservatorios = list || [];
-      if (selectRes) {
-        if (state.reservatorios.length > 0) {
-          selectRes.innerHTML = state.reservatorios
-            .map(
-              (r) =>
-                `<option value="${r.id}">${escapeHtml(r.apelido)} (${escapeHtml(
-                  r.tipo
-                )} · Atual: ${r.ultimoNivelPercentual ?? "--"}%)</option>`
-            )
-            .join("");
-        } else {
-          selectRes.innerHTML = `<option value="1">Cisterna Principal da Propriedade</option>`;
-        }
+  try {
+    const list = await apiFetch("/api/v1/reservatorios");
+    state.reservatorios = list || [];
+    if (selectRes) {
+      if (state.reservatorios.length > 0) {
+        selectRes.innerHTML = state.reservatorios
+          .map(
+            (r) =>
+              `<option value="${r.id}">${escapeHtml(r.apelido)} (${escapeHtml(
+                r.tipo
+              )} · Atual: ${r.ultimoNivelPercentual ?? "--"}%)</option>`
+          )
+          .join("");
+      } else {
+        selectRes.innerHTML = `<option value="1">Cisterna Principal da Propriedade</option>`;
       }
-    } catch {
-      if (selectRes) selectRes.innerHTML = `<option value="1">Cisterna Principal (Modo Offline)</option>`;
     }
-  } else if (selectRes) {
-    selectRes.innerHTML = `<option value="1">Cisterna de Demonstração (Entre para salvar)</option>`;
+  } catch {
+    if (selectRes) selectRes.innerHTML = `<option value="1">Cisterna Principal (Modo Offline)</option>`;
   }
 
   try {
@@ -739,6 +760,8 @@ async function loadReservatoriosAndMonitor() {
 }
 
 async function loadAlertasAndMural() {
+  if (!state.token || !state.user) return;
+
   const alertasContainer = $("#alertas-list");
   const muralContainer = $("#mural-list");
 
@@ -800,86 +823,6 @@ async function loadAlertasAndMural() {
 }
 
 /* ==========================================================================
-   CHAT ASSISTENTE DE PLANTIO (CONECTADO ÀS APIS DE CLIMA E IA)
-   ========================================================================== */
-function appendChatMessage(autor, texto) {
-  const container = $("#chat-messages");
-  if (!container) return;
-
-  const bubble = document.createElement("div");
-  bubble.className = `chat-bubble ${autor === "usuario" ? "user" : "bot"}`;
-
-  if (autor === "usuario") {
-    bubble.textContent = texto;
-  } else {
-    const textDiv = document.createElement("div");
-    textDiv.textContent = texto;
-    bubble.appendChild(textDiv);
-
-    const actionsDiv = document.createElement("div");
-    actionsDiv.className = "chat-bubble-actions";
-
-    const speakBtn = document.createElement("button");
-    speakBtn.type = "button";
-    speakBtn.className = "chat-speak-btn";
-    speakBtn.title = "Ouvir esta resposta";
-    speakBtn.textContent = "🔊";
-    speakBtn.addEventListener("click", () => {
-      if (window.MC_Voz && typeof window.MC_Voz.lerTexto === "function") {
-        window.MC_Voz.lerTexto(texto);
-      }
-    });
-
-    actionsDiv.appendChild(speakBtn);
-    bubble.appendChild(actionsDiv);
-  }
-
-  container.appendChild(bubble);
-  container.scrollTop = container.scrollHeight;
-}
-
-async function enviarPerguntaChatIa(perguntaTexto) {
-  const pergunta = String(perguntaTexto || "").trim();
-  if (!pergunta) return;
-
-  appendChatMessage("usuario", pergunta);
-  state.chatHistory.push({ autor: "usuario", texto: pergunta });
-
-  const btnSend = $("#btn-chat-send");
-  if (btnSend) {
-    btnSend.disabled = true;
-    btnSend.textContent = "Consultando...";
-  }
-
-  try {
-    const res = await apiFetch("/api/v1/ia/chat", {
-      method: "POST",
-      body: JSON.stringify({
-        mensagem: pergunta,
-        localidadeId: state.localidadeId,
-        cultura: state.culturaSelecionada,
-        historico: state.chatHistory.slice(-6)
-      })
-    });
-
-    const resposta = res?.resposta || "Estou acompanhando os dados da sua localidade. Verifique a umidade do solo antes de semear.";
-    appendChatMessage("assistente", resposta);
-    state.chatHistory.push({ autor: "assistente", texto: resposta });
-  } catch {
-    const diag = state.ultimoDiagnostico;
-    const msgOffline = diag
-      ? `Modo offline: em ${diag.localidadeNome}, o acumulado do mês é de ${diag.acumuladoMesMm} mm (${diag.rotuloSituacao}). Mantenha a cobertura do solo com palhada e ajuste o plantio conforme a umidade da terra.`
-      : "Sem conexão no momento. Verifique a umidade da terra a 15 cm de profundidade antes de semear.";
-    appendChatMessage("assistente", msgOffline);
-  } finally {
-    if (btnSend) {
-      btnSend.disabled = false;
-      btnSend.textContent = "Perguntar";
-    }
-  }
-}
-
-/* ==========================================================================
    AUTENTICAÇÃO GOOGLE E SINCRONIZAÇÃO OFFLINE
    ========================================================================== */
 async function iniciarLoginGoogleOidc() {
@@ -909,13 +852,12 @@ window.addEventListener("message", async (event) => {
     saveAuthSession(msg.payload);
     const selectPainel = $("#select-localidade");
     if (selectPainel) selectPainel.value = String(state.localidadeId);
-    showFeedback("#auth-feedback", `Bem-vindo(a), ${msg.payload.nome}!`);
     await loadAllLocalityData();
   }
 });
 
 async function flushOfflineQueue() {
-  if (!state.token || !navigator.onLine) return;
+  if (!state.token || !state.user || !navigator.onLine) return;
   const q = state.offlineQueue;
   const total =
     (q.precipitacoes?.length || 0) +
@@ -943,6 +885,7 @@ async function flushOfflineQueue() {
 }
 
 async function loadAllLocalityData() {
+  if (!state.token || !state.user) return;
   await Promise.all([
     loadPainelChuvaAndSugestao(),
     loadPrecipitacoes(),
@@ -954,7 +897,7 @@ async function loadAllLocalityData() {
 function iniciarAtualizacaoAutomaticaClima() {
   if (state.autoRefreshTimer) clearInterval(state.autoRefreshTimer);
   state.autoRefreshTimer = setInterval(() => {
-    if (navigator.onLine) {
+    if (navigator.onLine && state.user && state.token) {
       loadPainelChuvaAndSugestao().catch(() => {});
       flushOfflineQueue().catch(() => {});
     }
@@ -975,6 +918,26 @@ function bindEvents() {
       switchView(btn.dataset.goView);
     });
   });
+
+  // Ícone de Chat do Assistente de IA ao lado do botão de áudio (acesso somente logado -> abre nova página exclusiva)
+  const btnChatIaIcon = $("#btn-chat-ia-icon");
+  if (btnChatIaIcon) {
+    btnChatIaIcon.addEventListener("click", () => {
+      if (!state.user || !state.token) {
+        switchView("view-inicio");
+        showFeedback(
+          "#auth-feedback",
+          "Entre na sua conta primeiro para acessar a página exclusiva do seu Assistente de IA.",
+          true
+        );
+        const loginInput = $("#login-telefone");
+        if (loginInput) loginInput.focus();
+        return;
+      }
+      // Quando logado, abre a página dedicada exclusivamente ao chat com o Assistente de IA
+      window.location.href = "/pages/assistente-ia.html";
+    });
+  }
 
   // Seletor de localidade
   const selectLoc = $("#select-localidade");
@@ -1083,32 +1046,23 @@ function bindEvents() {
     });
   }
 
-  // Chips de demonstração
-  $$(".chip-demo").forEach((chip) => {
-    chip.addEventListener("click", () => {
-      const tel = $("#login-telefone");
-      const pass = $("#login-senha");
-      if (tel) tel.value = chip.dataset.demoPhone;
-      if (pass) pass.value = chip.dataset.demoPass;
-      $("#form-login")?.requestSubmit();
-    });
-  });
-
   // Botões Entrar / Sair com confirmação
   $("#btn-open-auth")?.addEventListener("click", () => {
     switchView("view-inicio");
-    const authPanel = $("#auth-panel");
-    if (authPanel) {
-      authPanel.hidden = false;
-      authPanel.scrollIntoView({ behavior: "smooth" });
-    }
+    const loginInput = $("#login-telefone");
+    if (loginInput) loginInput.focus();
   });
 
   const logoutModal = $("#logout-confirm-modal");
   const logoutCancelBtn = $("#logout-cancel-btn");
   const logoutConfirmBtn = $("#logout-confirm-btn");
 
+  if (logoutModal) {
+    logoutModal.hidden = true;
+  }
+
   $("#btn-logout")?.addEventListener("click", () => {
+    if (!state.user) return;
     if (logoutModal) logoutModal.hidden = false;
   });
 
@@ -1116,10 +1070,21 @@ function bindEvents() {
     if (logoutModal) logoutModal.hidden = true;
   });
 
+  logoutModal?.addEventListener("click", (e) => {
+    if (e.target === logoutModal) {
+      logoutModal.hidden = true;
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && logoutModal && !logoutModal.hidden) {
+      logoutModal.hidden = true;
+    }
+  });
+
   logoutConfirmBtn?.addEventListener("click", () => {
     if (logoutModal) logoutModal.hidden = true;
     saveAuthSession(null);
-    loadAllLocalityData();
     switchView("view-inicio");
   });
 
@@ -1138,7 +1103,7 @@ function bindEvents() {
       saveAuthSession(res);
       const selectPainel = $("#select-localidade");
       if (selectPainel) selectPainel.value = String(state.localidadeId);
-      showFeedback("#auth-feedback", `Bem-vindo(a), ${res.nome}!`);
+      e.target.reset();
       await flushOfflineQueue();
       await loadAllLocalityData();
     } catch (err) {
@@ -1174,7 +1139,7 @@ function bindEvents() {
       saveAuthSession(loginRes);
       const selectPainel = $("#select-localidade");
       if (selectPainel) selectPainel.value = String(state.localidadeId);
-      showFeedback("#auth-feedback", "Conta criada com sucesso!");
+      e.target.reset();
       await loadAllLocalityData();
     } catch (err) {
       showFeedback("#auth-feedback", err.message, true);
@@ -1235,7 +1200,7 @@ function bindEvents() {
         method: "POST",
         body: JSON.stringify(registro)
       });
-      showFeedback("#chuva-feedback", "Chuva registrada com sucesso!");
+      showFeedback("#chuva-feedback", "Chuva registrada com sucesso na sua conta!");
       e.target.reset();
       initDefaultDates();
       await loadAllLocalityData();
@@ -1395,36 +1360,12 @@ function bindEvents() {
     } catch {}
   });
 
-  // Chat Assistente de Plantio (IA + Clima)
-  $("#form-chat-ia")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const input = $("#chat-input-text");
-    if (!input || !input.value.trim()) return;
-    const texto = input.value.trim();
-    input.value = "";
-    await enviarPerguntaChatIa(texto);
-  });
-
-  $$("[data-quick-ask]").forEach((chip) => {
-    chip.addEventListener("click", () => {
-      const q = chip.getAttribute("data-quick-ask");
-      if (q) enviarPerguntaChatIa(q);
-    });
-  });
-
-  $$("[data-speak-text]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const t = btn.getAttribute("data-speak-text");
-      if (t && window.MC_Voz && typeof window.MC_Voz.lerTexto === "function") {
-        window.MC_Voz.lerTexto(t);
-      }
-    });
-  });
-
   window.addEventListener("online", () => {
     updateSyncBadge();
-    flushOfflineQueue();
-    loadPainelChuvaAndSugestao();
+    if (state.user && state.token) {
+      flushOfflineQueue();
+      loadPainelChuvaAndSugestao();
+    }
   });
   window.addEventListener("offline", () => {
     updateSyncBadge();
@@ -1446,9 +1387,24 @@ async function initApp() {
   initDefaultDates();
   bindEvents();
   await loadLocalidades();
-  populateProfileScreen();
-  await flushOfflineQueue();
-  await loadAllLocalityData();
+
+  // Verifica se veio redirecionado da página do Assistente de IA sem estar logado
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("aviso") === "login-ia" && !state.user) {
+    showFeedback(
+      "#auth-feedback",
+      "Entre na sua conta para acessar a página exclusiva do seu Assistente de IA.",
+      true
+    );
+  }
+
+  // Só carrega dados de manejo da roça quando o usuário estiver logado na sua própria conta
+  if (state.user && state.token) {
+    populateProfileScreen();
+    await flushOfflineQueue();
+    await loadAllLocalityData();
+  }
+
   iniciarAtualizacaoAutomaticaClima();
 }
 

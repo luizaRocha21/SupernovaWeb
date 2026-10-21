@@ -384,35 +384,7 @@ const tresDiasAtrasIso = new Date(Date.now() - 86400000 * 3).toISOString().slice
 const seisDiasAtrasIso = new Date(Date.now() - 86400000 * 6).toISOString().slice(0, 10);
 const trintaDiasFuturoIso = new Date(Date.now() + 86400000 * 30).toISOString().slice(0, 10);
 
-const precipitacoes: Precipitacao[] = [
-  {
-    id: 1,
-    localidadeId: 1,
-    usuarioId: 2,
-    volumeMm: 18.5,
-    dataEvento: hojeIso,
-    fonte: "PLUVIOMETRO_PROPRIO",
-    criadoEm: new Date().toISOString()
-  },
-  {
-    id: 2,
-    localidadeId: 1,
-    usuarioId: 2,
-    volumeMm: 14.0,
-    dataEvento: tresDiasAtrasIso,
-    fonte: "PLUVIOMETRO_PROPRIO",
-    criadoEm: new Date(Date.now() - 86400000 * 3).toISOString()
-  },
-  {
-    id: 3,
-    localidadeId: 1,
-    usuarioId: 3,
-    volumeMm: 9.5,
-    dataEvento: seisDiasAtrasIso,
-    fonte: "ESTACAO",
-    criadoEm: new Date(Date.now() - 86400000 * 6).toISOString()
-  }
-];
+const precipitacoes: Precipitacao[] = [];
 
 function calcularEscala(pct: number): 'CHEIO' | 'MEDIO' | 'BAIXO' | 'CRITICO' {
   if (pct >= 75) return 'CHEIO';
@@ -853,10 +825,24 @@ function formatarRespostaAuth(user: Usuario) {
     { expiresIn: '8h' }
   );
   const localidade = localidades.find(l => l.id === user.localidadeId);
+  const localidadeNome = localidade ? localidade.nome : "Irecê";
   return {
     token,
     tipo: "Bearer",
     expiraEm: 28800,
+    id: user.id,
+    usuarioId: user.id,
+    nome: user.nome,
+    telefone: user.telefone,
+    email: user.email || null,
+    emailVerificado: Boolean(user.emailVerificado),
+    provedorAuth: user.provedorAuth || 'LOCAL',
+    fotoUrl: user.fotoUrl || null,
+    perfil: user.perfil,
+    abastecimento: user.abastecimento,
+    localidadeId: user.localidadeId,
+    localidadeNome,
+    consentimentoLocalizacao: Boolean(user.consentimentoLocalizacao),
     usuario: {
       id: user.id,
       nome: user.nome,
@@ -866,8 +852,10 @@ function formatarRespostaAuth(user: Usuario) {
       provedorAuth: user.provedorAuth || 'LOCAL',
       fotoUrl: user.fotoUrl || null,
       perfil: user.perfil,
+      abastecimento: user.abastecimento,
       localidadeId: user.localidadeId,
-      localidadeNome: localidade ? localidade.nome : "Irecê"
+      localidadeNome,
+      consentimentoLocalizacao: Boolean(user.consentimentoLocalizacao)
     }
   };
 }
@@ -995,30 +983,13 @@ app.get('/api/v1/auth/google/popup-consent', (req: Request, res: Response) => {
   <div class="card">
     <div class="google-header">
       <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-      <span>Fazer login com o Google · OpenID Connect</span>
+      <span>Entrar com o Google</span>
     </div>
-    <h1>Escolha uma conta Google</h1>
-    <p class="sub">Para prosseguir para <strong>Manejo Caatingueiro</strong> com validação de e-mail</p>
-
-    <div class="quick-accounts">
-      <button type="button" class="acc-btn" onclick="selecionarConta('Luiza Rocha', 'luizarocha21@gmail.com', '74988880002')">
-        <div class="acc-avatar">L</div>
-        <div class="acc-info">
-          <strong>Luiza Rocha</strong>
-          <span>luizarocha21@gmail.com · Conta Google verificada</span>
-        </div>
-      </button>
-      <button type="button" class="acc-btn" onclick="selecionarConta('Zé Ronaldo', 'zeronaldo.roca@gmail.com', '74988880000')">
-        <div class="acc-avatar" style="background:#286947;">Z</div>
-        <div class="acc-info">
-          <strong>Zé Ronaldo (Agricultor · Irecê)</strong>
-          <span>zeronaldo.roca@gmail.com · Conta Google verificada</span>
-        </div>
-      </button>
-    </div>
+    <h1>Acesse com sua Conta Google</h1>
+    <p class="sub">Para prosseguir para <strong>Manejo Caatingueiro</strong></p>
 
     <form id="oidc-form">
-      <label for="g-email">Ou informe seu próprio e-mail Google (@gmail.com / institucional)</label>
+      <label for="g-email">Seu e-mail Google</label>
       <input id="g-email" name="email" type="email" placeholder="seu.email@gmail.com" required>
       <label for="g-name">Seu nome completo</label>
       <input id="g-name" name="nome" type="text" placeholder="Seu nome" required>
@@ -1026,22 +997,16 @@ app.get('/api/v1/auth/google/popup-consent', (req: Request, res: Response) => {
       <input id="g-phone" name="telefone" type="tel" placeholder="74999990000">
       <div class="btn-row">
         <button type="button" class="btn btn-cancel" onclick="window.close()">Cancelar</button>
-        <button type="submit" class="btn btn-submit">Continuar com Google</button>
+        <button type="submit" class="btn btn-submit">Continuar</button>
       </div>
     </form>
 
     <div class="security-note">
-      <strong>Segurança OAuth 2.0 & OpenID Connect:</strong> O Google compartilhará seu nome, endereço de e-mail e identificador OIDC seguro (<code>sub</code>) com o Manejo Caatingueiro. Um e-mail real de confirmação será enviado para sua conta.
+      Seus dados são protegidos e vinculados exclusivamente à sua conta.
     </div>
   </div>
 
   <script>
-    function selecionarConta(nome, email, telefone) {
-      document.getElementById('g-name').value = nome;
-      document.getElementById('g-email').value = email;
-      document.getElementById('g-phone').value = telefone || '';
-      document.getElementById('oidc-form').requestSubmit();
-    }
 
     document.getElementById('oidc-form').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -1626,7 +1591,7 @@ app.post('/api/v1/admin/ingestao/todas', optionalAuth, async (_req: Request, res
   });
 });
 
-function calcularChuvaLocalidade(localidadeId: number, diasAtras: number): {
+function calcularChuvaLocalidade(localidadeId: number, diasAtras: number, usuarioId?: number): {
   valorMm: number;
   temperaturaC: number;
   umidadePct: number;
@@ -1640,9 +1605,12 @@ function calcularChuvaLocalidade(localidadeId: number, diasAtras: number): {
   limite.setDate(hoje.getDate() - diasAtras);
   const limiteStr = limite.toISOString().slice(0, 10);
 
-  const obsManuais = precipitacoes
-    .filter(p => p.localidadeId === localidadeId && p.dataEvento >= limiteStr)
-    .reduce((sum, p) => sum + p.volumeMm, 0);
+  // Soma apenas os registros de pluviômetro da conta do próprio usuário autenticado
+  const obsManuais = usuarioId != null
+    ? precipitacoes
+        .filter(p => p.localidadeId === localidadeId && p.usuarioId === usuarioId && p.dataEvento >= limiteStr)
+        .reduce((sum, p) => sum + p.volumeMm, 0)
+    : 0;
 
   const realData = inmetWeatherCache.get(localidadeId);
   if (realData) {
@@ -1674,7 +1642,7 @@ function calcularChuvaLocalidade(localidadeId: number, diasAtras: number): {
     umidadePct: estacoesInmet[0].umidadeRelativaPct,
     ventoKmh: estacoesInmet[0].ventoVelocidadeKmh,
     estacaoCodigo: "A424",
-    fonte: "INMET Estação Automática A424 (Irecê-BA) + Climatologia 1991-2020 + Pluviômetros da Comunidade",
+    fonte: "Monitoramento Meteorológico Automático",
     atualizadoEm: ultimaSincronizacaoAutomaticaInmet
   };
 }
@@ -1694,11 +1662,12 @@ app.get('/api/v1/localidades/:id/painel-chuva', optionalAuth, async (req: Authen
   const hoje = new Date();
   const mesAtual = hoje.getMonth() + 1;
   const diaDoMes = hoje.getDate();
+  const uid = req.usuario?.id;
 
   const normalMes = NORMAIS_IRECE[mesAtual - 1];
-  const medidaMes = calcularChuvaLocalidade(localidadeId, diaDoMes);
-  const medidaRecente = calcularChuvaLocalidade(localidadeId, 7);
-  const medidaEstacao = calcularChuvaLocalidade(localidadeId, 45);
+  const medidaMes = calcularChuvaLocalidade(localidadeId, diaDoMes, uid);
+  const medidaRecente = calcularChuvaLocalidade(localidadeId, 7, uid);
+  const medidaEstacao = calcularChuvaLocalidade(localidadeId, 45, uid);
   const percentual = Math.round((medidaMes.valorMm / normalMes) * 1000) / 10;
 
   let comparacaoCultura = null;
@@ -1714,7 +1683,7 @@ app.get('/api/v1/localidades/:id/painel-chuva', optionalAuth, async (req: Authen
       }
     }
     const diasJanela = cult.tipoCriterio === 'VOLUME_POR_EVENTO' ? 7 : cult.janelaDias || 30;
-    const medidaCultura = calcularChuvaLocalidade(localidadeId, diasJanela);
+    const medidaCultura = calcularChuvaLocalidade(localidadeId, diasJanela, uid);
 
     comparacaoCultura = {
       culturaNome: cult.nome,
@@ -1826,7 +1795,7 @@ app.get('/api/v1/localidades/:id/sugestao-plantio', optionalAuth, (req: Authenti
   }
 
   const diasJanela = cult.tipoCriterio === 'VOLUME_POR_EVENTO' ? 7 : cult.janelaDias || 30;
-  const medida = calcularChuvaLocalidade(localidadeId, diasJanela);
+  const medida = calcularChuvaLocalidade(localidadeId, diasJanela, req.usuario?.id);
   const razao = medida.valorMm / limiar;
 
   let resultado: 'CONDICAO_FAVORAVEL' | 'ATENCAO_CONSIDERE_ADIAR' | 'CONSIDERE_CULTURA_ALTERNATIVA';
@@ -1863,7 +1832,7 @@ app.post('/api/v1/precipitacoes', authMiddleware, (req: AuthenticatedRequest, re
     return res.status(400).json({ mensagem: "Volume, data e localidade são obrigatórios." });
   }
   if (idClienteSync) {
-    const existente = precipitacoes.find(p => p.idClienteSync === idClienteSync);
+    const existente = precipitacoes.find(p => p.idClienteSync === idClienteSync && p.usuarioId === req.usuario!.id);
     if (existente) return res.status(200).json(existente);
   }
   const nova: Precipitacao = {
@@ -1893,7 +1862,23 @@ app.get('/api/v1/precipitacoes', authMiddleware, (req: AuthenticatedRequest, res
 
 // 10. Reservatórios, Níveis, Checklist Sanitário e Monitor Comunitário (RF07, RF08, RF16, RN15)
 app.get('/api/v1/reservatorios', authMiddleware, (req: AuthenticatedRequest, res: Response) => {
-  const userRes = reservatorios.filter(r => r.responsavelId === req.usuario!.id);
+  let userRes = reservatorios.filter(r => r.responsavelId === req.usuario!.id);
+  if (userRes.length === 0) {
+    const novoRes: Reservatorio = {
+      id: reservatorios.length + 1,
+      apelido: req.usuario!.abastecimento === 'POCO' ? `Poço de ${req.usuario!.nome}` : `Cisterna de ${req.usuario!.nome}`,
+      tipo: req.usuario!.abastecimento === 'POCO' ? 'POCO' : 'CISTERNA',
+      responsavelId: req.usuario!.id,
+      localidadeId: req.usuario!.localidadeId,
+      capacidadeLitros: 16000,
+      ultimoNivelPercentual: 65,
+      escala: 'MEDIO',
+      consentimentoAgregacao: Boolean(req.usuario!.consentimentoLocalizacao),
+      atualizadoEm: new Date().toISOString()
+    };
+    reservatorios.push(novoRes);
+    userRes = [novoRes];
+  }
   res.json(
     userRes.map(r => ({
       ...r,
@@ -2261,15 +2246,15 @@ app.post('/api/v1/tts/sintetizar', optionalAuth, async (req: Request, res: Respo
 });
 
 // 15. Inteligência Artificial para Resumo Natural em Voz Alta e Chat Consultivo de Clima e Plantio
-function montarContextoClimaticoLocalidade(localidadeId: number, culturaFiltro = 'milho') {
+function montarContextoClimaticoLocalidade(localidadeId: number, culturaFiltro = 'milho', usuarioId?: number) {
   const loc = localidades.find(l => l.id === Number(localidadeId)) || localidades[0];
   const hoje = new Date();
   const mesAtual = hoje.getMonth() + 1;
   const diaDoMes = hoje.getDate();
   const normalMes = NORMAIS_IRECE[mesAtual - 1];
-  const medidaMes = calcularChuvaLocalidade(loc.id, diaDoMes);
-  const medida7d = calcularChuvaLocalidade(loc.id, 7);
-  const medida30d = calcularChuvaLocalidade(loc.id, 30);
+  const medidaMes = calcularChuvaLocalidade(loc.id, diaDoMes, usuarioId);
+  const medida7d = calcularChuvaLocalidade(loc.id, 7, usuarioId);
+  const medida30d = calcularChuvaLocalidade(loc.id, 30, usuarioId);
   const percentual = Math.round((medidaMes.valorMm / normalMes) * 1000) / 10;
 
   const cult = culturas.find(c => c.nome.toLowerCase() === String(culturaFiltro).toLowerCase()) || culturas[0];
@@ -2305,17 +2290,27 @@ function montarContextoClimaticoLocalidade(localidadeId: number, culturaFiltro =
 }
 
 app.post('/api/v1/ia/resumo-voz', optionalAuth, async (req: AuthenticatedRequest, res: Response) => {
-  const { localidadeId = 1, cultura = 'milho', secao = 'painel', textoExtra = '' } = req.body;
-  const ctx = montarContextoClimaticoLocalidade(Number(localidadeId) || 1, String(cultura || 'milho'));
+  // Se o usuário ainda não entrou na conta, lê apenas a apresentação de boas-vindas do aplicativo
+  if (!req.usuario) {
+    return res.json({
+      sucesso: true,
+      origem: 'BOAS_VINDAS_VISITANTE',
+      resumoFalado: 'Bem-vindo ao Manejo Caatingueiro! Aqui você pode acompanhar o manejo da sua roça, consultar a situação climática da sua terra, tirar dúvidas com seu assistente de inteligência artificial e cuidar da água da sua cisterna ou poço. Entre na sua conta ou faça seu cadastro gratuito para visualizar as informações de manejo da sua propriedade.',
+      situacao: 'Visitante'
+    });
+  }
 
-  const resumoFallback = `Olá! Aqui é o resumo da sua roça em ${ctx.localidade.nome}. Nos últimos 7 dias choveu ${ctx.chuva7dMm} milímetros, e no mês estamos com ${ctx.chuvaMesMm} milímetros, o que representa ${ctx.percentualNormal}% do esperado. A temperatura agora é de ${ctx.temperaturaC} graus, com umidade do ar em ${ctx.umidadePct}%. Sua roça está em ${ctx.situacao}. Recomendação de manejo para ${ctx.culturaFoco.nome}: ${ctx.orientacaoDireta}`;
+  const { localidadeId = req.usuario.localidadeId || 1, cultura = 'milho', secao = 'painel', textoExtra = '' } = req.body;
+  const ctx = montarContextoClimaticoLocalidade(Number(localidadeId) || 1, String(cultura || 'milho'), req.usuario.id);
+
+  const resumoFallback = `Olá, ${req.usuario.nome}! Aqui é o resumo da sua roça em ${ctx.localidade.nome}. Nos últimos 7 dias choveu ${ctx.chuva7dMm} milímetros, e no mês estamos com ${ctx.chuvaMesMm} milímetros, o que representa ${ctx.percentualNormal}% do esperado. A temperatura agora é de ${ctx.temperaturaC} graus, com umidade do ar em ${ctx.umidadePct}%. Sua roça está em ${ctx.situacao}. Recomendação de manejo para ${ctx.culturaFoco.nome}: ${ctx.orientacaoDireta}`;
 
   const geminiKey = process.env.GEMINI_API_KEY;
   if (geminiKey) {
     try {
       const ai = new GoogleGenAI({ apiKey: geminiKey });
       const prompt = `Você é um assistente agronômico acolhedor que conversa em voz alta com pequenos agricultores familiares do semiárido baiano (região de Irecê e Presidente Dutra).
-Gere um resumo curto, caloroso, muito claro e natural (3 a 4 frases apenas, sem listas, sem asteriscos, pronto para ser lido em voz alta) explicando os dados atuais da localidade do agricultor:
+Gere um resumo curto, caloroso, muito claro e natural (3 a 4 frases apenas, sem listas, sem asteriscos, pronto para ser lido em voz alta) para o agricultor(a) ${req.usuario.nome}, explicando os dados atuais da localidade dele:
 - Localidade: ${ctx.localidade.nome}
 - Chuva últimos 7 dias: ${ctx.chuva7dMm} mm
 - Chuva acumulada no mês: ${ctx.chuvaMesMm} mm (normal esperada: ${ctx.normalMes} mm, ${ctx.percentualNormal}%)
@@ -2324,7 +2319,7 @@ Gere um resumo curto, caloroso, muito claro e natural (3 a 4 frases apenas, sem 
 - Cultura selecionada: ${ctx.culturaFoco.nome} (limiar de referência: ${ctx.culturaFoco.limiarPadraoMm} mm)
 - Orientação de manejo: ${ctx.orientacaoDireta}
 ${textoExtra ? `- Contexto da tela atual (${secao}): ${String(textoExtra).slice(0, 400)}` : ''}
-Escreva os números de forma fácil de ouvir e fale diretamente com o agricultor(a).`;
+Escreva os números de forma fácil de ouvir e fale diretamente com ${req.usuario.nome}.`;
 
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
@@ -2350,14 +2345,14 @@ Escreva os números de forma fácil de ouvir e fale diretamente com o agricultor
   });
 });
 
-app.post('/api/v1/ia/chat', optionalAuth, async (req: AuthenticatedRequest, res: Response) => {
-  const { mensagem, localidadeId = 1, cultura = 'milho', historico = [] } = req.body;
+app.post('/api/v1/ia/chat', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  const { mensagem, localidadeId = req.usuario?.localidadeId || 1, cultura = 'milho', historico = [] } = req.body;
   if (!mensagem || !String(mensagem).trim()) {
     return res.status(400).json({ mensagem: "Digite uma pergunta para o assistente de manejo." });
   }
 
   const pergunta = String(mensagem).trim();
-  const ctx = montarContextoClimaticoLocalidade(Number(localidadeId) || 1, String(cultura || 'milho'));
+  const ctx = montarContextoClimaticoLocalidade(Number(localidadeId) || 1, String(cultura || 'milho'), req.usuario?.id);
 
   const geminiKey = process.env.GEMINI_API_KEY;
   if (geminiKey) {
@@ -2436,6 +2431,67 @@ Pergunta do agricultor: ${pergunta}`;
     },
     origem: 'ASSISTENTE_CLIMA_LOCAL'
   });
+});
+
+// Rotas explícitas de download com Content-Disposition: attachment para garantir download direto no navegador
+const ARQUIVOS_ZIP_PERMITIDOS: Record<string, string> = {
+  'repositorio-backend.zip': 'repositorio-backend.zip',
+  'repositorio-supernovaweb.zip': 'repositorio-supernovaweb.zip',
+  'projeto-completo-manejo-caatingueiro.zip': 'projeto-completo-manejo-caatingueiro.zip'
+};
+
+app.get(['/repositorio-backend.zip', '/repositorio-supernovaweb.zip', '/projeto-completo-manejo-caatingueiro.zip', '/baixar/:arquivo'], (req: Request, res: Response) => {
+  const nome = req.params.arquivo || req.path.replace(/^\//, '');
+  const arquivoSeguro = ARQUIVOS_ZIP_PERMITIDOS[nome];
+  if (!arquivoSeguro) {
+    return res.status(404).json({ mensagem: "Arquivo não encontrado." });
+  }
+  const fullPath = path.join(__dirname, 'public', arquivoSeguro);
+  res.setHeader('Content-Type', 'application/zip');
+  res.setHeader('Content-Disposition', `attachment; filename="${arquivoSeguro}"`);
+  return res.download(fullPath, arquivoSeguro);
+});
+
+app.get('/baixar', (_req: Request, res: Response) => {
+  res.send(`<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Central de Download — Manejo Caatingueiro</title>
+  <style>
+    * { box-sizing: border-box; font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
+    body { margin: 0; background: #f4f5ed; color: #202a21; padding: 32px 16px; display: flex; justify-content: center; }
+    .box { max-width: 640px; width: 100%; background: #fffefa; border: 1px solid #d8ddd0; border-radius: 10px; padding: 28px; box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
+    h1 { margin: 0 0 8px; color: #173d2c; font-size: 24px; }
+    p { margin: 0 0 20px; color: #556155; font-size: 15px; line-height: 1.5; }
+    .list { display: grid; gap: 12px; }
+    .dl-btn { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 14px 18px; background: #286947; color: #fff; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 15px; border: none; cursor: pointer; text-align: left; }
+    .dl-btn:hover { background: #173d2c; }
+    .dl-sub { display: block; font-size: 12px; font-weight: 400; color: #d7ebe0; margin-top: 3px; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>📦 Pacotes Atualizados para Download</h1>
+    <p>Clique em qualquer pacote abaixo para iniciar o download imediatamente:</p>
+    <div class="list">
+      <a class="dl-btn" href="/baixar/repositorio-backend.zip" download="repositorio-backend.zip">
+        <span>1. Backend para o Render (repositorio-backend.zip)<span class="dl-sub">Servidor Node.js/Express + Dockerfile + API INMET + IA + OAuth</span></span>
+        <span>⬇ Baixar</span>
+      </a>
+      <a class="dl-btn" href="/baixar/repositorio-supernovaweb.zip" download="repositorio-supernovaweb.zip">
+        <span>2. Frontend para a Vercel (repositorio-supernovaweb.zip)<span class="dl-sub">Interface completa com Menu Lateral, Perfil, Chat IA, Voz e Modo Offline</span></span>
+        <span>⬇ Baixar</span>
+      </a>
+      <a class="dl-btn" href="/baixar/projeto-completo-manejo-caatingueiro.zip" download="projeto-completo-manejo-caatingueiro.zip">
+        <span>3. Projeto Completo Unificado (projeto-completo-manejo-caatingueiro.zip)<span class="dl-sub">Frontend + Backend + Schema SQL Supabase + Documentação + Agente</span></span>
+        <span>⬇ Baixar</span>
+      </a>
+    </div>
+  </div>
+</body>
+</html>`);
 });
 
 // Serve os arquivos estáticos de /public e /supernovaweb

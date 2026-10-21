@@ -53,7 +53,7 @@
 
   function updateSoundButtonsState(reading) {
     isReading = reading;
-    document.querySelectorAll(".btn-sound-icon").forEach((btn) => {
+    document.querySelectorAll("#btn-tts-icon, .btn-sound-icon:not(.btn-chat-icon)").forEach((btn) => {
       btn.classList.toggle("is-speaking", reading);
       btn.setAttribute(
         "aria-label",
@@ -158,10 +158,24 @@
     const secao = activeView ? activeView.id : "painel";
 
     const apiBase = window.MC_API_BASE || "";
+    let authToken = null;
+    try {
+      const rawAuth = localStorage.getItem("mc_auth_session_v4");
+      if (rawAuth) {
+        const parsed = JSON.parse(rawAuth);
+        authToken = parsed?.token || null;
+      }
+    } catch {}
+
+    const headers = { "Content-Type": "application/json" };
+    if (authToken) {
+      headers["Authorization"] = `Bearer ${authToken}`;
+    }
+
     try {
       const resp = await fetch(`${apiBase}/api/v1/ia/resumo-voz`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ localidadeId, cultura, secao })
       });
       if (resp.ok) {
@@ -174,6 +188,12 @@
     } catch {}
 
     // Fallback caso offline
+    if (!authToken) {
+      await playSpeechText(
+        "Bem-vindo ao Manejo Caatingueiro! Aqui você pode acompanhar o manejo da sua roça, tirar dúvidas com seu assistente de inteligência artificial e cuidar da água da sua propriedade. Entre na sua conta para começar."
+      );
+      return;
+    }
     const locName = locSelect?.options?.[locSelect.selectedIndex]?.text || "Irecê";
     const rainMonth = document.querySelector("#metric-month")?.textContent || "--";
     const statusTitle = document.querySelector("#decision-title")?.textContent || "em análise";
@@ -214,9 +234,29 @@
       });
     });
 
-    document.querySelectorAll(".btn-sound-icon").forEach((btn) => {
+    document.querySelectorAll("#btn-tts-icon, .btn-sound-icon:not(.btn-chat-icon)").forEach((btn) => {
       btn.addEventListener("click", togglePageSummaryAudio);
     });
+
+    if (window.location.pathname.includes("/pages/") && !window.location.pathname.includes("assistente-ia.html")) {
+      const chatBtn = document.querySelector("#btn-chat-ia-icon");
+      if (chatBtn) {
+        let hasAuth = false;
+        try {
+          const raw = localStorage.getItem("mc_auth_session_v4");
+          const parsed = raw ? JSON.parse(raw) : null;
+          hasAuth = Boolean(parsed && parsed.token && parsed.user);
+        } catch {}
+        chatBtn.classList.toggle("is-locked", !hasAuth);
+        chatBtn.addEventListener("click", () => {
+          if (!hasAuth) {
+            window.location.href = "/?aviso=login-ia";
+          } else {
+            window.location.href = "/pages/assistente-ia.html";
+          }
+        });
+      }
+    }
   }
 
   function init() {

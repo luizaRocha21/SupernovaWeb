@@ -3,82 +3,79 @@
 > **Painel de Chuva Hiperlocal, Diagnóstico Automático da Roça e Assistente de Plantio com IA para a Agricultura Familiar no Semiárido**  
 > *Grupo Garimpeiros · IFBA Campus Irecê (Bahia)*
 
-[![Code Health Agent](https://img.shields.io/badge/Code%20Health-100%25-brightgreen)](AGENT.md)
-[![Security Skills](https://img.shields.io/badge/Security-Hardened-blue)](DOCUMENTACAO.md)
-[![Deploy Vercel](https://img.shields.io/badge/Frontend-Vercel-black)](https://vercel.com)
-[![Deploy Render](https://img.shields.io/badge/Backend-Render-46E3B7)](https://render.com)
-[![Database Supabase](https://img.shields.io/badge/Database-Supabase%20Postgres-3ECF8E)](https://supabase.com)
+[![Code Health Agent](https://img.shields.io/badge/Code_Health-100%25_Aprovado-286947?style=for-the-badge)](./AGENT_HEALTH_REPORT.md)
+[![Stack](https://img.shields.io/badge/Stack-HTML5%20%7C%20CSS3%20%7C%20JS%20%7C%20Node%20%7C%20PostgreSQL-c47a2b?style=for-the-badge)](#arquitetura-do-projeto)
 
 ---
 
-## 📖 Visão Geral do Projeto
+## 📋 Visão Geral do Projeto
 
-O **Manejo Caatingueiro** é uma plataforma web responsiva (Mobile, Tablet e Desktop) e *offline-first* voltada para apoiar agricultores familiares do Território de Identidade de Irecê e Presidente Dutra (BA) no acompanhamento da chuva, manejo do plantio (Milho, Mamona e Feijão-Caupi) e conservação de água em poços e cisternas.
+O **Manejo Caatingueiro** é uma plataforma web progressiva (PWA) construída para apoiar agricultores e agricultoras familiares do **Território de Irecê e Presidente Dutra (BA)** na tomada de decisão sobre o manejo do plantio de sequeiro (**milho**, **mamona** e **feijão-caupi**) e na segurança hídrica de **cisternas e poços**.
 
-### Principais Funcionalidades
+### Principais Funcionalidades Implementadas
 
-1. **Clima e Chuva com Atualização Automática**:
-   - Integração contínua em segundo plano com estações meteorológicas do **INMET (`A424` Irecê, `83228` e `A429`)**, dados de satélite (**Open-Meteo**) e pluviômetros comunitários, sem necessidade de atualização manual.
-   - Opção de detectar a **localização atual por GPS** ou selecionar a comunidade/povoado.
+1. **Página Inicial Separada por Estado de Acesso (Visitante x Agricultor Conectado)**
+   - **Antes de Entrar na Conta**: A tela inicial exibe apenas a apresentação clara dos recursos do aplicativo (*acompanhamento do manejo da roça, assistente de IA, pluviômetro, cisterna/poço e acessibilidade*) ao lado do painel de login e cadastro, sem carregar nem expor dados de outras contas.
+   - **Após Entrar na Conta**: O painel libera os dados exclusivos da conta conectada, incluindo o diagnóstico da propriedade, o painel de chuva da localidade, o pluviômetro pessoal e as abas de manejo.
 
-2. **Diagnóstico Automático da Situação da Roça e Guia de Manejo**:
-   - O sistema identifica automaticamente em qual condição a propriedade se encontra (**Situação Favorável**, **Situação de Transição · Atenção ao Solo** ou **Situação de Estiagem**) e orienta o agricultor sobre **como agir agora no manejo do plantio**.
+2. **Diagnóstico Automático da Situação da Roça e Guia de Manejo**
+   - Ao entrar na conta, o sistema analisa automaticamente a precipitação acumulada e a necessidade hídrica da cultura, indicando a situação atual (**Situação Favorável**, **Situação de Transição / Atenção** ou **Situação de Estiagem**) e exibindo orientações práticas de manejo do solo.
 
-3. **Inteligência Artificial Integrada ao Clima (Voz e Chat)**:
-   - **Leitura Natural por IA (`🔊`)**: Um único ícone de som no cabeçalho que gera um resumo falado acolhedor e natural sobre o clima da localidade e o manejo recomendado, convertido em voz em Português do Brasil.
-   - **Chat Assistente de Plantio**: Assistente conversacional conectado aos dados reais de chuva, temperatura, umidade e limiares de culturas da localidade para tirar dúvidas e dar dicas práticas ao agricultor.
+3. **Assistente de IA em Página Exclusiva (`/pages/assistente-ia.html`)**
+   - **Ícone de Chat ao lado do Botão de Áudio**: Posicionado no cabeçalho ao lado do ícone de som, com acesso liberado **exclusivamente quando o usuário está logado**.
+   - **Página Dedicada de Chat**: Ao clicar no ícone de chat conectado, abre-se uma página exclusiva apenas com o chat do agricultor com o Assistente de IA (`/pages/assistente-ia.html`), fundamentado nos dados meteorológicos da localidade do usuário.
 
-4. **Menu Lateral com Configurações de Acessibilidade**:
-   - **Temas Visuais**: Modo **Claro**, Modo **Escuro**, Modo **Daltônico (paleta Okabe-Ito)** e Modo **Alto Contraste / Baixa Visão**.
-   - **Ajuste de Tamanho da Fonte**: Controles `A-`, `Padrão (100%)` e `A+` (até `145%`) pensados para agricultores idosos ou com baixa visão.
-   - **Ajuste de Velocidade do Áudio**: Opções de leitura mais pausada, normal ou rápida.
+4. **Leitura Natural da Página em Voz Alta (Ícone de Som)**
+   - Um único botão com **ícone de alto-falante (`🔊`)** no topo gera um resumo natural por IA (`POST /api/v1/ia/resumo-voz`) e lê o conteúdo em Português do Brasil.
 
-5. **Tela de Perfil do Usuário Editável**:
-   - Visualização e edição completa dos dados cadastrais (Nome, Telefone/WhatsApp, E-mail, Localidade padrão da propriedade, Fonte principal de água e Senha) via `PUT /api/v1/usuarios/me`.
+5. **Menu Lateral com Configurações de Acessibilidade e Tela**
+   - **Temas Visuais**: **Claro**, **Escuro**, **Daltônico** e **Alto Contraste (Baixa Visão)**.
+   - **Tamanho da Fonte**: Controles **A-**, **Padrão** e **A+** (de `100%` a `145%`).
+   - **Velocidade do Áudio**: Ajuste da cadência da fala (`0.85x`, `1.0x`, `1.2x`).
 
-6. **Autenticação Segura e Persistência Offline**:
-   - Login e cadastro sucintos com **Conta Google (OAuth 2.0 / OpenID Connect)** ou telefone/e-mail, com validação de e-mail por código.
-   - Armazenamento local com **IndexedDB**, **LocalStorage** e **Service Worker (`sw.js`)**, mantendo o painel funcional mesmo sem internet na roça.
+6. **Perfil do Usuário com Edição de Dados (`PUT /api/v1/usuarios/me`)**
+   - Tela dedicada (**Meu Perfil**) permitindo consultar e atualizar nome, telefone/WhatsApp, e-mail, localidade da propriedade, fonte principal de água e senha.
 
----
-
-## 🏗️ Estrutura do Ecossistema
-
-1. **Frontend (`supernovaweb/` e `public/`):**
-   - Interface limpa, intuitiva e responsiva para celulares, tablets e computadores;
-   - Menu lateral retrátil com navegação, temas de acessibilidade e controle de fonte;
-   - Hospedado na **Vercel**.
-
-2. **Backend (`server.ts` e `repositorio-backend/server.js`):**
-   - API RESTful (`/api/v1/*`) com autenticação JWT, OAuth Google e validação de e-mail;
-   - Rotas de IA (`/api/v1/ia/resumo-voz` e `/api/v1/ia/chat`) fundamentadas nos dados meteorológicos reais da localidade;
-   - Hospedado no **Render.com**.
-
-3. **Banco de Dados Relacional (`supabase/schema.sql`):**
-   - 13 tabelas estruturadas no **PostgreSQL (Supabase)**.
-
-4. **Agente de Código (`scripts/code-agent.js`):**
-   - Scanner automático de conformidade, segurança e arquitetura (`npm run agent`).
+7. **Login e Cadastro Simplificados + Funcionamento Offline**
+   - Acesso rápido com **Conta Google** ou telefone/e-mail, com validação de e-mail e fila de sincronização offline (`IndexedDB` + `Service Worker`).
 
 ---
 
-## ⚡ Como Executar Localmente
+## 🏗️ Arquitetura do Projeto
+
+```text
+├── public/ & supernovaweb/         # Frontend Web Responsivo (PWA)
+│   ├── index.html                  # Tela inicial (Apresentação Visitante / Painel Logado)
+│   ├── pages/
+│   │   ├── assistente-ia.html      # Página exclusiva do Chat com o Assistente de IA
+│   │   ├── plantio.html            # Matriz consultiva de culturas
+│   │   ├── reservatorios.html      # Gestão de poços, cisternas e qualidade da água
+│   │   └── comunidade.html         # Alertas e mural comunitário
+│   ├── assets/
+│   │   ├── css/                    # Estilos responsivos e temas de acessibilidade
+│   │   └── js/                     # Lógica de sessão isolada, áudio IA, menu e clima
+│   └── sw.js                       # Service Worker Offline-First
+├── server.ts                       # Servidor Full-Stack TypeScript / Express
+├── repositorio-backend/            # Pacote isolado do Backend para deploy no Render
+├── backend-java/                   # Implementação de referência Spring Boot 3 / Java 21
+└── supabase/schema.sql             # Modelagem relacional PostgreSQL
+```
+
+---
+
+## 🚀 Como Executar Localmente
 
 ```bash
 # 1. Instalar dependências
 npm install
 
-# 2. Executar auditoria de saúde do código
-npm run agent
-
-# 3. Iniciar o servidor em desenvolvimento (porta 3000)
+# 2. Iniciar o servidor na porta 3000
 npm run dev
 ```
 
-### Credenciais de Demonstração:
-- **Agricultor:** Telefone `74988880000` | Senha `senha123` (Zé Ronaldo · Irecê)
-- **Gestora:** Telefone `74999990000` | Senha `senha123` (Ana Carolina · IFBA)
-
 ---
 
-*Grupo Garimpeiros · IFBA Campus Irecê · 2026*
+## 👥 Autoria
+
+**Grupo Garimpeiros — IFBA Campus Irecê**  
+- Ana Carolina Estevão · Luiza Rocha · Wiliam Santos · Zé Ronaldo

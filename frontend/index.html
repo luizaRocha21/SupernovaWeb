@@ -39,9 +39,9 @@
       </div>
 
       <div class="sidebar-body">
-        <!-- NAVEGAÇÃO -->
-        <div>
-          <p class="sidebar-group-title">Navegação</p>
+        <!-- NAVEGAÇÃO DO MANEJO (EXIBIDA SOMENTE QUANDO LOGADO) -->
+        <div id="sidebar-nav-logged" hidden>
+          <p class="sidebar-group-title">Navegação do Manejo</p>
           <div class="sidebar-nav-list">
             <button class="sidebar-nav-btn active" type="button" data-view="view-inicio">
               <span>🌦️</span>
@@ -59,14 +59,14 @@
               <span>📢</span>
               <span>Alertas e Mural</span>
             </button>
-            <button class="sidebar-nav-btn" type="button" data-view="view-chat">
-              <span>💬</span>
-              <span>Assistente de Plantio</span>
-            </button>
             <button class="sidebar-nav-btn" type="button" data-view="view-perfil">
               <span>👤</span>
               <span>Meu Perfil</span>
             </button>
+            <a class="sidebar-nav-btn" href="/pages/assistente-ia.html" id="sidebar-link-chat">
+              <span>💬</span>
+              <span>Assistente de IA (Página de Chat)</span>
+            </a>
           </div>
         </div>
 
@@ -128,17 +128,17 @@
       </a>
     </div>
 
-    <nav class="main-nav" id="main-nav" aria-label="Navegação principal">
-      <button class="nav-link active" type="button" data-view="view-inicio">Início e Clima</button>
+    <!-- Navegação do Manejo (Visível apenas quando o usuário está logado) -->
+    <nav class="main-nav" id="main-nav" aria-label="Navegação principal" hidden>
+      <button class="nav-link active" type="button" data-view="view-inicio">Manejo da Roça</button>
       <button class="nav-link" type="button" data-view="view-plantio">Plantio</button>
       <button class="nav-link" type="button" data-view="view-reservatorios">Poço e Cisterna</button>
       <button class="nav-link" type="button" data-view="view-comunidade">Alertas e Mural</button>
-      <button class="nav-link" type="button" data-view="view-chat">Assistente IA</button>
       <button class="nav-link" type="button" data-view="view-perfil">Meu Perfil</button>
     </nav>
 
     <div class="topbar-right">
-      <!-- ÍCONE ÚNICO DE SOM (RESUMO POR IA EM VOZ ALTA) -->
+      <!-- ÍCONE DE SOM (RESUMO POR IA EM VOZ ALTA) -->
       <button class="btn-sound-icon" id="btn-tts-icon" type="button" aria-label="Ouvir resumo em áudio desta página" title="Ouvir resumo da página">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
@@ -147,9 +147,16 @@
         </svg>
       </button>
 
+      <!-- ÍCONE DE CHAT DO ASSISTENTE DE IA (AO LADO DO BOTÃO DE ÁUDIO · EXCLUSIVO PARA USUÁRIO LOGADO) -->
+      <button class="btn-sound-icon btn-chat-icon is-locked" id="btn-chat-ia-icon" type="button" aria-label="Abrir página do Assistente de IA" title="Entre na sua conta para acessar o Assistente de IA">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+      </button>
+
       <div class="account-area">
         <span class="sync-badge" id="sync-queue-badge" hidden>Offline: 0</span>
-        <button class="user-badge" id="user-badge" type="button" data-go-view="view-perfil" hidden title="Editar meu perfil">Visitante</button>
+        <button class="user-badge" id="user-badge" type="button" data-go-view="view-perfil" hidden title="Editar meu perfil">Agricultor(a)</button>
         <button class="button button-secondary" id="btn-open-auth" type="button" style="min-height: 38px; padding: 6px 12px; font-size: 0.85rem;">Entrar</button>
         <button class="button button-secondary" id="btn-logout" type="button" hidden style="min-height: 38px; padding: 6px 12px; font-size: 0.85rem;">Sair</button>
       </div>
@@ -158,257 +165,313 @@
 
   <main>
     <!-- ==================================================================
-         1. VISÃO INICIAL: DIAGNÓSTICO AUTOMÁTICO + PAINEL DE CHUVA LIMPO
+         1. VISÃO INICIAL:
+            - Antes de entrar: Apresentação do App + Login/Cadastro
+            - Depois de entrar: Informações do Manejo da Roça do Usuário
          ================================================================== -->
     <section class="view-section active" id="view-inicio">
-      <div class="hero-workspace">
-        <!-- Coluna Esquerda: Diagnóstico Automático da Situação da Roça e Login -->
-        <div class="hero-pitch">
-          <p class="eyebrow eyebrow-ochre">SEMIÁRIDO DA BAHIA · TERRITÓRIO DE IRECÊ</p>
-          <h1>Clima, chuva e orientação de plantio para a sua roça.</h1>
+
+      <!-- A) TELA DE INÍCIO ANTES DE ENTRAR NA CONTA (APRESENTAÇÃO DO APP + LOGIN/CADASTRO) -->
+      <div class="guest-home-grid" id="guest-home-section">
+        <div class="guest-intro-panel">
+          <p class="eyebrow eyebrow-ochre">AGRICULTURA FAMILIAR NO SEMIÁRIDO · BAHIA</p>
+          <h1>O apoio certo para cuidar do manejo da sua roça.</h1>
           <p class="lead">
-            Acompanhe o volume de chuva da sua localidade, veja o diagnóstico automático da sua terra e saiba como agir no manejo do plantio e da água.
+            Aqui você pode acompanhar o manejo da sua roça, tirar dúvidas com seu assistente de IA, anotar as chuvas do seu pluviômetro e cuidar da água da sua cisterna ou poço. Entre na sua conta para visualizar as informações da sua propriedade.
           </p>
 
-          <!-- Cartão de Diagnóstico Automático da Situação e Manejo (Sem botões selecionáveis) -->
-          <div class="clima-dinamico-card" id="situacao-automatica-card">
-            <div class="clima-dinamico-top">
-              <img id="clima-dinamico-img" src="/assets/images/roca-atencao.svg" alt="Ilustração do estado atual da roça">
-              <div class="clima-dinamico-info">
-                <span class="status-label status-warn" id="clima-situacao-badge">Analisando Clima...</span>
-                <h3 id="clima-dinamico-titulo">Diagnóstico da Sua Localidade</h3>
-                <p id="clima-dinamico-desc">Carregando volume de chuva e condição do solo da sua localidade...</p>
-              </div>
+          <div class="guest-feature-grid">
+            <div class="guest-feature-card">
+              <span class="feature-icon" aria-hidden="true">🌱</span>
+              <h3>Acompanhe o Manejo da Roça</h3>
+              <p>Veja automaticamente se sua localidade está em situação favorável, em transição ou estiagem e saiba como agir no plantio de milho, mamona e feijão-caupi.</p>
             </div>
 
-            <div class="manejo-guide-box">
-              <p class="manejo-guide-title">Como agir agora no manejo do plantio:</p>
-              <ul class="manejo-passos-list" id="manejo-passos-list">
-                <li>Verifique a umidade do solo antes de iniciar a semeadura.</li>
-                <li>Prepare sulcos em nível para conservar a água da chuva na linha de plantio.</li>
-                <li>Mantenha cobertura morta com palhada para reduzir a evaporação.</li>
-              </ul>
-            </div>
-          </div>
-
-          <!-- Painel de Login e Cadastro Sucinto -->
-          <div class="auth-panel" id="auth-panel">
-            <div class="auth-tabs" role="tablist">
-              <button class="auth-tab active" type="button" data-auth-tab="login">Entrar</button>
-              <button class="auth-tab" type="button" data-auth-tab="cadastro">Criar Conta</button>
+            <div class="guest-feature-card">
+              <span class="feature-icon" aria-hidden="true">💬</span>
+              <h3>Tire Dúvidas com seu Assistente de IA</h3>
+              <p>Ao entrar na conta, clique no ícone de chat ao lado do botão de áudio para abrir uma página exclusiva de conversa com o assistente conectado ao clima da sua região.</p>
             </div>
 
-            <!-- Formulário de Login -->
-            <form id="form-login" class="field-stack">
-              <button type="button" class="button-google" id="btn-google-login">
-                <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-                <span>Entrar com Google</span>
-              </button>
+            <div class="guest-feature-card">
+              <span class="feature-icon" aria-hidden="true">💧</span>
+              <h3>Pluviômetro, Poço e Cisterna</h3>
+              <p>Registre as chuvas que caíram na sua terra, acompanhe o nível de água da sua propriedade e veja avisos importantes da comunidade.</p>
+            </div>
 
-              <div class="auth-divider">ou com telefone / e-mail</div>
-
-              <div class="field-row-2">
-                <label class="field">
-                  <span>Telefone ou E-mail</span>
-                  <input type="text" name="telefone" id="login-telefone" placeholder="74988880000 ou e-mail" required>
-                </label>
-                <label class="field">
-                  <span>Senha</span>
-                  <input type="password" name="senha" id="login-senha" placeholder="Sua senha" required>
-                </label>
-              </div>
-              <button class="button button-primary" type="submit">Entrar</button>
-              <div class="demo-credentials">
-                <span>Acesso rápido:</span>
-                <button type="button" class="chip-demo" data-demo-phone="74988880000" data-demo-pass="senha123">Agricultor (Zé Ronaldo)</button>
-                <button type="button" class="chip-demo" data-demo-phone="74999990000" data-demo-pass="senha123">Gestora (Ana Carolina)</button>
-              </div>
-            </form>
-
-            <!-- Formulário de Cadastro -->
-            <form id="form-cadastro" class="field-stack" hidden>
-              <button type="button" class="button-google" id="btn-google-signup">
-                <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-                <span>Cadastrar com Google</span>
-              </button>
-
-              <div class="auth-divider">ou preencha seus dados</div>
-
-              <div class="field-row-2">
-                <label class="field">
-                  <span>Nome completo</span>
-                  <input type="text" name="nome" placeholder="Ex: Maria da Silva" required>
-                </label>
-                <label class="field">
-                  <span>Telefone / WhatsApp</span>
-                  <input type="tel" name="telefone" placeholder="74999990000" required>
-                </label>
-              </div>
-
-              <div class="field">
-                <span>E-mail (para validação da conta)</span>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                  <input type="email" name="email" id="cadastro-email" placeholder="seu.email@gmail.com" style="flex: 1; min-width: 180px;">
-                  <button type="button" class="button button-secondary" id="btn-enviar-codigo-email" style="min-height: 42px; padding: 6px 12px; font-size: 0.8rem;">Enviar Código</button>
-                </div>
-              </div>
-
-              <!-- Validação de E-mail -->
-              <div id="email-verification-box" class="feedback-banner" hidden style="display: grid; gap: 8px;">
-                <p id="email-verification-msg" style="margin: 0;">Digite o código enviado para o seu e-mail:</p>
-                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                  <input type="text" id="input-codigo-email" maxlength="6" placeholder="000000" style="width: 110px; height: 38px; text-align: center; font-weight: 700; letter-spacing: 0.15em; background: var(--surface); border: 1px solid var(--line); border-radius: 4px;">
-                  <button type="button" class="button button-primary" id="btn-confirmar-codigo-email" style="min-height: 38px; padding: 4px 12px; font-size: 0.8rem;">Validar</button>
-                  <a id="link-webmail-preview" href="#" target="_blank" rel="noopener" hidden style="font-size: 0.8rem; text-decoration: underline;">Ver e-mail enviado ↗</a>
-                </div>
-              </div>
-
-              <div class="field-row-2">
-                <div class="field">
-                  <span>Localidade</span>
-                  <div style="display: flex; gap: 6px;">
-                    <select name="localidadeId" id="cadastro-localidade" required style="flex: 1;"></select>
-                    <button type="button" class="btn-gps-inline" id="btn-gps-cadastro" title="Usar localização atual">📍 GPS</button>
-                  </div>
-                </div>
-                <label class="field">
-                  <span>Fonte principal de água</span>
-                  <select name="abastecimento">
-                    <option value="CISTERNA">Cisterna</option>
-                    <option value="POCO">Poço tubular / cacimba</option>
-                    <option value="ENCANADA">Água encanada</option>
-                  </select>
-                </label>
-              </div>
-              <label class="field">
-                <span>Senha (mínimo 6 caracteres)</span>
-                <input type="password" name="senha" minlength="6" placeholder="Crie uma senha" required>
-              </label>
-              <label class="checkbox-field">
-                <input type="checkbox" name="consentimentoLocalizacao" checked>
-                <span>Concordo em participar de forma anônima do Monitor Comunitário de Água.</span>
-              </label>
-              <button class="button button-primary" type="submit">Concluir Cadastro</button>
-            </form>
-
-            <div class="feedback-banner" id="auth-feedback" hidden></div>
+            <div class="guest-feature-card">
+              <span class="feature-icon" aria-hidden="true">🔊</span>
+              <h3>Leitura em Áudio e Acessibilidade</h3>
+              <p>Ouça o resumo falado da página no ícone de som e ajuste o tema (Claro, Escuro, Daltônico ou Alto Contraste) e o tamanho da letra no menu lateral.</p>
+            </div>
           </div>
         </div>
 
-        <!-- Coluna Direita: Painel de Clima e Chuva (Sucinto e Atualizado Automaticamente) -->
-        <aside class="rain-card" aria-label="Painel de Chuva da Localidade">
-          <div class="rain-card-header">
-            <div>
-              <p class="eyebrow eyebrow-light">CLIMA NA SUA ROÇA</p>
-              <h2 id="painel-localidade-titulo">Irecê — Sede</h2>
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-end;">
-              <label class="locality-picker">
-                <span>Localidade</span>
-                <select id="select-localidade" aria-label="Selecionar localidade"></select>
-              </label>
-              <button type="button" class="btn-gps-inline" id="btn-detectar-localizacao" style="background: rgba(255,255,255,0.14); color: #fff; border-color: rgba(255,255,255,0.3);">
-                📍 Usar minha localização
-              </button>
-            </div>
+        <!-- Painel de Login e Cadastro (Sem contas de terceiros pré-carregadas) -->
+        <div class="auth-panel" id="auth-panel" style="margin-top: 0;">
+          <p class="eyebrow eyebrow-green" style="margin-bottom: 6px;">ACESSO À SUA CONTA</p>
+          <h2 style="margin: 0 0 14px; font-family: var(--serif); font-size: 1.55rem; font-weight: 500;">Entre ou cadastre sua propriedade</h2>
+
+          <div class="auth-tabs" role="tablist">
+            <button class="auth-tab active" type="button" data-auth-tab="login">Entrar</button>
+            <button class="auth-tab" type="button" data-auth-tab="cadastro">Criar Conta</button>
           </div>
 
-          <!-- Resumo Meteorológico Limpo -->
-          <div class="climate-quick-strip">
-            <div class="climate-quick-metrics">
-              <span>🌡️ <strong id="inmet-temp-val">27.2 °C</strong></span>
-              <span>💧 Umidade <strong id="inmet-umid-val">62%</strong></span>
-              <span>🌬️ Vento <strong id="inmet-vento-val">14 km/h</strong></span>
-            </div>
-            <span id="inmet-sync-badge" style="font-size: 0.76rem; opacity: 0.88;">Atualização automática</span>
-          </div>
-
-          <p id="gps-status-banner" hidden style="margin: 0; padding: 8px 12px; border-radius: 6px; background: rgba(255,255,255,0.14); color: #fff; font-size: 0.82rem;"></p>
-
-          <div class="rain-metrics">
-            <div class="rain-metric">
-              <span class="metric-label">Últimos 7 dias</span>
-              <strong class="metric-value" id="metric-7d">-- mm</strong>
-              <span class="metric-sub" id="metric-7d-sub">Chuva recente</span>
-            </div>
-            <div class="rain-metric">
-              <span class="metric-label">Acumulado no mês</span>
-              <strong class="metric-value" id="metric-month">-- mm</strong>
-              <span class="metric-sub" id="metric-normal">Média do mês: -- mm</span>
-            </div>
-            <div class="rain-metric">
-              <span class="metric-label">Acumulado na estação</span>
-              <strong class="metric-value" id="metric-season">-- mm</strong>
-              <span class="metric-sub" id="metric-pct">--% da média</span>
-            </div>
-          </div>
-
-          <div>
-            <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: #cde3d5;">
-              <span>Progresso da chuva no mês</span>
-              <strong id="progress-label">--%</strong>
-            </div>
-            <div class="progress-track">
-              <div class="progress-fill" id="rain-progress-bar" style="width: 0%"></div>
-            </div>
-          </div>
-
-          <div class="rain-decision" id="rain-decision-box">
-            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
-              <span class="status-label status-warn" id="decision-badge">Carregando...</span>
-              <button class="button button-secondary" type="button" data-go-view="view-chat" style="min-height: 32px; padding: 4px 10px; font-size: 0.78rem;">💬 Tirar dúvida com IA</button>
-            </div>
-            <h3 id="decision-title">Analisando condições da localidade</h3>
-            <p id="decision-copy">Aguarde enquanto consultamos o volume de chuva da sua região.</p>
-          </div>
-
-          <div class="rain-card-footer">
-            <span id="painel-fonte-label">Monitoramento meteorológico e comunitário</span>
-            <button class="button button-secondary" type="button" data-go-view="view-plantio" style="min-height: 36px; padding: 6px 12px; font-size: 0.8rem;">
-              Ver Detalhes de Plantio &rarr;
+          <!-- Formulário de Login -->
+          <form id="form-login" class="field-stack" autocomplete="off">
+            <button type="button" class="button-google" id="btn-google-login">
+              <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+              <span>Entrar com Google</span>
             </button>
-          </div>
-        </aside>
-      </div>
 
-      <!-- Barra Inferior: Registro de Chuva no Pluviômetro + Histórico -->
-      <div class="home-actions-bar">
-        <div class="card-box">
-          <p class="eyebrow eyebrow-green">PLUVIÔMETRO DA PROPRIEDADE</p>
-          <h3>Registrar Chuva na Roça</h3>
-          <form id="form-chuva" class="field-stack">
+            <div class="auth-divider">ou com telefone / e-mail</div>
+
             <div class="field-row-2">
               <label class="field">
-                <span>Volume (mm)</span>
-                <input type="number" name="volumeMm" step="0.5" min="0" max="500" placeholder="Ex: 18.5" required>
+                <span>Telefone ou E-mail</span>
+                <input type="text" name="telefone" id="login-telefone" placeholder="Seu telefone ou e-mail" required>
               </label>
               <label class="field">
-                <span>Data da chuva</span>
-                <input type="date" name="dataEvento" id="chuva-data" required>
+                <span>Senha</span>
+                <input type="password" name="senha" id="login-senha" placeholder="Sua senha" required>
               </label>
             </div>
-            <button class="button button-primary" type="submit">Salvar Registro de Chuva</button>
-            <p class="feedback-banner" id="chuva-feedback" hidden></p>
+            <button class="button button-primary" type="submit">Entrar na Minha Conta</button>
           </form>
-        </div>
 
-        <div class="card-box">
-          <p class="eyebrow eyebrow-ochre">SEUS REGISTROS</p>
-          <h3>Últimas Chuvas Anotadas</h3>
-          <div id="precipitacoes-list" class="field-stack" style="font-size: 0.88rem;">
-            <p class="muted">Entre na sua conta para anotar e consultar o histórico do seu pluviômetro.</p>
+          <!-- Formulário de Cadastro -->
+          <form id="form-cadastro" class="field-stack" hidden autocomplete="off">
+            <button type="button" class="button-google" id="btn-google-signup">
+              <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+              <span>Cadastrar com Google</span>
+            </button>
+
+            <div class="auth-divider">ou preencha seus dados</div>
+
+            <div class="field-row-2">
+              <label class="field">
+                <span>Nome completo</span>
+                <input type="text" name="nome" placeholder="Seu nome completo" required>
+              </label>
+              <label class="field">
+                <span>Telefone / WhatsApp</span>
+                <input type="tel" name="telefone" placeholder="74999990000" required>
+              </label>
+            </div>
+
+            <div class="field">
+              <span>E-mail (para validação da conta)</span>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <input type="email" name="email" id="cadastro-email" placeholder="seu.email@gmail.com" style="flex: 1; min-width: 180px;">
+                <button type="button" class="button button-secondary" id="btn-enviar-codigo-email" style="min-height: 42px; padding: 6px 12px; font-size: 0.8rem;">Enviar Código</button>
+              </div>
+            </div>
+
+            <!-- Validação de E-mail -->
+            <div id="email-verification-box" class="feedback-banner" hidden style="display: grid; gap: 8px;">
+              <p id="email-verification-msg" style="margin: 0;">Digite o código enviado para o seu e-mail:</p>
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <input type="text" id="input-codigo-email" maxlength="6" placeholder="000000" style="width: 110px; height: 38px; text-align: center; font-weight: 700; letter-spacing: 0.15em; background: var(--surface); border: 1px solid var(--line); border-radius: 4px;">
+                <button type="button" class="button button-primary" id="btn-confirmar-codigo-email" style="min-height: 38px; padding: 4px 12px; font-size: 0.8rem;">Validar</button>
+                <a id="link-webmail-preview" href="#" target="_blank" rel="noopener" hidden style="font-size: 0.8rem; text-decoration: underline;">Ver e-mail enviado ↗</a>
+              </div>
+            </div>
+
+            <div class="field-row-2">
+              <div class="field">
+                <span>Localidade</span>
+                <div style="display: flex; gap: 6px;">
+                  <select name="localidadeId" id="cadastro-localidade" required style="flex: 1;"></select>
+                  <button type="button" class="btn-gps-inline" id="btn-gps-cadastro" title="Usar localização atual">📍 GPS</button>
+                </div>
+              </div>
+              <label class="field">
+                <span>Fonte principal de água</span>
+                <select name="abastecimento">
+                  <option value="CISTERNA">Cisterna</option>
+                  <option value="POCO">Poço tubular / cacimba</option>
+                  <option value="ENCANADA">Água encanada</option>
+                </select>
+              </label>
+            </div>
+            <label class="field">
+              <span>Senha (mínimo 6 caracteres)</span>
+              <input type="password" name="senha" minlength="6" placeholder="Crie uma senha" required>
+            </label>
+            <label class="checkbox-field">
+              <input type="checkbox" name="consentimentoLocalizacao" checked>
+              <span>Concordo em participar de forma anônima do Monitor Comunitário de Água.</span>
+            </label>
+            <button class="button button-primary" type="submit">Concluir Cadastro</button>
+          </form>
+
+          <div class="feedback-banner" id="auth-feedback" hidden></div>
+        </div>
+      </div>
+
+      <!-- B) PAINEL DE MANEJO DA ROÇA (EXIBIDO SOMENTE QUANDO O USUÁRIO ESTIVER LOGADO) -->
+      <div id="logged-manejo-workspace" hidden>
+        <div class="user-welcome-strip">
+          <div>
+            <span class="eyebrow eyebrow-green" style="display: block; margin-bottom: 2px;">PAINEL EXCLUSIVO DA SUA PROPRIEDADE</span>
+            <strong id="logged-welcome-title" style="font-size: 1.05rem;">Olá! Acompanhe o manejo da sua roça.</strong>
+          </div>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <a class="button button-secondary" href="/pages/assistente-ia.html" style="min-height: 38px; padding: 6px 14px; font-size: 0.85rem;">
+              💬 Abrir Chat com Assistente de IA
+            </a>
+            <button class="button button-secondary" type="button" data-go-view="view-perfil" style="min-height: 38px; padding: 6px 14px; font-size: 0.85rem;">
+              👤 Editar Meu Perfil
+            </button>
           </div>
         </div>
 
-        <div class="card-box">
-          <p class="eyebrow eyebrow-green">APOIO AO AGRICULTOR</p>
-          <h3>Assistente de Manejo</h3>
-          <p class="muted" style="font-size: 0.9rem; margin-bottom: 14px;">
-            Receba dicas práticas sobre quando plantar milho, mamona ou feijão-caupi com base na chuva atual da sua localidade.
-          </p>
-          <div class="field-stack">
-            <button class="button button-primary" type="button" data-go-view="view-chat">Abrir Conversa com Assistente</button>
-            <button class="button button-secondary" type="button" data-go-view="view-reservatorios">Atualizar Nível da Cisterna / Poço</button>
+        <div class="hero-workspace">
+          <!-- Coluna Esquerda: Diagnóstico Automático da Situação da Roça -->
+          <div class="hero-pitch">
+            <p class="eyebrow eyebrow-ochre">DIAGNÓSTICO AUTOMÁTICO DO SEU MANEJO</p>
+            <h1>Situação atual e como agir na sua roça.</h1>
+            <p class="lead">
+              O sistema avalia automaticamente as chuvas e a condição do solo na sua localidade para orientar suas decisões de plantio e conservação da água.
+            </p>
+
+            <!-- Cartão de Diagnóstico Automático da Situação e Manejo -->
+            <div class="clima-dinamico-card" id="situacao-automatica-card">
+              <div class="clima-dinamico-top">
+                <img id="clima-dinamico-img" src="/assets/images/roca-atencao.svg" alt="Ilustração do estado atual da roça">
+                <div class="clima-dinamico-info">
+                  <span class="status-label status-warn" id="clima-situacao-badge">Analisando Clima...</span>
+                  <h3 id="clima-dinamico-titulo">Diagnóstico da Sua Localidade</h3>
+                  <p id="clima-dinamico-desc">Carregando volume de chuva e condição do solo da sua localidade...</p>
+                </div>
+              </div>
+
+              <div class="manejo-guide-box">
+                <p class="manejo-guide-title">Como agir agora no manejo do plantio:</p>
+                <ul class="manejo-passos-list" id="manejo-passos-list">
+                  <li>Verifique a umidade do solo antes de iniciar a semeadura.</li>
+                  <li>Prepare sulcos em nível para conservar a água da chuva na linha de plantio.</li>
+                  <li>Mantenha cobertura morta com palhada para reduzir a evaporação.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Coluna Direita: Painel de Clima e Chuva da Localidade do Usuário -->
+          <aside class="rain-card" aria-label="Painel de Chuva da Localidade">
+            <div class="rain-card-header">
+              <div>
+                <p class="eyebrow eyebrow-light">CLIMA NA SUA ROÇA</p>
+                <h2 id="painel-localidade-titulo">Sua Localidade</h2>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-end;">
+                <label class="locality-picker">
+                  <span>Localidade</span>
+                  <select id="select-localidade" aria-label="Selecionar localidade"></select>
+                </label>
+                <button type="button" class="btn-gps-inline" id="btn-detectar-localizacao" style="background: rgba(255,255,255,0.14); color: #fff; border-color: rgba(255,255,255,0.3);">
+                  📍 Usar minha localização
+                </button>
+              </div>
+            </div>
+
+            <!-- Resumo Meteorológico Limpo -->
+            <div class="climate-quick-strip">
+              <div class="climate-quick-metrics">
+                <span>🌡️ <strong id="inmet-temp-val">-- °C</strong></span>
+                <span>💧 Umidade <strong id="inmet-umid-val">--%</strong></span>
+                <span>🌬️ Vento <strong id="inmet-vento-val">-- km/h</strong></span>
+              </div>
+              <span id="inmet-sync-badge" style="font-size: 0.76rem; opacity: 0.88;">Atualização automática</span>
+            </div>
+
+            <p id="gps-status-banner" hidden style="margin: 0; padding: 8px 12px; border-radius: 6px; background: rgba(255,255,255,0.14); color: #fff; font-size: 0.82rem;"></p>
+
+            <div class="rain-metrics">
+              <div class="rain-metric">
+                <span class="metric-label">Últimos 7 dias</span>
+                <strong class="metric-value" id="metric-7d">-- mm</strong>
+                <span class="metric-sub" id="metric-7d-sub">Chuva recente</span>
+              </div>
+              <div class="rain-metric">
+                <span class="metric-label">Acumulado no mês</span>
+                <strong class="metric-value" id="metric-month">-- mm</strong>
+                <span class="metric-sub" id="metric-normal">Média do mês: -- mm</span>
+              </div>
+              <div class="rain-metric">
+                <span class="metric-label">Acumulado na estação</span>
+                <strong class="metric-value" id="metric-season">-- mm</strong>
+                <span class="metric-sub" id="metric-pct">--% da média</span>
+              </div>
+            </div>
+
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: #cde3d5;">
+                <span>Progresso da chuva no mês</span>
+                <strong id="progress-label">--%</strong>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" id="rain-progress-bar" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <div class="rain-decision" id="rain-decision-box">
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span class="status-label status-warn" id="decision-badge">Carregando...</span>
+                <a class="button button-secondary" href="/pages/assistente-ia.html" style="min-height: 32px; padding: 4px 10px; font-size: 0.78rem;">💬 Tirar dúvida com IA</a>
+              </div>
+              <h3 id="decision-title">Analisando condições da localidade</h3>
+              <p id="decision-copy">Aguarde enquanto consultamos o volume de chuva da sua região.</p>
+            </div>
+
+            <div class="rain-card-footer">
+              <span id="painel-fonte-label">Monitoramento meteorológico automático</span>
+              <button class="button button-secondary" type="button" data-go-view="view-plantio" style="min-height: 36px; padding: 6px 12px; font-size: 0.8rem;">
+                Ver Detalhes de Plantio &rarr;
+              </button>
+            </div>
+          </aside>
+        </div>
+
+        <!-- Barra Inferior: Registro de Chuva no Pluviômetro da Conta + Histórico Pessoal -->
+        <div class="home-actions-bar">
+          <div class="card-box">
+            <p class="eyebrow eyebrow-green">PLUVIÔMETRO DA SUA PROPRIEDADE</p>
+            <h3>Registrar Chuva na Sua Roça</h3>
+            <form id="form-chuva" class="field-stack">
+              <div class="field-row-2">
+                <label class="field">
+                  <span>Volume (mm)</span>
+                  <input type="number" name="volumeMm" step="0.5" min="0" max="500" placeholder="Ex: 18.5" required>
+                </label>
+                <label class="field">
+                  <span>Data da chuva</span>
+                  <input type="date" name="dataEvento" id="chuva-data" required>
+                </label>
+              </div>
+              <button class="button button-primary" type="submit">Salvar Registro de Chuva</button>
+              <p class="feedback-banner" id="chuva-feedback" hidden></p>
+            </form>
+          </div>
+
+          <div class="card-box">
+            <p class="eyebrow eyebrow-ochre">REGISTROS DA SUA CONTA</p>
+            <h3>Suas Últimas Chuvas Anotadas</h3>
+            <div id="precipitacoes-list" class="field-stack" style="font-size: 0.88rem;">
+              <p class="muted">Nenhum registro de chuva anotado na sua conta ainda.</p>
+            </div>
+          </div>
+
+          <div class="card-box">
+            <p class="eyebrow eyebrow-green">APOIO AO SEU MANEJO</p>
+            <h3>Ferramentas da Propriedade</h3>
+            <p class="muted" style="font-size: 0.9rem; margin-bottom: 14px;">
+              Converse com o seu Assistente de IA em uma página exclusiva ou atualize os dados da sua cisterna e poço.
+            </p>
+            <div class="field-stack">
+              <a class="button button-primary" href="/pages/assistente-ia.html">💬 Abrir Página do Assistente de IA</a>
+              <button class="button button-secondary" type="button" data-go-view="view-reservatorios">Atualizar Nível da Cisterna / Poço</button>
+            </div>
           </div>
         </div>
       </div>
@@ -649,82 +712,7 @@
     </section>
 
     <!-- ==================================================================
-         5. VISÃO ASSISTENTE DE PLANTIO (CHAT IA CONECTADO AO CLIMA)
-         ================================================================== -->
-    <section class="view-section page-content" id="view-chat">
-      <div class="section-header">
-        <div>
-          <p class="eyebrow eyebrow-green">INTELIGÊNCIA ARTIFICIAL INTEGRADA AO CLIMA</p>
-          <h2>Assistente de Plantio e Manejo</h2>
-        </div>
-      </div>
-
-      <div class="chat-layout">
-        <div class="chat-window">
-          <div class="chat-context-strip">
-            <span id="chat-climate-context">📍 Localidade: <strong>Irecê</strong> · Conectado aos dados de chuva e temperatura</span>
-            <span class="status-label status-good" id="chat-situacao-pill">Pronto para ajudar</span>
-          </div>
-
-          <div class="chat-messages" id="chat-messages">
-            <div class="chat-bubble bot">
-              <div>
-                Olá! Eu sou o assistente de manejo do <strong>Manejo Caatingueiro</strong>. Estou acompanhando os dados de chuva, temperatura e umidade da sua localidade em tempo real. Como posso ajudar no seu plantio hoje?
-              </div>
-              <div class="chat-bubble-actions">
-                <button type="button" class="chat-speak-btn" data-speak-text="Olá! Eu sou o assistente de manejo do Manejo Caatingueiro. Estou acompanhando os dados de chuva, temperatura e umidade da sua localidade em tempo real. Como posso ajudar no seu plantio hoje?" title="Ouvir resposta">
-                  🔊
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="chat-quick-Row">
-            <button type="button" class="chat-chip" data-quick-ask="Posso plantar milho agora na minha localidade?">🌱 Posso plantar milho agora?</button>
-            <button type="button" class="chat-chip" data-quick-ask="Qual a melhor cultura para o volume de chuva atual?">🌾 Melhor cultura para hoje</button>
-            <button type="button" class="chat-chip" data-quick-ask="Como conservar a umidade do solo na minha roça?">🌿 Como segurar umidade no solo</button>
-            <button type="button" class="chat-chip" data-quick-ask="Como economizar e proteger a água da minha cisterna?">💧 Cuidados com a cisterna</button>
-          </div>
-
-          <form id="form-chat-ia" class="chat-input-bar">
-            <input type="text" id="chat-input-text" placeholder="Pergunte sobre plantio, milho, mamona, feijão ou chuva..." required>
-            <button class="button button-primary" type="submit" id="btn-chat-send">Perguntar</button>
-          </form>
-        </div>
-
-        <aside class="card-box">
-          <p class="eyebrow eyebrow-ochre">BASE DE DADOS EM TEMPO REAL</p>
-          <h3>Como o Assistente Funciona</h3>
-          <p class="muted small">
-            O assistente analisa automaticamente os dados meteorológicos da sua localidade antes de responder:
-          </p>
-          <div class="suggestion-Rule-list" style="margin-top: 12px;">
-            <div class="rule-row">
-              <span>Localidade ativa</span>
-              <strong id="chat-side-loc">Irecê</strong>
-            </div>
-            <div class="rule-row">
-              <span>Chuva no mês</span>
-              <strong id="chat-side-mes">-- mm</strong>
-            </div>
-            <div class="rule-row">
-              <span>Últimos 7 dias</span>
-              <strong id="chat-side-7d">-- mm</strong>
-            </div>
-            <div class="rule-row">
-              <span>Situação diagnosticada</span>
-              <strong id="chat-side-sit">Em análise</strong>
-            </div>
-          </div>
-          <p class="muted small" style="margin-top: 12px;">
-            Dica: você também pode clicar no ícone <strong>🔊</strong> ao lado de qualquer resposta para ouvir a explicação em voz alta.
-          </p>
-        </aside>
-      </div>
-    </section>
-
-    <!-- ==================================================================
-         6. NOVA TELA: MEU PERFIL E EDIÇÃO DE DADOS DO USUÁRIO
+         5. TELA MEU PERFIL E EDIÇÃO DE DADOS DO USUÁRIO
          ================================================================== -->
     <section class="view-section page-content" id="view-perfil">
       <div class="section-header">
@@ -740,8 +728,8 @@
             <div class="profile-avatar" id="perfil-avatar-letra">U</div>
             <div>
               <span class="status-label status-good" id="perfil-papel-badge">Agricultor(a)</span>
-              <h3 id="perfil-resumo-nome" style="margin: 6px 0 2px; font-family: var(--serif); font-size: 1.45rem;">Visitante</h3>
-              <p class="muted small" id="perfil-resumo-localidade" style="margin: 0;">Localidade: Irecê</p>
+              <h3 id="perfil-resumo-nome" style="margin: 6px 0 2px; font-family: var(--serif); font-size: 1.45rem;">Agricultor(a)</h3>
+              <p class="muted small" id="perfil-resumo-localidade" style="margin: 0;">Localidade: --</p>
             </div>
           </div>
 
@@ -842,7 +830,7 @@
       <p class="eyebrow eyebrow-ochre">CONFIRMAÇÃO</p>
       <h3 id="logout-modal-title">Deseja realmente sair da sua conta?</h3>
       <p class="muted small">
-        Seus dados salvos no aparelho continuarão protegidos, mas para registrar novas chuvas ou editar seu perfil será necessário entrar novamente.
+        Seus dados salvos no aparelho continuarão protegidos, mas para visualizar o manejo da sua roça ou usar o Assistente de IA será necessário entrar novamente.
       </p>
       <div class="modal-actions">
         <button type="button" class="button button-secondary" id="logout-cancel-btn">Continuar Conectado</button>

@@ -103,6 +103,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 html {
   scroll-behavior: smooth;
   font-size: calc(16px * var(--font-scale, 1));
@@ -952,6 +956,11 @@ textarea {
   padding: 20px;
 }
 
+.modal-overlay[hidden],
+[hidden] {
+  display: none !important;
+}
+
 .modal-box {
   width: 100%;
   max-width: 420px;
@@ -977,6 +986,112 @@ textarea {
 }
 
 /* ==========================================================================
+   ÍCONE DO ASSISTENTE DE IA (AO LADO DO BOTÃO DE ÁUDIO) + TELA DE VISITANTE
+   ========================================================================== */
+
+.btn-chat-icon {
+  position: relative;
+}
+
+.btn-chat-icon.active {
+  background: var(--green);
+  color: #ffffff;
+  border-color: var(--green);
+}
+
+.btn-chat-icon.is-locked {
+  opacity: 0.55;
+  color: var(--muted);
+  border-style: dashed;
+}
+
+.btn-chat-icon.is-locked:hover {
+  background: var(--surface-alt);
+  color: var(--ink);
+  border-color: var(--ochre);
+  transform: none;
+}
+
+.guest-home-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: clamp(24px, 4vw, 48px);
+  align-items: start;
+  padding: clamp(24px, 4vw, 52px) clamp(16px, 4vw, 44px);
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+.guest-intro-panel {
+  display: grid;
+  gap: 20px;
+}
+
+.guest-intro-panel h1 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: clamp(2rem, 3.6vw, 3.1rem);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.guest-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-top: 6px;
+}
+
+.guest-feature-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+  display: grid;
+  gap: 8px;
+}
+
+.guest-feature-card .feature-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: var(--green-soft);
+  color: var(--green);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+}
+
+.guest-feature-card h3 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 1.18rem;
+  font-weight: 500;
+}
+
+.guest-feature-card p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.user-welcome-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px clamp(16px, 4vw, 44px);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+/* ==========================================================================
    RESPONSIVIDADE EM TODAS AS TELAS (MOBILE, TABLET, DESKTOP)
    ========================================================================== */
 
@@ -985,6 +1100,7 @@ textarea {
     display: none;
   }
 
+  .guest-home-grid,
   .chat-layout,
   .profile-grid {
     grid-template-columns: 1fr;
@@ -1000,6 +1116,7 @@ textarea {
     font-size: 0.85rem;
   }
 
+  .guest-feature-grid,
   .field-row-2 {
     grid-template-columns: 1fr;
   }
@@ -1023,3 +1140,4 @@ textarea {
     width: 100%;
   }
 }
+

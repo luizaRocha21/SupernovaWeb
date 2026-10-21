@@ -147,11 +147,7 @@ const tresDiasAtrasIso = new Date(Date.now() - 86400000 * 3).toISOString().slice
 const seisDiasAtrasIso = new Date(Date.now() - 86400000 * 6).toISOString().slice(0, 10);
 const trintaDiasFuturoIso = new Date(Date.now() + 86400000 * 30).toISOString().slice(0, 10);
 
-const precipitacoes = [
-  { id: 1, localidadeId: 1, usuarioId: 2, volumeMm: 18.5, dataEvento: hojeIso, fonte: "PLUVIOMETRO_PROPRIO", criadoEm: new Date().toISOString() },
-  { id: 2, localidadeId: 1, usuarioId: 2, volumeMm: 14.0, dataEvento: tresDiasAtrasIso, fonte: "PLUVIOMETRO_PROPRIO", criadoEm: new Date().toISOString() },
-  { id: 3, localidadeId: 1, usuarioId: 3, volumeMm: 9.5, dataEvento: seisDiasAtrasIso, fonte: "ESTACAO", criadoEm: new Date().toISOString() }
-];
+const precipitacoes = [];
 
 function calcularEscala(pct) {
   if (pct >= 75) return 'CHEIO';
@@ -370,10 +366,23 @@ function optionalAuth(req, _res, next) {
 function formatarRespostaAuth(user) {
   const token = jwt.sign({ id: user.id, telefone: user.telefone, email: user.email, perfil: user.perfil }, JWT_SECRET, { expiresIn: '8h' });
   const localidade = localidades.find(l => l.id === user.localidadeId);
+  const localidadeNome = localidade ? localidade.nome : "Irecê";
   return {
     token,
     tipo: "Bearer",
     expiraEm: 28800,
+    id: user.id,
+    usuarioId: user.id,
+    nome: user.nome,
+    telefone: user.telefone,
+    email: user.email || null,
+    emailVerificado: Boolean(user.emailVerificado),
+    provedorAuth: user.provedorAuth || 'LOCAL',
+    perfil: user.perfil,
+    abastecimento: user.abastecimento,
+    localidadeId: user.localidadeId,
+    localidadeNome,
+    consentimentoLocalizacao: Boolean(user.consentimentoLocalizacao),
     usuario: {
       id: user.id,
       nome: user.nome,
@@ -382,8 +391,10 @@ function formatarRespostaAuth(user) {
       emailVerificado: Boolean(user.emailVerificado),
       provedorAuth: user.provedorAuth || 'LOCAL',
       perfil: user.perfil,
+      abastecimento: user.abastecimento,
       localidadeId: user.localidadeId,
-      localidadeNome: localidade ? localidade.nome : "Irecê"
+      localidadeNome,
+      consentimentoLocalizacao: Boolean(user.consentimentoLocalizacao)
     }
   };
 }
@@ -451,10 +462,10 @@ app.get('/api/v1/auth/google/popup-consent', (req, res) => {
   const nonce = String(req.query.nonce || '');
   const localidadeId = Number(req.query.localidadeId || 1);
   const abastecimento = String(req.query.abastecimento || 'CISTERNA');
-  res.send(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Login com Google — OAuth 2.0 / OIDC</title>
+  res.send(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Entrar com Google</title>
   <style>body{font-family:sans-serif;background:#f0f4f9;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:16px}.card{max-width:420px;width:100%;background:#fff;padding:28px;border-radius:12px;border:1px solid #dadce0}input{width:100%;height:42px;margin:6px 0 12px;padding:8px 12px;border:1px solid #ccc;border-radius:6px;box-sizing:border-box}button{padding:10px 18px;border-radius:6px;border:none;background:#1a73e8;color:#fff;font-weight:bold;cursor:pointer}</style></head>
-  <body><div class="card"><h2>Entrar com o Google (OAuth 2.0 / OIDC)</h2>
-  <form id="f"><label>E-mail Google</label><input id="e" type="email" value="luizarocha21@gmail.com" required><label>Nome completo</label><input id="n" type="text" value="Luiza Rocha" required><button type="submit">Continuar com Google</button></form>
+  <body><div class="card"><h2>Entrar com o Google</h2>
+  <form id="f"><label>Seu e-mail Google</label><input id="e" type="email" placeholder="seu.email@gmail.com" required><label>Seu nome completo</label><input id="n" type="text" placeholder="Seu nome" required><button type="submit">Continuar</button></form>
   <script>document.getElementById('f').onsubmit=async(ev)=>{ev.preventDefault();const r=await fetch('/api/v1/auth/google',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:document.getElementById('e').value,nome:document.getElementById('n').value,state:'${state}',nonce:'${nonce}',localidadeId:${localidadeId},abastecimento:'${abastecimento}'})});const d=await r.json();if(window.opener){window.opener.postMessage({type:'GOOGLE_OAUTH_SUCCESS',payload:d},'*');window.close();}};</script></div></body></html>`);
 });
 
@@ -722,15 +733,17 @@ app.post('/api/v1/admin/ingestao/todas', optionalAuth, async (_req, res) => {
   });
 });
 
-function calcularChuvaLocalidade(localidadeId, diasAtras) {
+function calcularChuvaLocalidade(localidadeId, diasAtras, usuarioId) {
   const hoje = new Date();
   const limite = new Date();
   limite.setDate(hoje.getDate() - diasAtras);
   const limiteStr = limite.toISOString().slice(0, 10);
 
-  const obsManuais = precipitacoes
-    .filter(p => p.localidadeId === localidadeId && p.dataEvento >= limiteStr)
-    .reduce((sum, p) => sum + p.volumeMm, 0);
+  const obsManuais = usuarioId != null
+    ? precipitacoes
+        .filter(p => p.localidadeId === localidadeId && p.usuarioId === usuarioId && p.dataEvento >= limiteStr)
+        .reduce((sum, p) => sum + p.volumeMm, 0)
+    : 0;
 
   const realData = inmetWeatherCache.get(localidadeId);
   if (realData) {
@@ -755,7 +768,7 @@ function calcularChuvaLocalidade(localidadeId, diasAtras) {
     umidadePct: estacoesInmet[0].umidadeRelativaPct,
     ventoKmh: estacoesInmet[0].ventoVelocidadeKmh,
     estacaoCodigo: "A424",
-    fonte: "INMET Estação Automática A424 (Irecê-BA) + Pluviômetros da Comunidade",
+    fonte: "Monitoramento Meteorológico Automático",
     atualizadoEm: ultimaSincronizacaoAutomaticaInmet
   };
 }
@@ -770,11 +783,12 @@ app.get('/api/v1/localidades/:id/painel-chuva', optionalAuth, async (req, res) =
   const hoje = new Date();
   const mesAtual = hoje.getMonth() + 1;
   const diaDoMes = hoje.getDate();
+  const uid = req.usuario?.id;
 
   const normalMes = NORMAIS_IRECE[mesAtual - 1];
-  const medidaMes = calcularChuvaLocalidade(localidadeId, diaDoMes);
-  const medidaRecente = calcularChuvaLocalidade(localidadeId, 7);
-  const medidaEstacao = calcularChuvaLocalidade(localidadeId, 45);
+  const medidaMes = calcularChuvaLocalidade(localidadeId, diaDoMes, uid);
+  const medidaRecente = calcularChuvaLocalidade(localidadeId, 7, uid);
+  const medidaEstacao = calcularChuvaLocalidade(localidadeId, 45, uid);
   const percentual = Math.round((medidaMes.valorMm / normalMes) * 1000) / 10;
 
   const cult = culturas.find(c => c.nome.toLowerCase() === culturaNome.toLowerCase()) || culturas[0];
@@ -785,7 +799,7 @@ app.get('/api/v1/localidades/:id/painel-chuva', optionalAuth, async (req, res) =
     if (custom != null) { limiar = custom; personalizado = true; }
   }
   const diasJanela = cult.tipoCriterio === 'VOLUME_POR_EVENTO' ? 7 : cult.janelaDias || 30;
-  const medidaCultura = calcularChuvaLocalidade(localidadeId, diasJanela);
+  const medidaCultura = calcularChuvaLocalidade(localidadeId, diasJanela, uid);
   const estacaoPrincipal = estacoesInmet[0];
   const razaoCultura = limiar > 0 ? medidaCultura.valorMm / limiar : 0;
 
@@ -888,7 +902,7 @@ app.get('/api/v1/localidades/:id/sugestao-plantio', optionalAuth, (req, res) => 
   }
 
   const diasJanela = cult.tipoCriterio === 'VOLUME_POR_EVENTO' ? 7 : cult.janelaDias || 30;
-  const medida = calcularChuvaLocalidade(localidadeId, diasJanela);
+  const medida = calcularChuvaLocalidade(localidadeId, diasJanela, req.usuario?.id);
   const razao = medida.valorMm / limiar;
 
   let resultado;
@@ -920,7 +934,23 @@ app.get('/api/v1/precipitacoes', authMiddleware, (req, res) => {
 });
 
 app.get('/api/v1/reservatorios', authMiddleware, (req, res) => {
-  const userRes = reservatorios.filter(r => r.responsavelId === req.usuario.id);
+  let userRes = reservatorios.filter(r => r.responsavelId === req.usuario.id);
+  if (userRes.length === 0) {
+    const novoRes = {
+      id: reservatorios.length + 1,
+      apelido: req.usuario.abastecimento === 'POCO' ? `Poço de ${req.usuario.nome}` : `Cisterna de ${req.usuario.nome}`,
+      tipo: req.usuario.abastecimento === 'POCO' ? 'POCO' : 'CISTERNA',
+      responsavelId: req.usuario.id,
+      localidadeId: req.usuario.localidadeId,
+      capacidadeLitros: 16000,
+      ultimoNivelPercentual: 65,
+      escala: 'MEDIO',
+      consentimentoAgregacao: Boolean(req.usuario.consentimentoLocalizacao),
+      atualizadoEm: new Date().toISOString()
+    };
+    reservatorios.push(novoRes);
+    userRes = [novoRes];
+  }
   res.json(userRes.map(r => ({ ...r, localidadeNome: localidades.find(l => l.id === r.localidadeId)?.nome || "Irecê" })));
 });
 
@@ -1045,15 +1075,15 @@ app.post('/api/v1/tts/sintetizar', optionalAuth, async (req, res) => {
   res.json({ engine: 'GOOGLE_WEB_SPEECH_PT_BR', idioma: 'pt-BR', voz, velocidade: Number(velocidade) || 1.0, entonacao: Number(entonacao) || 0.0, textoNormalizado: cleanText, audioBase64: null });
 });
 
-function montarContextoClimaticoLocalidade(localidadeId, culturaFiltro = 'milho') {
+function montarContextoClimaticoLocalidade(localidadeId, culturaFiltro = 'milho', usuarioId) {
   const loc = localidades.find(l => l.id === Number(localidadeId)) || localidades[0];
   const hoje = new Date();
   const mesAtual = hoje.getMonth() + 1;
   const diaDoMes = hoje.getDate();
   const normalMes = NORMAIS_IRECE[mesAtual - 1];
-  const medidaMes = calcularChuvaLocalidade(loc.id, diaDoMes);
-  const medida7d = calcularChuvaLocalidade(loc.id, 7);
-  const medida30d = calcularChuvaLocalidade(loc.id, 30);
+  const medidaMes = calcularChuvaLocalidade(loc.id, diaDoMes, usuarioId);
+  const medida7d = calcularChuvaLocalidade(loc.id, 7, usuarioId);
+  const medida30d = calcularChuvaLocalidade(loc.id, 30, usuarioId);
   const percentual = Math.round((medidaMes.valorMm / normalMes) * 1000) / 10;
 
   const cult = culturas.find(c => c.nome.toLowerCase() === String(culturaFiltro).toLowerCase()) || culturas[0];
@@ -1086,16 +1116,24 @@ function montarContextoClimaticoLocalidade(localidadeId, culturaFiltro = 'milho'
 }
 
 app.post('/api/v1/ia/resumo-voz', optionalAuth, async (req, res) => {
-  const { localidadeId = 1, cultura = 'milho' } = req.body;
-  const ctx = montarContextoClimaticoLocalidade(Number(localidadeId) || 1, String(cultura || 'milho'));
-  const resumoFallback = `Olá! Aqui é o resumo da sua roça em ${ctx.localidade.nome}. Nos últimos 7 dias choveu ${ctx.chuva7dMm} milímetros, e no mês estamos com ${ctx.chuvaMesMm} milímetros, o que representa ${ctx.percentualNormal}% do esperado. A temperatura agora é de ${ctx.temperaturaC} graus, com umidade do ar em ${ctx.umidadePct}%. Sua roça está em ${ctx.situacao}. Recomendação de manejo para ${ctx.culturaFoco.nome}: ${ctx.orientacaoDireta}`;
+  if (!req.usuario) {
+    return res.json({
+      sucesso: true,
+      origem: 'BOAS_VINDAS_VISITANTE',
+      resumoFalado: 'Bem-vindo ao Manejo Caatingueiro! Aqui você pode acompanhar o manejo da sua roça, consultar a situação climática da sua terra, tirar dúvidas com seu assistente de inteligência artificial e cuidar da água da sua cisterna ou poço. Entre na sua conta ou faça seu cadastro gratuito para visualizar as informações de manejo da sua propriedade.',
+      situacao: 'Visitante'
+    });
+  }
+  const { localidadeId = req.usuario.localidadeId || 1, cultura = 'milho' } = req.body;
+  const ctx = montarContextoClimaticoLocalidade(Number(localidadeId) || 1, String(cultura || 'milho'), req.usuario.id);
+  const resumoFallback = `Olá, ${req.usuario.nome}! Aqui é o resumo da sua roça em ${ctx.localidade.nome}. Nos últimos 7 dias choveu ${ctx.chuva7dMm} milímetros, e no mês estamos com ${ctx.chuvaMesMm} milímetros, o que representa ${ctx.percentualNormal}% do esperado. A temperatura agora é de ${ctx.temperaturaC} graus, com umidade do ar em ${ctx.umidadePct}%. Sua roça está em ${ctx.situacao}. Recomendação de manejo para ${ctx.culturaFoco.nome}: ${ctx.orientacaoDireta}`;
   res.json({ sucesso: true, origem: 'RESUMO_INTELIGENTE', resumoFalado: resumoFallback, situacao: ctx.situacao });
 });
 
-app.post('/api/v1/ia/chat', optionalAuth, async (req, res) => {
-  const { mensagem, localidadeId = 1, cultura = 'milho' } = req.body;
+app.post('/api/v1/ia/chat', authMiddleware, async (req, res) => {
+  const { mensagem, localidadeId = req.usuario?.localidadeId || 1, cultura = 'milho' } = req.body;
   const pergunta = String(mensagem || '').trim().toLowerCase();
-  const ctx = montarContextoClimaticoLocalidade(Number(localidadeId) || 1, String(cultura || 'milho'));
+  const ctx = montarContextoClimaticoLocalidade(Number(localidadeId) || 1, String(cultura || 'milho'), req.usuario?.id);
 
   let respostaContextual = '';
   if (pergunta.includes('milho')) {

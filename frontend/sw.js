@@ -3,8 +3,8 @@
    Garante funcionamento contínuo na roça mesmo quando a internet cai
    ========================================================================== */
 
-const CACHE_STATIC = 'manejo-caatingueiro-static-v3';
-const CACHE_API = 'manejo-caatingueiro-api-v3';
+const CACHE_STATIC = 'manejo-caatingueiro-static-v6';
+const CACHE_API = 'manejo-caatingueiro-api-v6';
 
 const STATIC_ASSETS = [
   '/',
@@ -25,7 +25,8 @@ const STATIC_ASSETS = [
   '/assets/images/roca-estiagem.svg',
   '/pages/plantio.html',
   '/pages/reservatorios.html',
-  '/pages/comunidade.html'
+  '/pages/comunidade.html',
+  '/pages/assistente-ia.html'
 ];
 
 self.addEventListener('install', (event) => {
@@ -53,6 +54,11 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
 
   const url = new URL(request.url);
+
+  // Arquivos .zip e rota de download vão direto para a rede sem cache do Service Worker
+  if (url.pathname.endsWith('.zip') || url.pathname.startsWith('/baixar')) {
+    return;
+  }
 
   // Estratégia Network-First com fallback imediato para Cache nas rotas de leitura da API
   if (url.pathname.startsWith('/api/v1/')) {
