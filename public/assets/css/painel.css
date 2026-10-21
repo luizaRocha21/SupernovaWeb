@@ -1,0 +1,427 @@
+/* ==========================================================================
+   MANEJO CAATINGUEIRO (SUPERNOVAWEB) — PAINEL.CSS
+   Painel de Chuva Limpo, Diagnóstico Automático da Situação da Roça e Plantio
+   ========================================================================== */
+
+.hero-workspace {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  padding: clamp(20px, 3.5vw, 36px) clamp(16px, 4vw, 44px);
+  max-width: 1320px;
+  margin: 0 auto;
+  border-bottom: 1px solid var(--line);
+}
+
+.hero-pitch h1 {
+  margin: 0 0 14px;
+  font-family: var(--serif);
+  font-size: clamp(1.9rem, 3.4vw, 2.85rem);
+  line-height: 1.1;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.lead {
+  margin: 0 0 22px;
+  font-size: 1rem;
+  color: var(--muted);
+  max-width: 540px;
+}
+
+/* CARTÃO DE SITUAÇÃO AUTOMÁTICA E MANEJO RECOMENDADO */
+.clima-dinamico-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.clima-dinamico-top {
+  display: grid;
+  grid-template-columns: 145px 1fr;
+  gap: 18px;
+  align-items: center;
+}
+
+.clima-dinamico-card img {
+  width: 100%;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+}
+
+.clima-dinamico-info h3 {
+  margin: 6px 0 6px;
+  font-family: var(--serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.clima-dinamico-info p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.manejo-guide-box {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.manejo-guide-title {
+  margin: 0 0 8px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--green);
+}
+
+.manejo-passos-list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+
+/* CARD DE ACESSO / CADASTRO SUCINTO */
+.auth-panel {
+  margin-top: 16px;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.auth-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 10px;
+}
+
+.auth-tab {
+  padding: 7px 14px;
+  background: transparent;
+  border: none;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--muted);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.auth-tab.active {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.demo-credentials {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.chip-demo {
+  padding: 5px 10px;
+  background: var(--paper-strong);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chip-demo:hover {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+/* PAINEL DE CHUVA LIMPO E DIRETO */
+.rain-card {
+  background: var(--card-rain-bg);
+  color: var(--card-rain-text);
+  border-radius: 8px;
+  padding: clamp(20px, 3vw, 28px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.rain-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.rain-card-header h2 {
+  margin: 2px 0 0;
+  font-family: var(--serif);
+  font-size: clamp(1.45rem, 2.4vw, 1.85rem);
+  font-weight: 500;
+}
+
+.locality-picker {
+  display: grid;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: #b7d8c3;
+  min-width: 210px;
+}
+
+.locality-picker select {
+  height: 40px;
+  padding: 0 12px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.locality-picker select option {
+  color: #173d2c;
+  background: #fffefa;
+}
+
+.climate-quick-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #d7ebe0;
+}
+
+.climate-quick-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-weight: 600;
+}
+
+.rain-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 16px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.rain-metric {
+  display: grid;
+  gap: 4px;
+}
+
+.metric-label {
+  font-size: 0.78rem;
+  color: #b7d8c3;
+}
+
+.metric-value {
+  font-family: var(--serif);
+  font-size: clamp(1.4rem, 2.2vw, 1.9rem);
+  font-weight: 600;
+  line-height: 1.05;
+}
+
+.metric-sub {
+  font-size: 0.78rem;
+  color: #cde3d5;
+}
+
+.progress-track {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #67c587;
+}
+
+.rain-decision {
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 6px;
+  padding: 18px;
+  display: grid;
+  gap: 8px;
+}
+
+.rain-decision h3 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.rain-decision p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.rain-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: #b7d8c3;
+}
+
+/* BARRA INFERIOR DE REGISTRO DE CHUVA E ATALHOS */
+.home-actions-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  padding: 28px clamp(16px, 4vw, 44px);
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+/* MATRIZ DE CULTURAS E SUGESTÃO DE PLANTIO */
+.crop-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.crop-tab {
+  min-height: 40px;
+  padding: 8px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.crop-tab.active {
+  background: var(--green-deep);
+  color: #ffffff;
+  border-color: var(--green-deep);
+}
+
+.suggestion-layout {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.suggestion-copy,
+.threshold-box {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.suggestion-copy h3 {
+  margin: 12px 0 10px;
+  font-family: var(--serif);
+  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.suggestion-Rule-list {
+  margin: 18px 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 10px;
+}
+
+.rule-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  font-size: 0.9rem;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--line);
+}
+
+.decision-note {
+  padding: 12px 14px;
+  background: var(--ochre-soft);
+  border-left: 3px solid var(--ochre);
+  font-size: 0.86rem;
+  color: var(--ink);
+  border-radius: 0 4px 4px 0;
+}
+
+.threshold-box h4 {
+  margin: 4px 0 8px;
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  font-weight: 500;
+}
+
+.threshold-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 1024px) {
+  .hero-workspace,
+  .suggestion-layout,
+  .home-actions-bar {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .clima-dinamico-top {
+    grid-template-columns: 1fr;
+  }
+
+  .clima-dinamico-card img {
+    height: 140px;
+  }
+
+  .rain-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .locality-picker {
+    width: 100%;
+  }
+
+  .rule-row {
+    flex-direction: column;
+    gap: 4px;
+  }
+}

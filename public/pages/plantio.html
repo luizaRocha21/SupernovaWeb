@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="claro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sugestão Consultiva de Plantio · Manejo Caatingueiro</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/global.css">
+  <link rel="stylesheet" href="/assets/css/painel.css">
+  <script src="/assets/js/acessibilidade-voz.js" defer></script>
+  <script src="/assets/js/menu.js" defer></script>
+</head>
+<body>
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+  <aside class="app-sidebar" id="app-sidebar" aria-label="Menu Lateral e Configurações" aria-hidden="true">
+    <div>
+      <div class="sidebar-header">
+        <div class="brand">
+          <span class="brand-mark"><img src="/assets/images/logo-mark.svg" alt="" width="24" height="24"></span>
+          <span>Manejo Caatingueiro</span>
+        </div>
+        <button class="sidebar-close" id="sidebar-close" type="button" aria-label="Fechar menu">&times;</button>
+      </div>
+      <div class="sidebar-body">
+        <div>
+          <p class="sidebar-group-title">Navegação</p>
+          <div class="sidebar-nav-list">
+            <a class="sidebar-nav-btn" href="/">🌦️ Painel Inicial</a>
+            <a class="sidebar-nav-btn active" href="/pages/plantio.html">🌱 Critérios de Plantio</a>
+            <a class="sidebar-nav-btn" href="/pages/reservatorios.html">💧 Poço e Cisterna</a>
+            <a class="sidebar-nav-btn" href="/pages/comunidade.html">📢 Alertas e Mural</a>
+          </div>
+        </div>
+        <div>
+          <p class="sidebar-group-title">Configurações de Tela</p>
+          <div class="sidebar-settings-box">
+            <div class="theme-grid">
+              <button type="button" class="theme-option-btn active" data-set-theme="claro">☀️ Claro</button>
+              <button type="button" class="theme-option-btn" data-set-theme="escuro">🌙 Escuro</button>
+              <button type="button" class="theme-option-btn" data-set-theme="daltonico">👁️ Daltônico</button>
+              <button type="button" class="theme-option-btn" data-set-theme="baixa-visao">🔍 Contraste</button>
+            </div>
+            <div class="font-controls-row">
+              <button type="button" class="font-btn" data-font-action="dec">A-</button>
+              <span class="font-scale-display">100%</span>
+              <button type="button" class="font-btn" data-font-action="reset">Padrão</button>
+              <button type="button" class="font-btn" data-font-action="inc">A+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="app-sidebar">
+        <span aria-hidden="true">&#9776;</span>
+        <span>Menu</span>
+      </button>
+      <a class="brand" href="/">
+        <span class="brand-mark"><img src="/assets/images/logo-mark.svg" alt="" width="24" height="24"></span>
+        <span>Manejo<br>Caatingueiro</span>
+      </a>
+    </div>
+    <nav class="main-nav" aria-label="Navegação entre páginas">
+      <a class="nav-link" href="/">Painel Inicial</a>
+      <a class="nav-link active" href="/pages/plantio.html">Critérios de Plantio</a>
+      <a class="nav-link" href="/pages/reservatorios.html">Poço e Cisterna</a>
+      <a class="nav-link" href="/pages/comunidade.html">Alertas e Mural</a>
+    </nav>
+    <div class="topbar-right">
+      <button class="btn-sound-icon" id="btn-tts-icon" type="button" aria-label="Ouvir resumo em áudio desta página" title="Ouvir resumo da página">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+        </svg>
+      </button>
+      <button class="btn-sound-icon btn-chat-icon" id="btn-chat-ia-icon" type="button" aria-label="Abrir Assistente de IA" title="Assistente de IA">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+      </button>
+      <a class="button button-primary" href="/" style="min-height: 38px; padding: 6px 14px; font-size: 0.85rem;">Abrir Painel</a>
+    </div>
+  </header>
+
+  <main class="page-content">
+    <p class="eyebrow eyebrow-green">MATRIZ DE CULTURAS DO SEMIÁRIDO</p>
+    <h1 style="font-family: var(--serif); font-size: clamp(1.8rem, 3.2vw, 2.4rem); font-weight: 500; margin: 0 0 14px;">Critérios Consultivos de Plantio</h1>
+    <p class="muted" style="max-width: 720px; margin-bottom: 24px;">
+      Cada cultura possui um critério hidrometeorológico validado para o território de Irecê e Presidente Dutra, podendo ser ajustado livremente pelo agricultor no painel principal.
+    </p>
+
+    <div class="home-actions-bar" style="padding: 0;">
+      <article class="suggestion-copy">
+        <span class="status-label status-good">MILHO (Zea mays)</span>
+        <h3 style="font-family: var(--serif); font-size: 1.5rem; margin: 8px 0 10px;">Referência: 120 mm</h3>
+        <p class="muted">Critério: <strong>Acumulado em janela de 30 dias</strong>. Exige solo bem umedecido na fase de germinação e pendoamento.</p>
+      </article>
+
+      <article class="suggestion-copy">
+        <span class="status-label status-good">MAMONA (Ricinus communis)</span>
+        <h3 style="font-family: var(--serif); font-size: 1.5rem; margin: 8px 0 10px;">Referência: 90 mm</h3>
+        <p class="muted">Critério: <strong>Acumulado em janela de 30 dias</strong>. Cultura tradicional de Presidente Dutra e Irecê, com maior tolerância à estiagem.</p>
+      </article>
+
+      <article class="suggestion-copy">
+        <span class="status-label status-good">FEIJÃO-CAUPI (Vigna unguiculata)</span>
+        <h3 style="font-family: var(--serif); font-size: 1.5rem; margin: 8px 0 10px;">Referência: 110 mm</h3>
+        <p class="muted">Critério: <strong>Acumulado na estação chuvosa</strong>. Ciclo rápido ideal para consórcio e segurança alimentar da família.</p>
+      </article>
+    </div>
+  </main>
+</body>
+</html>

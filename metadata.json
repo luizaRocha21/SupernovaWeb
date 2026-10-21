@@ -1,0 +1,10 @@
+{
+  "name": "Manejo Caatingueiro",
+  "description": "Painel de chuva hiperlocal e sugestão consultiva de plantio para o semiárido da Bahia",
+  "permissions": [
+    "geolocation"
+  ],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

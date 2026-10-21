@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Plano de Deploy (Vercel + Render + Supabase) · Manejo Caatingueiro</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/global.css">
+  <link rel="stylesheet" href="/assets/css/comunidade.css">
+  <script src="/assets/js/menu.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">
+      <span class="brand-mark"><img src="/assets/images/logo-mark.svg" alt=""></span>
+      <span>Manejo<br>Caatingueiro</span>
+    </a>
+    <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav">
+      <span aria-hidden="true">&#9776;</span>
+      <span class="menu-toggle-label">Menu</span>
+    </button>
+    <nav class="main-nav" id="main-nav" aria-label="Navegação entre páginas">
+      <a class="nav-link" href="/">Painel Inicial</a>
+      <a class="nav-link" href="/pages/plantio.html">Sugestão de Plantio</a>
+      <a class="nav-link" href="/pages/reservatorios.html">Poço e Comunidade</a>
+      <a class="nav-link" href="/pages/comunidade.html">Alertas e Mural</a>
+      <a class="nav-link active" href="/pages/plano-deploy.html">Plano de Deploy</a>
+    </nav>
+    <div class="account-area">
+      <a class="button button-primary" href="/" style="min-height: 38px; padding: 6px 14px; font-size: 13px;">Voltar ao App</a>
+    </div>
+  </header>
+
+  <main class="page-content">
+    <div class="section-header">
+      <div>
+        <p class="eyebrow eyebrow-green">ARQUITETURA EM NUVEM · GITHUB + SUPABASE + RENDER + VERCEL</p>
+        <h2>Plano Passo a Passo de Implantação</h2>
+      </div>
+    </div>
+
+    <div class="deploy-steps">
+      <article class="deploy-step-card">
+        <div class="deploy-step-header">
+          <span class="deploy-step-number">1</span>
+          <h3>Passo 1: Banco de Dados no Supabase (PostgreSQL)</h3>
+        </div>
+        <p>O Supabase hospeda gratuitamente o banco relacional PostgreSQL que substitui o MySQL local.</p>
+        <ol style="line-height: 1.75; padding-left: 20px;">
+          <li>Entre em <strong>https://supabase.com</strong> com sua conta do <strong>GitHub</strong> e crie um novo projeto (região: <em>South America - São Paulo</em>).</li>
+          <li>Abra o menu <strong>SQL Editor → New Query</strong>, cole todo o conteúdo do arquivo <code>/supabase/schema.sql</code> e clique em <strong>Run</strong>.</li>
+          <li>Copie a string JDBC no botão <strong>Connect → Transaction Pooler (porta 6543)</strong>:</li>
+        </ol>
+        <div class="code-block">DB_URL=jdbc:postgresql://aws-0-sa-east-1.pooler.supabase.com:6543/postgres?sslmode=require&amp;prepareThreshold=0
+DB_USER=postgres.SEU_PROJECT_ID
+DB_PASSWORD=SUA_SENHA_DEFINIDA_NO_SUPABASE</div>
+      </article>
+
+      <article class="deploy-step-card">
+        <div class="deploy-step-header">
+          <span class="deploy-step-number">2</span>
+          <h3>Passo 2: Backend Java 21 Spring Boot no Render</h3>
+        </div>
+        <p>Toda a pasta <code>/backend-java</code> já está pronta com <code>Dockerfile</code>, driver PostgreSQL no <code>pom.xml</code>, CORS liberado e serviço meteorológico real <code>OpenMeteoFonteDadosClimaticosService.java</code>.</p>
+        <ol style="line-height: 1.75; padding-left: 20px;">
+          <li>Suba o conteúdo de <code>/backend-java</code> no seu repositório de backend no GitHub.</li>
+          <li>No <strong>https://render.com</strong>, clique em <strong>New + → Web Service</strong> e conecte esse repositório.</li>
+          <li>O Render identificará automaticamente o <code>Dockerfile</code>. Configure as variáveis de ambiente:
+            <code>DB_URL</code>, <code>DB_USER</code>, <code>DB_PASSWORD</code>, <code>JWT_SECRET</code>, <code>CLIMA_FONTE=open-meteo</code> e <code>ALLOWED_ORIGINS=https://supernovaweb.vercel.app</code>.</li>
+        </ol>
+      </article>
+
+      <article class="deploy-step-card">
+        <div class="deploy-step-header">
+          <span class="deploy-step-number">3</span>
+          <h3>Passo 3: Frontend (supernovaweb) na Vercel</h3>
+        </div>
+        <p>A pasta <code>/supernovaweb</code> segue a mesma organização limpa do <strong>UniBus Web</strong> (<code>index.html</code>, <code>favicon.svg</code>, <code>assets/css/</code>, <code>assets/js/</code>, <code>assets/images/</code> e <code>pages/</code>).</p>
+        <ol style="line-height: 1.75; padding-left: 20px;">
+          <li>Suba o conteúdo da pasta <code>/supernovaweb</code> para o repositório <strong><code>supernovaweb</code></strong> no GitHub.</li>
+          <li>No arquivo <code>vercel.json</code>, coloque a URL gerada pelo seu serviço no Render.</li>
+          <li>Na <strong>https://vercel.com</strong>, importe o repositório <code>supernovaweb</code> e clique em <strong>Deploy</strong>.</li>
+        </ol>
+      </article>
+    </div>
+  </main>
+
+  <footer class="page-footer">
+    <span>Manejo Caatingueiro · Grupo Garimpeiros · IFBA Campus Irecê</span>
+    <a href="/">Voltar para o Painel Principal &#8594;</a>
+  </footer>
+</body>
+</html>

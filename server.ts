@@ -16,14 +16,19 @@ const PORT = process.env.PORT || 3000;
 const HOST = '0.0.0.0';
 const JWT_SECRET = process.env.JWT_SECRET || 'manejo-caatingueiro-jwt-secret-key-2026-min-32-chars';
 
-app.use(cors());
+app.use(cors({
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
+}));
+app.options('*', cors());
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
-// Skills de Segurança (Headers HTTP defensivos + Permissão de Geolocalização e Áudio)
+// Skills de Segurança (Headers HTTP defensivos + Permissão de Geolocalização e Áudio sem travar iframes)
 app.use((_req: Request, res: Response, next: NextFunction) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   // Permite geolocation=(self) para que o agricultor possa usar sua localização GPS atual
@@ -31,13 +36,13 @@ app.use((_req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-// Skills de Segurança: Proteção contra força bruta nos endpoints de autenticação
+// Skills de Segurança: Proteção equilibrada nos endpoints de autenticação
 const loginRateLimitMap = new Map<string, { count: number; resetTime: number }>();
 const loginRateLimiter = (req: Request, res: Response, next: NextFunction) => {
   const ip = req.ip || req.socket.remoteAddress || 'unknown';
   const now = Date.now();
   const windowMs = 60 * 1000; // 1 minuto
-  const maxAttempts = 20;
+  const maxAttempts = 120; // Limite amplo para suportar múltiplos testes no ambiente compartilhado
 
   const record = loginRateLimitMap.get(ip);
   if (!record || now > record.resetTime) {
