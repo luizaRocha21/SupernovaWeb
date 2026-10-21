@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: manejo-caatingueiro-api
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        value: https://supernovaweb.vercel.app,http://localhost:3000
