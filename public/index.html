@@ -52,10 +52,11 @@
           <span>Manejo Caatingueiro</span>
         </a>
         <div class="ms-auto d-flex align-items-center gap-2">
-          <a href="/pages/login.html" class="btn btn-sm fw-bold"
-            style="background-color: #fffaf0; color: #542817; border: 1px solid #d2c2a9; border-radius: 7px;">Entrar</a>
-          <a href="/pages/login.html?modo=cadastro" class="btn btn-sm fw-bold"
-            style="background-color: #5d603d; color: #fffaf0; border: 1px solid #5d603d; border-radius: 7px;">Cadastrar minha roça</a>
+          <button type="button" class="btn btn-sm btn-speak" data-tts-summary="Manejo Caatingueiro: acompanhe a chuva que cai na sua terra, saiba a hora certa de semear mandioca, milho, feijão e palma, veja o nível dos açudes e converse com quem vive do campo no Semiárido Baiano."
+            onclick="if(window.manejoVoz && typeof window.manejoVoz.lerResumoPagina === 'function'){ window.manejoVoz.lerResumoPagina(); } else if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(this.getAttribute('data-tts-summary')); u.lang = 'pt-BR'; window.speechSynthesis.speak(u); }"
+            aria-label="Ouvir apresentação da página">
+            <span aria-hidden="true">🔊</span> <span>Ouvir página</span>
+          </button>
         </div>
       </div>
     </nav>
@@ -65,111 +66,85 @@
     <div class="container">
       <!-- VITRINE COMERCIAL EXCLUSIVA PARA VISITANTES -->
       <section id="guest-home-section" aria-label="Apresentação do Manejo Caatingueiro">
-        <!-- Hero Editorial Sertanejo (Fiel às Fotos de 21/10, sem texto branco nem botão amarelo) -->
-        <div class="p-4 p-md-5 mb-4 shadow-sm"
+        <!-- Hero Superior sem botões duplicados e com Logo Oficial Grande -->
+        <div class="p-4 p-md-5 mb-5 shadow-sm"
           style="background-color: #f4eddb; border: 1px solid #d2c2a9; border-radius: 12px;">
-          <div class="row align-items-center g-4">
+          <div class="row g-4 align-items-center">
             <div class="col-12 col-lg-7">
-              <div class="d-inline-flex align-items-center gap-2 mb-3">
-                <img src="/assets/images/logo.png" alt="Selo Manejo Caatingueiro" width="44" height="44"
-                  class="rounded-circle p-1 shadow-sm" style="background-color: #fffaf0; border: 1px solid #d2c2a9;" />
-                <span class="eyebrow mb-0"
-                  style="color: #4e5944 !important; font-family: 'DM Sans', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase;">
-                  TERRA, TEMPO E CUIDADO · SEMIÁRIDO BAIANO
-                </span>
-              </div>
-
-              <h1 style="font-family: 'Newsreader', Georgia, serif; font-weight: 400; color: #542817; font-size: clamp(2.4rem, 4.5vw, 3.6rem); line-height: 1.06; letter-spacing: -0.02em; margin-bottom: 1.1rem;">
+              <p class="eyebrow mb-2">TERRA, TEMPO E CUIDADO · SEMIÁRIDO BAIANO</p>
+              <h1 class="mb-3" style="font-family: 'Newsreader', Georgia, serif; font-weight: 400; color: #542817; font-size: clamp(2.5rem, 4.8vw, 3.8rem); line-height: 1.06;">
                 O seu lugar.<br>
                 <em style="font-style: italic; font-weight: 400; color: #bd7627;">O tempo de plantar.</em>
               </h1>
-
-              <p class="mb-4"
-                style="font-family: 'DM Sans', sans-serif; color: #6e6252 !important; font-size: 1.05rem; line-height: 1.6; font-weight: 400; max-width: 62ch;">
-                Acompanhe a chuva que cai na sua terra, saiba a hora certa de semear mandioca, milho, feijão e palma,
-                veja o nível dos açudes e converse com quem vive do campo no Semiárido Baiano.
+              <p class="mb-0" style="font-family: 'DM Sans', sans-serif; color: #6e6252; font-size: 1.08rem; line-height: 1.65; max-width: 58ch;">
+                Acompanhe a chuva que cai na sua terra, saiba a hora certa de semear mandioca, milho, feijão e palma, veja o nível dos açudes e converse com quem vive do campo no Semiárido Baiano.
               </p>
-
-              <div class="d-flex flex-column flex-sm-row flex-wrap gap-3">
-                <a href="/pages/login.html" class="btn col-12 col-sm-auto"
-                  style="background-color: #5d603d !important; color: #fffaf0 !important; border: 1px solid #5d603d !important; border-radius: 7px; padding: 0.75rem 1.5rem; font-family: 'DM Sans', sans-serif; font-weight: 600;">
-                  <span>Entrar na minha conta</span> <span aria-hidden="true">&rarr;</span>
-                </a>
-                <a href="/pages/login.html?modo=cadastro" class="btn col-12 col-sm-auto"
-                  style="background-color: #fffaf0 !important; color: #542817 !important; border: 1px solid #d2c2a9 !important; border-radius: 7px; padding: 0.75rem 1.5rem; font-family: 'DM Sans', sans-serif; font-weight: 600;">
-                  Criar meu cadastro
-                </a>
-              </div>
             </div>
 
-            <div class="col-12 col-lg-5">
-              <div class="rounded-3 p-3 shadow-sm"
-                style="background-color: #fffaf0; border: 1px solid #d2c2a9;">
-                <img src="/assets/images/roca-favoravel.svg"
-                  onerror="this.onerror=null;this.src='/assets/images/clima/roca-favoravel.svg';"
-                  alt="Ilustração da roça sertaneja com chuva favorável e plantio verdejante"
-                  class="img-fluid rounded-2 w-100" style="max-height: 240px; object-fit: cover;" />
+            <div class="col-12 col-lg-5 d-flex justify-content-center">
+              <div class="hero-brand-showcase">
+                <img
+                  src="/assets/images/logo.png"
+                  alt="Manejo Caatingueiro — Calango, Sol e Mandacaru"
+                  class="hero-logo-large"
+                />
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 3 Cards Ilustrados de Cenários da Roça (Alinhamento Vertical do Plano 6 + Fontes e Cores Originais) -->
-        <div class="row g-3 mb-5 align-items-stretch">
-          <div class="col-12 col-md-4 d-flex">
-            <div class="card h-100 w-100 shadow-sm d-flex flex-column align-items-start p-3"
-              style="background-color: #fffaf0; border: 1px solid #d2c2a9; border-radius: 9px;">
-              <img src="/assets/images/roca-favoravel.svg"
-                onerror="this.onerror=null;this.src='/assets/images/clima/roca-favoravel.svg';"
-                alt="Ilustração de roça em condição favorável de chuva"
-                class="w-100 rounded-2 mb-3" style="height: 110px; object-fit: cover; border: 1px solid #d2c2a9;" />
-              <h3 class="h5 mb-1 w-100"
-                style="font-family: 'Newsreader', Georgia, serif; color: #542817; font-weight: 500;">
-                Condição Favorável
-              </h3>
-              <p class="mb-0 small w-100"
-                style="font-family: 'DM Sans', sans-serif; color: #6e6252; line-height: 1.55;">
+        <!-- Primeira Linha de 3 Cards com Medalhões Circulares (Condição Favorável, Atenção às Chuvas, Reserva da Cisterna) -->
+        <div class="row g-4 mb-5">
+          <div class="col-12 col-md-4">
+            <article class="medallion-card">
+              <div class="medallion-img-wrap">
+                <img
+                  src="/assets/images/roca-favoravel.svg"
+                  alt="Medalhão ilustrado: Condição Favorável com chuva mansa, milho, feijão e mandacaru"
+                  class="medallion-svg"
+                />
+              </div>
+              <h3>Condição Favorável</h3>
+              <p>
                 Solo com umidade adequada e janela segura para semear milho, feijão-caupi e mandioca na sua roça.
               </p>
-            </div>
+            </article>
           </div>
-          <div class="col-12 col-md-4 d-flex">
-            <div class="card h-100 w-100 shadow-sm d-flex flex-column align-items-start p-3"
-              style="background-color: #fffaf0; border: 1px solid #d2c2a9; border-radius: 9px;">
-              <img src="/assets/images/roca-atencao.svg"
-                onerror="this.onerror=null;this.src='/assets/images/clima/roca-atencao.svg';"
-                alt="Ilustração de atenção às chuvas e veranico"
-                class="w-100 rounded-2 mb-3" style="height: 110px; object-fit: cover; border: 1px solid #d2c2a9;" />
-              <h3 class="h5 mb-1 w-100"
-                style="font-family: 'Newsreader', Georgia, serif; color: #542817; font-weight: 500;">
-                Atenção às Chuvas
-              </h3>
-              <p class="mb-0 small w-100"
-                style="font-family: 'DM Sans', sans-serif; color: #6e6252; line-height: 1.55;">
+
+          <div class="col-12 col-md-4">
+            <article class="medallion-card">
+              <div class="medallion-img-wrap">
+                <img
+                  src="/assets/images/roca-atencao.svg"
+                  alt="Medalhão ilustrado: Atenção às Chuvas com sol forte e palhada protegendo o solo"
+                  class="medallion-svg"
+                />
+              </div>
+              <h3>Atenção às Chuvas</h3>
+              <p>
                 Orientações práticas de cobertura morta com palhada e retenção de água na terra durante veranicos.
               </p>
-            </div>
+            </article>
           </div>
-          <div class="col-12 col-md-4 d-flex">
-            <div class="card h-100 w-100 shadow-sm d-flex flex-column align-items-start p-3"
-              style="background-color: #fffaf0; border: 1px solid #d2c2a9; border-radius: 9px;">
-              <img src="/assets/images/roca-estiagem.svg"
-                onerror="this.onerror=null;this.src='/assets/images/clima/roca-estiagem.svg';"
-                alt="Ilustração de proteção da reserva da cisterna na estiagem"
-                class="w-100 rounded-2 mb-3" style="height: 110px; object-fit: cover; border: 1px solid #d2c2a9;" />
-              <h3 class="h5 mb-1 w-100"
-                style="font-family: 'Newsreader', Georgia, serif; color: #542817; font-weight: 500;">
-                Reserva da Cisterna
-              </h3>
-              <p class="mb-0 small w-100"
-                style="font-family: 'DM Sans', sans-serif; color: #6e6252; line-height: 1.55;">
+
+          <div class="col-12 col-md-4">
+            <article class="medallion-card">
+              <div class="medallion-img-wrap">
+                <img
+                  src="/assets/images/roca-estiagem.svg"
+                  alt="Medalhão ilustrado: Reserva da Cisterna no pôr do sol sertanejo"
+                  class="medallion-svg"
+                />
+              </div>
+              <h3>Reserva da Cisterna</h3>
+              <p>
                 Planejamento econômico da água armazenada e priorização de culturas resistentes na estiagem.
               </p>
-            </div>
+            </article>
           </div>
         </div>
 
-        <!-- 4 Cards Comerciais de Benefícios Diretos -->
+        <!-- Segunda Linha de 3 Cards com Medalhões Circulares (Chuva na Sua Terra, Calendário da Roça, Água dos Açudes) -->
         <div class="mb-4">
           <span class="eyebrow" style="color: #4e5944 !important;">PLANEJAMENTO RURAL NO SEMIÁRIDO BAIANO</span>
           <h2 class="h3 mb-1"
@@ -181,66 +156,57 @@
           </p>
         </div>
 
-        <div class="row g-4 mb-5 align-items-stretch">
-          <div class="col-12 col-md-6 col-xl-3 d-flex">
-            <div class="card h-100 w-100 shadow-sm"
-              style="background-color: #fffaf0; border: 1px solid #d2c2a9; border-radius: 9px;">
-              <div class="card-body p-4 d-flex flex-column">
-                <div class="fs-2 mb-2" aria-hidden="true">🌧️</div>
-                <h3 class="h5" style="font-family: 'Newsreader', Georgia, serif; color: #542817; font-weight: 500;">
-                  Chuva na Sua Terra
-                </h3>
-                <p class="small mb-0 flex-grow-1" style="font-family: 'DM Sans', sans-serif; color: #6e6252;">
-                  Veja o acumulado dos últimos 30 dias direto nas coordenadas da sua roça e anote os milímetros do seu pluviômetro caseiro.
-                </p>
+        <div class="row g-4 mb-5">
+          <div class="col-12 col-md-4">
+            <article class="medallion-card">
+              <div class="medallion-img-wrap">
+                <img
+                  src="/assets/images/arte-chuva-terra.svg"
+                  alt="Medalhão ilustrado: Chuva na Sua Terra com casinha sertaneja e pluviômetro no mourão"
+                  class="medallion-svg"
+                />
               </div>
-            </div>
+              <h3>Chuva na Sua Terra</h3>
+              <p>
+                Veja o acumulado dos últimos 30 dias direto nas coordenadas da sua roça e anote os milímetros do seu pluviômetro caseiro.
+              </p>
+            </article>
           </div>
-          <div class="col-12 col-md-6 col-xl-3 d-flex">
-            <div class="card h-100 w-100 shadow-sm"
-              style="background-color: #fffaf0; border: 1px solid #d2c2a9; border-radius: 9px;">
-              <div class="card-body p-4 d-flex flex-column">
-                <div class="fs-2 mb-2" aria-hidden="true">🌱</div>
-                <h3 class="h5" style="font-family: 'Newsreader', Georgia, serif; color: #542817; font-weight: 500;">
-                  Calendário da Roça
-                </h3>
-                <p class="small mb-0 flex-grow-1" style="font-family: 'DM Sans', sans-serif; color: #6e6252;">
-                  Saiba o ciclo das culturas da Caatinga, espaçamento ideal, adubação orgânica e como proteger o solo com cobertura morta.
-                </p>
+
+          <div class="col-12 col-md-4">
+            <article class="medallion-card">
+              <div class="medallion-img-wrap">
+                <img
+                  src="/assets/images/arte-calendario-roca.svg"
+                  alt="Medalhão ilustrado: Calendário da Roça com agricultor de chapéu de palha cuidando da lavoura"
+                  class="medallion-svg"
+                />
               </div>
-            </div>
+              <h3>Calendário da Roça</h3>
+              <p>
+                Saiba o ciclo das culturas da Caatinga, espaçamento ideal, adubação orgânica e como proteger o solo com cobertura morta.
+              </p>
+            </article>
           </div>
-          <div class="col-12 col-md-6 col-xl-3 d-flex">
-            <div class="card h-100 w-100 shadow-sm"
-              style="background-color: #fffaf0; border: 1px solid #d2c2a9; border-radius: 9px;">
-              <div class="card-body p-4 d-flex flex-column">
-                <div class="fs-2 mb-2" aria-hidden="true">💧</div>
-                <h3 class="h5" style="font-family: 'Newsreader', Georgia, serif; color: #542817; font-weight: 500;">
-                  Água dos Açudes
-                </h3>
-                <p class="small mb-0 flex-grow-1" style="font-family: 'DM Sans', sans-serif; color: #6e6252;">
-                  Consulte o volume útil dos principais reservatórios e cisternas da sua região para planejar o consumo familiar e da criação.
-                </p>
+
+          <div class="col-12 col-md-4">
+            <article class="medallion-card">
+              <div class="medallion-img-wrap">
+                <img
+                  src="/assets/images/arte-agua-acudes.svg"
+                  alt="Medalhão ilustrado: Água dos Açudes e cisterna no Semiárido"
+                  class="medallion-svg"
+                />
               </div>
-            </div>
-          </div>
-          <div class="col-12 col-md-6 col-xl-3 d-flex">
-            <div class="card h-100 w-100 shadow-sm"
-              style="background-color: #fffaf0; border: 1px solid #d2c2a9; border-radius: 9px;">
-              <div class="card-body p-4 d-flex flex-column">
-                <div class="fs-2 mb-2" aria-hidden="true">🤝</div>
-                <h3 class="h5" style="font-family: 'Newsreader', Georgia, serif; color: #542817; font-weight: 500;">
-                  Roda de Prosa e Consultor
-                </h3>
-                <p class="small mb-0 flex-grow-1" style="font-family: 'DM Sans', sans-serif; color: #6e6252;">
-                  Troque experiências sobre sementes crioulas com vizinhos do Semiárido Baiano e tire dúvidas práticas de manejo a qualquer hora.
-                </p>
-              </div>
-            </div>
+              <h3>Água dos Açudes</h3>
+              <p>
+                Consulte o volume útil dos principais reservatórios e cisternas da sua região para planejar o consumo familiar e da criação.
+              </p>
+            </article>
           </div>
         </div>
 
-        <!-- Faixa final de chamada para ação -->
+        <!-- Faixa final de chamada para ação (Botões de Entrar e Cadastrar mantidos APENAS aqui embaixo) -->
         <div class="card shadow-sm p-4 p-md-5 text-center"
           style="background-color: #f4eddb; border: 1px solid #d2c2a9; border-radius: 12px;">
           <div class="mx-auto" style="max-width: 640px;">

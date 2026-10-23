@@ -1,14 +1,100 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 160" fill="none">
-  <rect width="360" height="160" rx="8" fill="#3B3A28"/>
-  <circle cx="295" cy="42" r="22" fill="#E9AD56"/>
-  <!-- Nuvem esparsa -->
-  <path d="M82 48C82 40.3 88.3 34 96 34C102.2 34 107.4 38 109.2 43.5C114.1 43.9 118 48 118 53C118 58.5 113.5 63 108 63H80C75 63 71 59 71 54C71 49.4 74.5 45.6 79 45.1" fill="#F4F5ED" fill-opacity="0.22"/>
-  <line x1="88" y1="70" x2="86" y2="79" stroke="#E9AD56" stroke-width="2" stroke-linecap="round"/>
-  <line x1="102" y1="70" x2="100" y2="79" stroke="#E9AD56" stroke-width="2" stroke-linecap="round"/>
-  <!-- Solo em transição -->
-  <path d="M0 126C100 118 210 134 360 122V160H0V126Z" fill="#6D5B33"/>
-  <path d="M0 140C130 132 240 146 360 136V160H0V140Z" fill="#4A3E22"/>
-  <!-- Mandacaru / Caatinga -->
-  <path d="M165 126V82M165 104H153V90M165 98H177V86" stroke="#CBD76C" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="18" y="149" fill="#FAF1D9" font-family="sans-serif" font-size="11" font-weight="600">Chuva moderada · Acompanhar evolução da umidade</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-label="Atenção às Chuvas — Sol forte, palhada protegendo o solo e mandacarus">
+  <defs>
+    <clipPath id="clip-medallion-atencao">
+      <circle cx="120" cy="120" r="110" />
+    </clipPath>
+  </defs>
+
+  <!-- Fundo base do medalhão -->
+  <circle cx="120" cy="120" r="112" fill="#fbf6e9" stroke="#542817" stroke-width="5" />
+
+  <g clip-path="url(#clip-medallion-atencao)" stroke="#542817" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Céu creme -->
+    <rect x="0" y="0" width="240" height="240" fill="#fbf6e9" stroke="none" />
+
+    <!-- Halo solar pontilhado -->
+    <circle cx="168" cy="70" r="42" fill="#f7ecda" stroke="#bd7627" stroke-width="1.5" stroke-dasharray="4 4" />
+
+    <!-- Sol ocre grande à direita -->
+    <g>
+      <circle cx="168" cy="70" r="29" fill="#bd7627" />
+      <line x1="168" y1="28" x2="168" y2="16" />
+      <line x1="198" y1="40" x2="208" y2="30" />
+      <line x1="210" y1="70" x2="222" y2="70" />
+      <line x1="198" y1="100" x2="208" y2="110" />
+      <line x1="138" y1="40" x2="128" y2="30" />
+      <line x1="138" y1="100" x2="130" y2="108" />
+      <line x1="152" y1="31" x2="148" y2="21" stroke-width="1.8" />
+      <line x1="184" y1="31" x2="188" y2="21" stroke-width="1.8" />
+    </g>
+
+    <!-- Nuvem marrom-escura à esquerda com poucas gotas esparsas -->
+    <g>
+      <path d="M36 78 C26 78, 20 70, 24 61 C27 53, 36 50, 44 53 C50 42, 65 41, 74 49 C83 46, 94 52, 95 62 C102 64, 104 73, 97 78 Z" fill="#542817" />
+      <!-- Linhas internas claras para estilo xilogravura -->
+      <path d="M38 68 Q58 63, 82 68" fill="none" stroke="#fbf6e9" stroke-width="1.6" />
+      <path d="M46 58 Q62 54, 76 59" fill="none" stroke="#fbf6e9" stroke-width="1.4" />
+      <!-- Poucas gotas esparsas -->
+      <line x1="46" y1="86" x2="42" y2="96" stroke="#7ba39b" stroke-width="2.5" />
+      <line x1="68" y1="88" x2="64" y2="98" stroke="#7ba39b" stroke-width="2.5" />
+      <line x1="86" y1="86" x2="82" y2="95" stroke="#7ba39b" stroke-width="2.5" />
+      <line x1="56" y1="104" x2="53" y2="112" stroke="#542817" stroke-width="2" />
+    </g>
+
+    <!-- Galhos secos da caatinga ao fundo esquerdo -->
+    <g fill="none" stroke="#542817" stroke-width="2.2">
+      <path d="M44 156 L44 128 L32 114 M44 134 L56 120 M36 120 L28 118 M52 125 L60 122" />
+      <path d="M124 152 L124 132 L115 121 M124 136 L133 125" />
+    </g>
+
+    <!-- Colina de solo arenoso/bege ao fundo -->
+    <path d="M0 156 Q68 138, 136 154 T240 148 L240 240 L0 240 Z" fill="#d2b48c" />
+
+    <!-- Colina de solo terracota intermediária -->
+    <path d="M0 174 Q88 158, 158 174 T240 170 L240 240 L0 240 Z" fill="#a64f2e" />
+
+    <!-- Cobertura morta de palhada dourada protegendo o solo -->
+    <path d="M0 184 Q60 172, 120 182 T240 178 L240 202 Q155 196, 85 202 T0 198 Z" fill="#d8a452" />
+    <!-- Feixes e tramas de palha seca sobre a terra -->
+    <g stroke="#542817" stroke-width="1.8">
+      <line x1="18" y1="186" x2="42" y2="182" />
+      <line x1="30" y1="191" x2="56" y2="187" />
+      <line x1="52" y1="184" x2="78" y2="188" />
+      <line x1="74" y1="192" x2="102" y2="186" />
+      <line x1="96" y1="185" x2="125" y2="190" />
+      <line x1="118" y1="194" x2="146" y2="188" />
+      <line x1="142" y1="186" x2="168" y2="191" />
+      <line x1="164" y1="193" x2="192" y2="187" />
+      <line x1="188" y1="186" x2="215" y2="191" />
+    </g>
+
+    <!-- Base profunda do solo úmido preservado sob a palhada -->
+    <path d="M0 198 Q85 192, 155 198 T240 195 L240 240 L0 240 Z" fill="#542817" />
+    <!-- Sinais de umidade retida no subsolo -->
+    <g stroke="#7ba39b" stroke-width="2" opacity="0.9">
+      <path d="M55 212 Q70 208, 85 212" fill="none" />
+      <path d="M108 216 Q125 212, 142 216" fill="none" />
+      <path d="M162 211 Q178 207, 194 211" fill="none" />
+    </g>
+
+    <!-- Cacto Mandacaru 1 (esquerda/centro) -->
+    <g>
+      <path d="M74 182 L74 114 C74 107, 86 107, 86 114 L86 182 Z" fill="#5d603d" />
+      <path d="M74 148 L62 148 C57 148, 54 144, 54 138 L54 122 C54 117, 63 117, 63 122 L63 138 L74 138 Z" fill="#5d603d" />
+      <path d="M86 154 L97 154 C102 154, 105 150, 105 144 L105 128 C105 123, 96 123, 96 128 L96 144 L86 144 Z" fill="#5d603d" />
+      <line x1="80" y1="112" x2="80" y2="180" stroke-width="1.5" />
+    </g>
+
+    <!-- Cacto Mandacaru 2 (direita) -->
+    <g>
+      <path d="M174 184 L174 122 C174 116, 185 116, 185 122 L185 184 Z" fill="#5d603d" />
+      <path d="M174 154 L164 154 C159 154, 157 150, 157 145 L157 132 C157 127, 165 127, 165 132 L165 145 L174 145 Z" fill="#5d603d" />
+      <path d="M185 160 L195 160 C200 160, 202 156, 202 151 L202 136 C202 131, 194 131, 194 136 L194 151 L185 151 Z" fill="#5d603d" />
+      <line x1="179.5" y1="120" x2="179.5" y2="182" stroke-width="1.5" />
+    </g>
+  </g>
+
+  <!-- Aro duplo editorial sertanejo -->
+  <circle cx="120" cy="120" r="112" fill="none" stroke="#542817" stroke-width="5" />
+  <circle cx="120" cy="120" r="106" fill="none" stroke="#542817" stroke-width="1.2" stroke-dasharray="6 4" opacity="0.65" />
 </svg>

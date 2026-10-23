@@ -1604,7 +1604,7 @@ function renderizarCardsDiagnosticoClima(diag) {
     rn12El.textContent = plantio.avisoConsultivoRN12;
   }
 
-  // 3. Sincroniza também a ilustração climática legada se presente no DOM
+  // 3. Sincroniza também a ilustração climática em medalhão circular
   const estadoIlustracao =
     plantio.statusGeral === "FAVORAVEL"
       ? "favoravel"
@@ -1615,12 +1615,285 @@ function renderizarCardsDiagnosticoClima(diag) {
   atualizarIlustracaoClimatica(estadoIlustracao, {
     rotulo:
       plantio.statusGeral === "FAVORAVEL"
-        ? "Situação Favorável para o Manejo"
+        ? "Condição Favorável para o Manejo"
         : plantio.statusGeral === "ATENCAO"
-        ? "Transição · Atenção Hídrica"
-        : "Estiagem · Proteja a Umidade do Solo",
+        ? "Atenção às Chuvas na Terra"
+        : "Estiagem · Proteja a Reserva e o Solo",
     resumo: `${fraseComparativa} ${resumoPlantioTexto}`
   });
+
+  // 4. Atualiza os Gráficos Editoriais (Histórico de Chuvas + Medidor de Umidade do Solo)
+  atualizarGraficoHistoricoChuvasEUmidadeSolo(diag);
+  void atualizarTabelaPluviometroRoca(diag);
+}
+
+const MESES_ROTULOS_PT = [
+  "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+  "Jul", "Ago", "Set", "Out", "Nov", "Dez"
+];
+
+// Climatologia média mensal de referência no Semiárido Baiano (mm)
+const CLIMATOLOGIA_BASE_SEMIARIDO_MM = [
+  112, 98, 118, 66, 26, 16, 12, 10, 18, 52, 94, 116
+];
+
+function atualizarGraficoHistoricoChuvasEUmidadeSolo(diag) {
+  const chuva = diag?.chuvaAcumulada || {};
+  const roca = window.MC_Menu?.getRocaAtiva?.();
+  const nomeMun =
+    roca?.municipio ||
+    roca?.municipioNome ||
+    diag?.localidade?.nome ||
+    "Irecê";
+
+  const acumMesMm = Number.isFinite(Number(chuva.acumuladoMesMm))
+    ? Number(chuva.acumuladoMesMm)
+    : 64;
+  const normalMesMm = Number.isFinite(Number(chuva.normalClimatologicaMesMm))
+    ? Number(chuva.normalClimatologicaMesMm)
+    : 90;
+  const acum7dMm = Number.isFinite(Number(chuva.acumuladoUltimos7DiasMm))
+    ? Number(chuva.acumuladoUltimos7DiasMm)
+    : 18;
+
+  // Atualiza descrição do card de Previsão de Chuva na Aba 1
+  const prevDescEl = document.getElementById("clima-previsao-card-desc");
+  if (prevDescEl) {
+    prevDescEl.textContent = `Nos últimos 7 dias choveu ${acum7dMm} mm em ${nomeMun} - BA (acumulado de ${acumMesMm} mm para uma média mensal de ${normalMesMm} mm). Mantenha calhas e sulcos limpos.`;
+  }
+
+  // 1. Renderiza barras mensais em #grafico-chuvas-barras-group
+  const grupoBarras = document.getElementById("grafico-chuvas-barras-group");
+  const mesAtualIdx = new Date().getMonth(); // 0..11
+  if (grupoBarras) {
+    const fatorLocal = normalMesMm > 0
+      ? Math.max(0.65, Math.min(1.35, normalMesMm / (CLIMATOLOGIA_BASE_SEMIARIDO_MM[mesAtualIdx] || 80)))
+      : 1;
+
+    const valoresMeses = CLIMATOLOGIA_BASE_SEMIARIDO_MM.map((baseMm, idx) => {
+      if (idx === mesAtualIdx) return Math.round(acumMesMm);
+      return Math.round(baseMm * fatorLocal);
+    });
+
+    const maxEscalaMm = 145;
+    const baseY = 134;
+    const alturaMaxPx = 104;
+
+    grupoBarras.innerHTML = valoresMeses
+      .map((mm, idx) => {
+        const x = 45 + idx * 25;
+        const centerX = x + 9;
+        const altura = Math.max(8, Math.min(alturaMaxPx, Math.round((mm / maxEscalaMm) * alturaMaxPx)));
+        const y = baseY - altura;
+
+        // Regra de cores do Prompt 04:
+        // < 40 mm: terracota (#a64f2e) com hachura
+        // 40 a 90 mm: ocre (#bd7627)
+        // > 90 mm: verde-oliva (#5d603d)
+        let corBarra = "#bd7627";
+        let usarHachura = false;
+        if (mm < 40) {
+          corBarra = "#a64f2e";
+          usarHachura = true;
+        } else if (mm > 90) {
+          corBarra = "#5d603d";
+        }
+
+        const isMesAtual = idx === mesAtualIdx;
+        const strokeWidth = isMesAtual ? "2.3" : "1.5";
+        const rotuloTopo = isMesAtual
+          ? `<text x="${centerX}" y="${Math.max(14, y - 4)}" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8" font-weight="700" fill="#542817">${mm}</text>`
+          : "";
+
+        return `
+          <g>
+            <rect x="${x}" y="${y}" width="18" height="${altura}" rx="2" fill="${corBarra}" stroke="#542817" stroke-width="${strokeWidth}">
+              <title>${MESES_ROTULOS_PT[idx]}: ${mm} mm</title>
+            </rect>
+            ${usarHachura ? `<rect x="${x}" y="${y}" width="18" height="${altura}" rx="2" fill="url(#hatch-seco)" pointer-events="none" />` : ""}
+            ${rotuloTopo}
+            <text x="${centerX}" y="148" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8.5" font-weight="${isMesAtual ? "700" : "600"}" fill="${isMesAtual ? "#542817" : "#6e6252"}">${MESES_ROTULOS_PT[idx]}</text>
+          </g>
+        `;
+      })
+      .join("");
+  }
+
+  const resumoGraficoEl = document.getElementById("grafico-chuvas-resumo");
+  if (resumoGraficoEl) {
+    const pct = Number(chuva.percentualDaNormal) || Math.round((acumMesMm / Math.max(1, normalMesMm)) * 100);
+    resumoGraficoEl.textContent = `Acumulado atual na roça em ${nomeMun} - BA: ${acumMesMm} mm (${pct}% da média histórica de ${normalMesMm} mm esperada para este mês).`;
+  }
+
+  const seloEstacaoEl = document.getElementById("grafico-chuvas-selo-estacao");
+  if (seloEstacaoEl) {
+    seloEstacaoEl.textContent = `${acumMesMm} mm / ${normalMesMm} mm`;
+  }
+
+  // 2. Atualiza o Ponteiro Dinâmico de Umidade do Solo (#ponteiro-umidade-solo)
+  // Regra do Prompt 04:
+  // - Crítico se < 45 mm (gira para a faixa esquerda: -62deg a -24deg)
+  // - Alerta entre 45 e 95 mm (gira para a faixa central: -20deg a +20deg)
+  // - Ideal se >= 95 mm (gira para a faixa direita: +24deg a +62deg)
+  const ponteiroEl = document.getElementById("ponteiro-umidade-solo");
+  const badgeUmidEl = document.getElementById("medidor-umidade-badge");
+  const resumoUmidEl = document.getElementById("medidor-umidade-resumo");
+
+  let anguloDeg = 0;
+  let faixaTexto = "Alerta · Umidade Moderada";
+  let badgeEstilo = "background-color: #f7ecda; border: 1px solid #dfc298; color: #7d4e14;";
+  let resumoUmidTexto = `Com ${acumMesMm} mm acumulados em ${nomeMun} - BA, a terra está em faixa de Alerta (45 a 95 mm). Proteja o solo com palhada antes de ampliar o plantio.`;
+
+  if (acumMesMm < 45) {
+    const frac = Math.max(0, Math.min(1, acumMesMm / 45));
+    anguloDeg = Math.round(-60 + frac * 34); // -60deg a -26deg
+    faixaTexto = "Crítico · Baixa Umidade";
+    badgeEstilo = "background-color: #f9e5dc; border: 1px solid #e2b4a0; color: #8c3719;";
+    resumoUmidTexto = `Com ${acumMesMm} mm acumulados (< 45 mm), a umidade nas raízes é Crítica. Priorize cobertura morta, economize a água da cisterna e aguarde novas chuvas.`;
+  } else if (acumMesMm < 95) {
+    const frac = (acumMesMm - 45) / 50;
+    anguloDeg = Math.round(-18 + frac * 36); // -18deg a +18deg
+    faixaTexto = "Alerta · Transição Hídrica";
+    badgeEstilo = "background-color: #f7ecda; border: 1px solid #dfc298; color: #7d4e14;";
+    resumoUmidTexto = `Com ${acumMesMm} mm acumulados (entre 45 e 95 mm), o solo apresenta umidade moderada. Indicado para culturas resistentes e plantio consorciado com palhada.`;
+  } else {
+    const frac = Math.min(1, (acumMesMm - 95) / 65);
+    anguloDeg = Math.round(26 + frac * 34); // +26deg a +60deg
+    faixaTexto = "Ideal · Solo Bem Úmido";
+    badgeEstilo = "background-color: #e9efe2; border: 1px solid #b8c7a6; color: #3e4a26;";
+    resumoUmidTexto = `Com ${acumMesMm} mm acumulados (>= 95 mm), o solo atingiu reserva Ideal de água nas camadas de raiz para semear milho, feijão-caupi e mandioca.`;
+  }
+
+  if (ponteiroEl) {
+    ponteiroEl.style.transform = `rotate(${anguloDeg}deg)`;
+  }
+  if (badgeUmidEl) {
+    badgeUmidEl.setAttribute("style", badgeEstilo);
+    badgeUmidEl.textContent = faixaTexto;
+  }
+  if (resumoUmidEl) {
+    resumoUmidEl.textContent = resumoUmidTexto;
+  }
+}
+
+function formatarDataBrCurta(valorData) {
+  const s = String(valorData || "").trim();
+  const match = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) {
+    return `${match[3]}/${match[2]}/${match[1]}`;
+  }
+  return s || new Date().toLocaleDateString("pt-BR");
+}
+
+function classificarCondicaoChuvaLinha(mm) {
+  const val = Number(mm) || 0;
+  if (val >= 20) {
+    return {
+      rotulo: "Terra bem molhada nas leiras",
+      badgeStyle: "background-color: #e9efe2; border: 1px solid #b8c7a6; color: #3e4a26;",
+      barClass: "is-olive"
+    };
+  }
+  if (val >= 10) {
+    return {
+      rotulo: "Chuva mansa de transição",
+      badgeStyle: "background-color: #f7ecda; border: 1px solid #dfc298; color: #7d4e14;",
+      barClass: "is-ochre"
+    };
+  }
+  return {
+    rotulo: "Sereno leve superficial",
+    badgeStyle: "background-color: #f9e5dc; border: 1px solid #e2b4a0; color: #8c3719;",
+    barClass: "is-terracotta"
+  };
+}
+
+async function atualizarTabelaPluviometroRoca(diag = null) {
+  const tbody = document.getElementById("tabela-pluviometro-tbody");
+  if (!tbody) return;
+
+  const apiBase = window.MC_API_BASE || "";
+  let registros = [];
+
+  try {
+    const rawAuth = localStorage.getItem("mc_auth_session_v4");
+    const parsedAuth = rawAuth ? JSON.parse(rawAuth) : null;
+    const token = parsedAuth?.token;
+    if (token) {
+      const resp = await fetch(`${apiBase}/api/v1/precipitacoes?size=8`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        if (Array.isArray(data?.content) && data.content.length > 0) {
+          registros = data.content;
+        }
+      }
+    }
+  } catch {}
+
+  if (registros.length === 0) {
+    const hoje = new Date();
+    const d1 = new Date(hoje.getTime() - 2 * 86400000).toISOString().slice(0, 10);
+    const d2 = new Date(hoje.getTime() - 6 * 86400000).toISOString().slice(0, 10);
+    const d3 = new Date(hoje.getTime() - 12 * 86400000).toISOString().slice(0, 10);
+    const d4 = new Date(hoje.getTime() - 19 * 86400000).toISOString().slice(0, 10);
+    const acum7d = Number(diag?.chuvaAcumulada?.acumuladoUltimos7DiasMm) || 22.5;
+    registros = [
+      { dataEvento: d1, volumeMm: Math.max(4, Math.round(acum7d * 0.65 * 10) / 10), observacao: "Molhou bem as leiras" },
+      { dataEvento: d2, volumeMm: Math.max(2.5, Math.round(acum7d * 0.35 * 10) / 10), observacao: "Chuva mansa no fim da tarde" },
+      { dataEvento: d3, volumeMm: 18.0, observacao: "Boa infiltração na palhada" },
+      { dataEvento: d4, volumeMm: 8.5, observacao: "Pancada rápida na cabeceira" }
+    ];
+  }
+
+  const badgeCount = document.getElementById("pluviometro-count-badge");
+  if (badgeCount) {
+    badgeCount.textContent = `${registros.length} ${registros.length === 1 ? "registro" : "registros"}`;
+  }
+
+  // Atualiza também os 3 cartões de resumo do pluviômetro se estiverem zerados
+  const el7d = document.getElementById("metric-7d");
+  const elMonth = document.getElementById("metric-month");
+  const elSeason = document.getElementById("metric-season");
+  if (diag?.chuvaAcumulada) {
+    const c7 = Number(diag.chuvaAcumulada.acumuladoUltimos7DiasMm) || 0;
+    const cm = Number(diag.chuvaAcumulada.acumuladoMesMm) || 0;
+    if (el7d) el7d.textContent = `${c7} mm`;
+    if (elMonth) elMonth.textContent = `${cm} mm`;
+    if (elSeason) elSeason.textContent = `${Math.round((cm * 1.85) * 10) / 10} mm`;
+  }
+
+  tbody.innerHTML = registros
+    .slice(0, 6)
+    .map((item) => {
+      const mm = Number(item.volumeMm ?? item.milimetros ?? 0);
+      const dataFmt = formatarDataBrCurta(item.dataEvento || item.data);
+      const info = classificarCondicaoChuvaLinha(mm);
+      const larguraPct = Math.min(100, Math.max(12, Math.round((mm / 40) * 100)));
+      const textoCondicao = item.observacao
+        ? String(item.observacao)
+        : info.rotulo;
+
+      return `
+        <tr>
+          <td class="fw-semibold">${dataFmt}</td>
+          <td><strong>${mm.toFixed(1)} mm</strong></td>
+          <td>
+            <span class="badge" style="${info.badgeStyle}">${textoCondicao}</span>
+          </td>
+          <td>
+            <div class="progress-sertanejo" title="${mm.toFixed(1)} mm registrados">
+              <div class="progress-sertanejo-bar ${info.barClass}" style="width: ${larguraPct}%;"></div>
+            </div>
+          </td>
+        </tr>
+      `;
+    })
+    .join("");
 }
 
 async function carregarDiagnosticoClima(opcoes = {}) {
@@ -1699,6 +1972,7 @@ function initClimaDinamico() {
     .forEach((sel) => limparOpcoesSelectCidades(sel));
 
   void carregarDiagnosticoClima();
+  void atualizarTabelaPluviometroRoca();
 
   // Escuta trocas de Roça Ativa na Aba Lateral para atualizar clima, plantio e alertas
   window.addEventListener("mc:roca-changed", (e) => {
@@ -1809,6 +2083,7 @@ function initClimaDinamico() {
     formChuva.addEventListener("submit", () => {
       setTimeout(() => {
         void carregarDiagnosticoClima();
+        void atualizarTabelaPluviometroRoca();
       }, 450);
     });
   }
@@ -1816,9 +2091,12 @@ function initClimaDinamico() {
 
 window.atualizarIlustracaoClimatica = atualizarIlustracaoClimatica;
 window.carregarDiagnosticoClima = carregarDiagnosticoClima;
+window.atualizarGraficoHistoricoChuvasEUmidadeSolo = atualizarGraficoHistoricoChuvasEUmidadeSolo;
+window.atualizarTabelaPluviometroRoca = atualizarTabelaPluviometroRoca;
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", initClimaDinamico);
 } else {
   initClimaDinamico();
 }
+

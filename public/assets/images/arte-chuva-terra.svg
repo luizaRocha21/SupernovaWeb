@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-label="Chuva na Sua Terra — Casinha sertaneja na chuva e pluviômetro no mourão">
+  <defs>
+    <clipPath id="clip-medallion-chuva">
+      <circle cx="120" cy="120" r="110" />
+    </clipPath>
+  </defs>
+
+  <!-- Fundo base do medalhão -->
+  <circle cx="120" cy="120" r="112" fill="#fbf6e9" stroke="#542817" stroke-width="5" />
+
+  <g clip-path="url(#clip-medallion-chuva)" stroke="#542817" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Céu creme -->
+    <rect x="0" y="0" width="240" height="240" fill="#fbf6e9" stroke="none" />
+
+    <!-- Nuvens carregadas de chuva boa no topo -->
+    <path d="M26 70 C16 70, 12 61, 16 52 C20 44, 30 41, 38 45 C44 33, 60 31, 70 39 C78 32, 93 35, 98 46 C107 47, 112 56, 107 64 C104 69, 96 70, 26 70 Z" fill="#fffaf0" />
+    <path d="M104 66 C95 66, 90 58, 94 50 C97 43, 106 40, 114 43 C120 32, 136 30, 146 38 C156 32, 170 36, 174 47 C183 48, 188 57, 182 64 C178 67, 170 66, 104 66 Z" fill="#e9efe2" />
+    <path d="M154 78 C146 78, 142 71, 145 65 C148 59, 156 57, 162 60 C167 52, 180 52, 186 59 C194 58, 202 64, 200 72 C199 76, 194 78, 154 78 Z" fill="#fffaf0" />
+
+    <!-- Chuva farta caindo sobre a roça e dentro do pluviômetro -->
+    <g stroke="#7ba39b" stroke-width="2.3">
+      <line x1="36" y1="78" x2="30" y2="94" />
+      <line x1="54" y1="78" x2="48" y2="95" />
+      <line x1="72" y1="78" x2="66" y2="94" />
+      <line x1="90" y1="76" x2="84" y2="92" />
+      <line x1="112" y1="74" x2="106" y2="90" />
+      <line x1="130" y1="74" x2="124" y2="92" />
+      <line x1="148" y1="76" x2="142" y2="93" />
+      <line x1="168" y1="84" x2="162" y2="100" />
+      <line x1="184" y1="84" x2="178" y2="100" />
+      <line x1="44" y1="100" x2="38" y2="114" />
+      <line x1="80" y1="98" x2="74" y2="112" />
+      <line x1="118" y1="96" x2="112" y2="110" />
+      <line x1="154" y1="98" x2="150" y2="110" />
+      <line x1="172" y1="102" x2="168" y2="112" />
+    </g>
+
+    <!-- Colinas do sertão ao fundo -->
+    <path d="M0 156 Q65 138, 135 152 T240 148 L240 240 L0 240 Z" fill="#6b7048" />
+    <path d="M0 176 Q88 164, 165 178 T240 172 L240 240 L0 240 Z" fill="#a64f2e" />
+    <path d="M0 198 Q95 190, 240 196 L240 240 L0 240 Z" fill="#542817" />
+
+    <!-- Casinha sertaneja acolhedora ao fundo esquerdo -->
+    <g>
+      <!-- Parede frontal e lateral -->
+      <rect x="46" y="130" width="48" height="34" fill="#c68b59" />
+      <polygon points="46,130 70,112 94,130" fill="#e0b284" />
+      <!-- Telhado de barro -->
+      <polygon points="40,132 70,108 100,132 94,132 70,113 46,132" fill="#a64f2e" />
+      <!-- Porta e janelinha -->
+      <rect x="56" y="142" width="12" height="22" rx="6" fill="#542817" />
+      <rect x="74" y="140" width="11" height="11" fill="#fffaf0" />
+      <line x1="79.5" y1="140" x2="79.5" y2="151" stroke-width="1.5" />
+      <line x1="74" y1="145.5" x2="85" y2="145.5" stroke-width="1.5" />
+    </g>
+
+    <!-- Cacto Mandacaru à esquerda da casinha -->
+    <g>
+      <path d="M26 168 L26 122 C26 117, 34 117, 34 122 L34 168 Z" fill="#5d603d" />
+      <path d="M26 146 L18 146 C15 146, 13 143, 13 138 L13 128 C13 124, 19 124, 19 128 L19 138 L26 138 Z" fill="#5d603d" />
+    </g>
+
+    <!-- Poça d'água na base do mourão -->
+    <ellipse cx="154" cy="204" rx="44" ry="11" fill="#7ba39b" />
+    <path d="M132 204 Q154 208, 176 203" fill="none" stroke="#fffaf0" stroke-width="1.6" />
+
+    <!-- Mourão de madeira rústica em primeiro plano à direita -->
+    <g>
+      <path d="M134 204 L134 114 L148 110 L148 204 Z" fill="#7c4728" />
+      <!-- Veios da madeira -->
+      <line x1="139" y1="120" x2="139" y2="196" stroke-width="1.4" />
+      <line x1="144" y1="134" x2="144" y2="188" stroke-width="1.4" />
+      <!-- Abraçadeira prendendo o pluviômetro -->
+      <rect x="132" y="138" width="46" height="6" rx="2" fill="#bd7627" />
+      <rect x="132" y="168" width="46" height="6" rx="2" fill="#bd7627" />
+    </g>
+
+    <!-- Pluviômetro caseiro transparente preso ao mourão -->
+    <g>
+      <!-- Funil superior de captação -->
+      <polygon points="150,114 184,114 177,126 157,126" fill="#fffaf0" opacity="0.9" />
+      <!-- Tubo graduado do pluviômetro -->
+      <rect x="155" y="126" width="24" height="58" rx="4" fill="#fffaf0" />
+      <!-- Água acumulada dentro do pluviômetro -->
+      <rect x="157" y="148" width="20" height="34" rx="2" fill="#7ba39b" stroke="none" />
+      <path d="M156 148 Q167 151, 178 148" fill="none" stroke="#542817" stroke-width="2" />
+      <!-- Traços de medição em milímetros (mm) -->
+      <line x1="169" y1="134" x2="177" y2="134" stroke-width="1.6" />
+      <line x1="171" y1="141" x2="177" y2="141" stroke-width="1.4" />
+      <line x1="169" y1="148" x2="177" y2="148" stroke-width="1.6" />
+      <line x1="171" y1="155" x2="177" y2="155" stroke-width="1.4" />
+      <line x1="169" y1="162" x2="177" y2="162" stroke-width="1.6" />
+      <line x1="171" y1="169" x2="177" y2="169" stroke-width="1.4" />
+      <line x1="169" y1="176" x2="177" y2="176" stroke-width="1.6" />
+    </g>
+
+    <!-- Mandacaru lateral direito -->
+    <g>
+      <path d="M202 184 L202 134 C202 129, 210 129, 210 134 L210 184 Z" fill="#5d603d" />
+      <path d="M202 158 L194 158 C191 158, 189 155, 189 150 L189 140 C189 136, 195 136, 195 140 L195 150 L202 150 Z" fill="#5d603d" />
+    </g>
+  </g>
+
+  <!-- Aro duplo editorial sertanejo -->
+  <circle cx="120" cy="120" r="112" fill="none" stroke="#542817" stroke-width="5" />
+  <circle cx="120" cy="120" r="106" fill="none" stroke="#542817" stroke-width="1.2" stroke-dasharray="6 4" opacity="0.65" />
+</svg>

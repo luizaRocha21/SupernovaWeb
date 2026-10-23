@@ -588,14 +588,20 @@
                   .replace(/\s*-\s*[A-Z]{2}$/i, "")
                   .trim()
               );
-              const maxNum = Number(c.temperatura_max ?? c.temperatura ?? 34.5);
-              const minNum = Number(c.temperatura_min ?? maxNum - 10);
-              const tempMax = Number.isFinite(maxNum) ? maxNum.toFixed(1) : "34.5";
-              const tempMin = Number.isFinite(minNum) ? minNum.toFixed(1) : "22.0";
+              const maxNum = Number(c.temperatura_max ?? c.temp_max ?? c.temperatura ?? 35.5);
+              const minNum = Number(c.temperatura_min ?? c.temp_min ?? maxNum - 11);
+              const tempMax = Number.isFinite(maxNum) ? maxNum.toFixed(1) : "35.5";
+              const tempMin = Number.isFinite(minNum) ? minNum.toFixed(1) : "23.0";
+              const pctCalor = Math.min(100, Math.max(40, Math.round(((Number(tempMax) - 20) / 22) * 100)));
               return `
-                <li class="d-flex flex-wrap justify-content-between align-items-center gap-2 p-2 border-bottom" style="border-color: #d2c2a9 !important;">
-                  <span style="color: #542817;"><strong>${idx + 1}. ${cidade} - BA</strong></span>
-                  <span class="badge" style="background-color: #f9e5dc; border: 1px solid #e2b4a0; color: #8c3719;">${tempMax} °C (mín ${tempMin} °C)</span>
+                <li class="p-2 border-bottom" style="border-color: #d2c2a9 !important;">
+                  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-1">
+                    <span style="color: #542817;"><strong>${idx + 1}. ${cidade} - BA</strong></span>
+                    <span class="badge tabular-nums" style="background-color: #f9e5dc; border: 1px solid #e2b4a0; color: #8c3719;">Máx ${tempMax} °C / Mín ${tempMin} °C</span>
+                  </div>
+                  <div class="progress-sertanejo" title="Temperatura máxima hoje: ${tempMax} °C">
+                    <div class="progress-sertanejo-bar is-terracotta" style="width: ${pctCalor}%; background-color: #a64f2e !important;"></div>
+                  </div>
                 </li>
               `;
             })
@@ -608,14 +614,20 @@
                   .replace(/\s*-\s*[A-Z]{2}$/i, "")
                   .trim()
               );
-              const minNum = Number(c.temperatura_min ?? c.temperatura ?? 15.2);
-              const maxNum = Number(c.temperatura_max ?? minNum + 9);
-              const tempMin = Number.isFinite(minNum) ? minNum.toFixed(1) : "15.2";
+              const minNum = Number(c.temperatura_min ?? c.temp_min ?? c.temperatura ?? 14.5);
+              const maxNum = Number(c.temperatura_max ?? c.temp_max ?? minNum + 10);
+              const tempMin = Number.isFinite(minNum) ? minNum.toFixed(1) : "14.5";
               const tempMax = Number.isFinite(maxNum) ? maxNum.toFixed(1) : "24.5";
+              const pctAmena = Math.min(92, Math.max(28, Math.round(((Number(tempMax) - 12) / 26) * 100)));
               return `
-                <li class="d-flex flex-wrap justify-content-between align-items-center gap-2 p-2 border-bottom" style="border-color: #d2c2a9 !important;">
-                  <span style="color: #542817;"><strong>${idx + 1}. ${cidade} - BA</strong></span>
-                  <span class="badge" style="background-color: #e9efe2; border: 1px solid #b8c7a6; color: #3e4a26;">${tempMin} °C (máx ${tempMax} °C)</span>
+                <li class="p-2 border-bottom" style="border-color: #d2c2a9 !important;">
+                  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-1">
+                    <span style="color: #542817;"><strong>${idx + 1}. ${cidade} - BA</strong></span>
+                    <span class="badge tabular-nums" style="background-color: #e9efe2; border: 1px solid #b8c7a6; color: #3e4a26;">Máx ${tempMax} °C / Mín ${tempMin} °C</span>
+                  </div>
+                  <div class="progress-sertanejo" title="Clima ameno hoje: Máx ${tempMax} °C / Mín ${tempMin} °C">
+                    <div class="progress-sertanejo-bar is-olive" style="width: ${pctAmena}%; background-color: #5d603d !important;"></div>
+                  </div>
                 </li>
               `;
             })

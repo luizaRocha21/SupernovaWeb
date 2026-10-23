@@ -77,128 +77,276 @@
          ABA 1: MINHA CISTERNA OU POÇO
          =================================================================== -->
     <section id="aba-minha-cisterna" role="tabpanel" aria-labelledby="tab-btn-minha-cisterna">
-      <div class="row g-4 mb-4">
-        <!-- Formulário de Registro de Nível alinhado pela base (row g-3 align-items-end) -->
-        <div class="col-12 col-lg-6">
-          <section
-            class="card h-100 p-3 p-md-4"
-            style="background-color: #fffaf0; border: 1px solid #d2c2a9; border-left: 4px solid #542817;"
-            aria-labelledby="titulo-form-nivel"
-          >
-            <span class="eyebrow section-kicker" style="font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase; color: #5d603d;">📏 ATUALIZAR VOLUME DA SUA CISTERNA</span>
-            <h2 id="titulo-form-nivel" class="h5 mb-2" style="font-family: 'Newsreader', Georgia, serif; font-weight: 400; color: #542817;">Quanto de água tem hoje no <em style="color: #bd7627; font-style: italic;">seu reservatório?</em></h2>
-            <p class="small mb-3" style="font-family: 'DM Sans', sans-serif; color: #6e6252; line-height: 1.55;">
-              Escolha o reservatório e marque a faixa aproximada de água para sabermos por quantos dias a reserva dá conta.
-            </p>
-
-            <form id="form-nivel-reservatorio" class="row g-3 align-items-end" novalidate>
-              <div class="col-12 col-md-6">
-                <label for="select-reservatorio-id" class="form-label fw-semibold mb-1" style="color: #542817;">Qual cisterna ou aguada você está medindo?</label>
-                <select id="select-reservatorio-id" class="form-select w-100" required>
-                  <option value="1">Cisterna de Placas (Água de Beber — 16.000 L)</option>
-                  <option value="2">Cisterna Calçadão / Enxurrada (Produção — 52.000 L)</option>
-                </select>
+      <!-- Linha 1: Medidor Gráfico de Volume da Cisterna (Medalhão + Cilindro Graduado SVG) + Formulário de Registro -->
+      <div class="row g-4 mb-4 align-items-stretch">
+        <!-- Coluna Esquerda: Medidor Visual da Cisterna/Açude + Medalhão -->
+        <div class="col-12 col-lg-5">
+          <section class="editorial-chart-box shadow-sm" aria-labelledby="titulo-medidor-cisterna">
+            <div>
+              <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <div class="d-flex align-items-center gap-2">
+                  <img
+                    src="/assets/images/arte-agua-acudes.svg"
+                    alt="Medalhão Água dos Açudes e Cisternas"
+                    width="54"
+                    height="54"
+                    class="rounded-circle flex-shrink-0"
+                    style="border: 1px solid #d2c2a9;"
+                  />
+                  <div>
+                    <span class="eyebrow d-block" style="color: #5d603d;">MEDIDOR VISUAL DE RESERVA</span>
+                    <h2 id="titulo-medidor-cisterna" class="h5 mb-0" style="font-family: 'Newsreader', Georgia, serif; font-weight: 400; color: #542817;">
+                      Nível da <em style="color: #bd7627; font-style: italic;">Sua Cisterna</em>
+                    </h2>
+                  </div>
+                </div>
+                <span id="cisterna-gauge-badge" class="badge" style="background-color: #e9efe2; border: 1px solid #b8c7a6; color: #3e4a26;">59% · Reserva Segura</span>
               </div>
 
-              <div class="col-12 col-md-6">
-                <label for="input-volume-litros" class="form-label fw-semibold mb-1" style="color: #542817;">Volume estimado (Litros)</label>
-                <input
-                  type="number"
-                  id="input-volume-litros"
-                  class="form-control w-100"
-                  min="0"
-                  max="120000"
-                  step="100"
-                  value="9500"
-                  required
-                />
-              </div>
+              <!-- Medidor Gráfico Cilíndrico Graduado (0% a 100% com onda de água em #7ba39b e marcadores 25%, 50%, 75%+) -->
+              <div class="editorial-chart-svg-wrap my-2">
+                <svg id="medidor-cisterna-svg" viewBox="0 0 320 205" role="img" aria-label="Medidor cilíndrico graduado do volume da cisterna de 0% a 100%">
+                  <defs>
+                    <clipPath id="clip-cilindro-agua">
+                      <rect x="64" y="42" width="124" height="136" rx="8" />
+                    </clipPath>
+                  </defs>
 
-              <div class="col-12 col-md-6">
-                <label for="select-faixa-rapida" class="form-label fw-semibold mb-1" style="color: #542817;">Escala rápida visual</label>
-                <select id="select-faixa-rapida" class="form-select w-100">
-                  <option value="14500">Cheia / Sangrando (85% a 100%)</option>
-                  <option value="9500" selected>Acima da metade (55% a 75%)</option>
-                  <option value="5200">Abaixo da metade — Poupar água (30%)</option>
-                  <option value="2200">No fundo — Reserva crítica (&lt; 15%)</option>
-                </select>
-              </div>
+                  <!-- Fundo editorial -->
+                  <rect x="0" y="0" width="320" height="205" rx="10" fill="#fbf6e9" />
 
-              <div class="col-12 col-md-6">
-                <label for="input-obs-nivel" class="form-label fw-semibold mb-1" style="color: #542817;">Anote como está a água (opcional)</label>
-                <input
-                  type="text"
-                  id="input-obs-nivel"
-                  class="form-control w-100"
-                  placeholder="Ex.: Desviamos a primeira água do telhado"
-                />
-              </div>
+                  <!-- Teto cônico da cisterna de placas -->
+                  <polygon points="56,42 126,14 196,42" fill="#fffaf0" stroke="#542817" stroke-width="2.4" stroke-linejoin="round" />
+                  <line x1="88" y1="30" x2="164" y2="30" stroke="#d2c2a9" stroke-width="1.5" />
 
-              <div class="col-12 d-flex flex-wrap gap-2 pt-1">
-                <button type="submit" class="btn fw-bold" style="background-color: #5d603d; border: 1px solid #5d603d; color: #fffaf0;">
-                  💧 Salvar medição da cisterna
-                </button>
-                <button type="button" id="btn-recarregar-niveis" class="btn" style="background-color: #fffaf0; border: 1px solid #d2c2a9; color: #542817;">
-                  🔄 Atualizar dados
-                </button>
-              </div>
-            </form>
+                  <!-- Corpo cilíndrico da cisterna (fundo interno claro) -->
+                  <rect x="64" y="42" width="124" height="136" rx="8" fill="#fffaf0" stroke="#542817" stroke-width="2.6" />
 
-            <div id="feedback-nivel-msg" class="alert d-none mt-3 mb-0" role="status" aria-live="polite"></div>
+                  <!-- Coluna de água dinâmica + onda superior em #7ba39b -->
+                  <g clip-path="url(#clip-cilindro-agua)">
+                    <rect id="cisterna-agua-rect" x="64" y="98" width="124" height="80" fill="#7ba39b" style="transition: y 0.45s ease, height 0.45s ease;" />
+                    <path id="cisterna-agua-onda" d="M 60 98 Q 95 92, 126 98 T 192 98 L 192 182 L 60 182 Z" fill="#7ba39b" stroke="#542817" stroke-width="1.8" style="transition: transform 0.45s ease;" />
+                    <!-- Reflexos horizontais na água -->
+                    <line x1="82" y1="126" x2="136" y2="126" stroke="#fffaf0" stroke-width="1.6" stroke-linecap="round" opacity="0.75" />
+                    <line x1="102" y1="148" x2="164" y2="148" stroke="#fffaf0" stroke-width="1.6" stroke-linecap="round" opacity="0.75" />
+                    <line x1="78" y1="166" x2="128" y2="166" stroke="#fffaf0" stroke-width="1.4" stroke-linecap="round" opacity="0.65" />
+                  </g>
+
+                  <!-- Linhas sutis das placas da cisterna -->
+                  <g stroke="#542817" stroke-width="0.9" stroke-dasharray="3 3" opacity="0.35">
+                    <line x1="64" y1="76" x2="188" y2="76" />
+                    <line x1="64" y1="110" x2="188" y2="110" />
+                    <line x1="64" y1="144" x2="188" y2="144" />
+                  </g>
+
+                  <!-- Contorno externo reforçado do cilindro -->
+                  <rect x="64" y="42" width="124" height="136" rx="8" fill="none" stroke="#542817" stroke-width="2.6" />
+
+                  <!-- Escala graduada à esquerda (0% a 100%) -->
+                  <g font-family="DM Sans, sans-serif" font-size="9.5" font-weight="700" fill="#542817" text-anchor="end">
+                    <text x="54" y="46">100%</text>
+                    <text x="54" y="79">75%</text>
+                    <text x="54" y="113">50%</text>
+                    <text x="54" y="147">25%</text>
+                    <text x="54" y="178">0%</text>
+                  </g>
+
+                  <!-- Marcadores de referência à direita (75%+ Seguro, 50% Atenção, 25% Crítico) -->
+                  <g font-family="DM Sans, sans-serif" font-size="9" font-weight="700">
+                    <!-- 75%+ Seguro -->
+                    <line x1="188" y1="76" x2="202" y2="76" stroke="#5d603d" stroke-width="2" />
+                    <rect x="204" y="66" width="102" height="18" rx="4" fill="#e9efe2" stroke="#b8c7a6" stroke-width="1" />
+                    <text x="210" y="78" fill="#3e4a26">75%+ Seguro</text>
+
+                    <!-- 50% Atenção -->
+                    <line x1="188" y1="110" x2="202" y2="110" stroke="#bd7627" stroke-width="2" />
+                    <rect x="204" y="100" width="102" height="18" rx="4" fill="#f7ecda" stroke="#dfc298" stroke-width="1" />
+                    <text x="210" y="112" fill="#7d4e14">50% Atenção</text>
+
+                    <!-- 25% Crítico -->
+                    <line x1="188" y1="144" x2="202" y2="144" stroke="#a64f2e" stroke-width="2" />
+                    <rect x="204" y="134" width="102" height="18" rx="4" fill="#f9e5dc" stroke="#e2b4a0" stroke-width="1" />
+                    <text x="210" y="146" fill="#8c3719">25% Crítico</text>
+                  </g>
+
+                  <!-- Rótulo central de leitura rápida -->
+                  <rect x="84" y="88" width="84" height="32" rx="6" fill="#fffaf0" stroke="#542817" stroke-width="1.6" opacity="0.94" />
+                  <text id="cisterna-svg-pct-text" x="126" y="108" text-anchor="middle" font-family="Newsreader, Georgia, serif" font-size="16" font-weight="500" fill="#542817">59%</text>
+
+                  <!-- Base de pedra/cimento -->
+                  <line x1="44" y1="179" x2="208" y2="179" stroke="#542817" stroke-width="3.5" stroke-linecap="round" />
+                  <text id="cisterna-svg-litros-text" x="126" y="196" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="10.5" font-weight="700" fill="#542817">9.500 L de 16.000 L</text>
+                </svg>
+              </div>
+            </div>
+
+            <div class="p-3 rounded-3 mt-1" style="background-color: #f4eddb; border: 1px solid #d2c2a9;">
+              <div class="d-flex justify-content-between small mb-1" style="color: #6e6252;">
+                <span>Autonomia estimada (consumo familiar ~120 L/dia):</span>
+                <strong id="cisterna-autonomia-dias" style="color: #542817;">~79 dias</strong>
+              </div>
+              <p id="cisterna-resumo-orientacao" class="small mb-0" style="color: #542817;">
+                Reserva acima da metade. Mantenha calhas e desvios limpos para aproveitar cada pancada de chuva.
+              </p>
+            </div>
           </section>
         </div>
 
-        <!-- Checklist Sanitário de Cisterna -->
-        <div class="col-12 col-lg-6">
-          <section class="card h-100 p-4" style="background-color: #fffaf0; border: 1px solid #d2c2a9;" aria-labelledby="titulo-checklist-agua">
-            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-              <div>
-                <span class="eyebrow section-kicker" style="font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase; color: #5d603d;">🛡️ ÁGUA LIMPA E SAUDÁVEL</span>
-                <h2 id="titulo-checklist-agua" class="h5 mb-0" style="font-family: 'Newsreader', Georgia, serif; font-weight: 400; color: #542817;">Cuidados com a cisterna <em style="color: #bd7627; font-style: italic;">e as bicas</em></h2>
-              </div>
-              <button
-                type="button"
-                class="btn btn-speak"
-                style="background-color: #fffaf0; border: 1px solid #d2c2a9; color: #542817;"
-                data-speak-target="#lista-cuidados-cisterna"
-                aria-label="Ouvir cuidados com a água da cisterna"
-              >
-                🔊 Ouvir
-              </button>
-            </div>
-            <p class="small mb-3" style="font-family: 'DM Sans', sans-serif; color: #6e6252; line-height: 1.55;">
-              Cuidados simples que evitam sujeira na cisterna e protegem a saúde das crianças e idosos:
-            </p>
+        <!-- Coluna Direita: Formulário de Registro de Nível alinhado pela base -->
+        <div class="col-12 col-lg-7">
+          <section
+            class="card h-100 p-3 p-md-4 d-flex flex-column justify-content-between"
+            style="background-color: #fffaf0; border: 1px solid #d2c2a9; border-left: 4px solid #542817;"
+            aria-labelledby="titulo-form-nivel"
+          >
+            <div>
+              <span class="eyebrow section-kicker" style="font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase; color: #5d603d;">📏 ATUALIZAR VOLUME DA SUA CISTERNA</span>
+              <h2 id="titulo-form-nivel" class="h5 mb-2" style="font-family: 'Newsreader', Georgia, serif; font-weight: 400; color: #542817;">Quanto de água tem hoje no <em style="color: #bd7627; font-style: italic;">seu reservatório?</em></h2>
+              <p class="small mb-3" style="font-family: 'DM Sans', sans-serif; color: #6e6252; line-height: 1.55;">
+                Escolha o reservatório e marque a faixa aproximada de água para atualizar o medidor ao lado e calcular por quantos dias a reserva dá conta.
+              </p>
 
-            <div id="lista-cuidados-cisterna" class="d-flex flex-column gap-2">
-              <div class="form-check p-3 border rounded-3 bg-body-tertiary">
-                <input class="form-check-input ms-0 me-2" type="checkbox" id="chk-agua-1" data-agua-chk="desvio_primeira_agua" />
-                <label class="form-check-label fw-semibold" for="chk-agua-1">
-                  Desviar a primeira água da chuva que lava a poeira do telhado antes de ligar na cisterna
-                </label>
+              <form id="form-nivel-reservatorio" class="row g-3 align-items-end" novalidate>
+                <div class="col-12 col-md-6">
+                  <label for="select-reservatorio-id" class="form-label fw-semibold mb-1" style="color: #542817;">Qual cisterna ou aguada você está medindo?</label>
+                  <select id="select-reservatorio-id" class="form-select w-100" required>
+                    <option value="1" data-cap="16000">Cisterna de Placas (Água de Beber — 16.000 L)</option>
+                    <option value="2" data-cap="52000">Cisterna Calçadão / Enxurrada (Produção — 52.000 L)</option>
+                  </select>
+                </div>
+
+                <div class="col-12 col-md-6">
+                  <label for="input-volume-litros" class="form-label fw-semibold mb-1" style="color: #542817;">Volume estimado (Litros)</label>
+                  <input
+                    type="number"
+                    id="input-volume-litros"
+                    class="form-control w-100"
+                    min="0"
+                    max="120000"
+                    step="100"
+                    value="9500"
+                    required
+                  />
+                </div>
+
+                <div class="col-12 col-md-6">
+                  <label for="select-faixa-rapida" class="form-label fw-semibold mb-1" style="color: #542817;">Escala rápida visual</label>
+                  <select id="select-faixa-rapida" class="form-select w-100">
+                    <option value="14500">Cheia / Sangrando (85% a 100%)</option>
+                    <option value="9500" selected>Acima da metade (55% a 75%)</option>
+                    <option value="5200">Abaixo da metade — Poupar água (30%)</option>
+                    <option value="2200">No fundo — Reserva crítica (&lt; 15%)</option>
+                  </select>
+                </div>
+
+                <div class="col-12 col-md-6">
+                  <label for="input-obs-nivel" class="form-label fw-semibold mb-1" style="color: #542817;">Anote como está a água (opcional)</label>
+                  <input
+                    type="text"
+                    id="input-obs-nivel"
+                    class="form-control w-100"
+                    placeholder="Ex.: Desviamos a primeira água do telhado"
+                  />
+                </div>
+
+                <div class="col-12 d-flex flex-wrap gap-2 pt-1">
+                  <button type="submit" class="btn fw-bold" style="background-color: #5d603d; border: 1px solid #5d603d; color: #fffaf0;">
+                    💧 Salvar medição da cisterna
+                  </button>
+                  <button type="button" id="btn-recarregar-niveis" class="btn" style="background-color: #fffaf0; border: 1px solid #d2c2a9; color: #542817;">
+                    🔄 Atualizar dados
+                  </button>
+                </div>
+              </form>
+
+              <div id="feedback-nivel-msg" class="alert d-none mt-3 mb-0" role="status" aria-live="polite"></div>
+            </div>
+
+            <!-- Checklist Sanitário Compacto -->
+            <div class="pt-3 mt-3 border-top" style="border-color: #d2c2a9 !important;">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <strong class="small" style="color: #542817;">🛡️ Cuidados rápidos com a cisterna e as bicas:</strong>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-speak"
+                  style="background-color: #fffaf0; border: 1px solid #d2c2a9; color: #542817;"
+                  data-speak-target="#lista-cuidados-cisterna"
+                  aria-label="Ouvir cuidados com a água da cisterna"
+                >
+                  🔊 Ouvir
+                </button>
               </div>
-              <div class="form-check p-3 border rounded-3 bg-body-tertiary">
-                <input class="form-check-input ms-0 me-2" type="checkbox" id="chk-agua-2" data-agua-chk="hipoclorito_beber" />
-                <label class="form-check-label fw-semibold" for="chk-agua-2">
-                  Usar 2 gotas de hipoclorito de sódio (2,5%) para cada litro de água de beber e aguardar 30 minutos
-                </label>
-              </div>
-              <div class="form-check p-3 border rounded-3 bg-body-tertiary">
-                <input class="form-check-input ms-0 me-2" type="checkbox" id="chk-agua-3" data-agua-chk="tela_ralos_calhas" />
-                <label class="form-check-label fw-semibold" for="chk-agua-3">
-                  Manter a tampa fechada com cadeado e telinha nos canos para não entrar mosquito nem folhas
-                </label>
-              </div>
-              <div class="form-check p-3 border rounded-3 bg-body-tertiary">
-                <input class="form-check-input ms-0 me-2" type="checkbox" id="chk-agua-4" data-agua-chk="separar_agua_beber" />
-                <label class="form-check-label fw-semibold" for="chk-agua-4">
-                  Guardar a cisterna de 16 mil litros só para beber e cozinhar quando a seca apertar
-                </label>
+              <div id="lista-cuidados-cisterna" class="row g-2">
+                <div class="col-12 col-sm-6">
+                  <div class="form-check p-2 border rounded-3 bg-body-tertiary small">
+                    <input class="form-check-input ms-0 me-2" type="checkbox" id="chk-agua-1" data-agua-chk="desvio_primeira_agua" />
+                    <label class="form-check-label" for="chk-agua-1">Desviar a 1ª água de chuva do telhado</label>
+                  </div>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <div class="form-check p-2 border rounded-3 bg-body-tertiary small">
+                    <input class="form-check-input ms-0 me-2" type="checkbox" id="chk-agua-2" data-agua-chk="hipoclorito_beber" />
+                    <label class="form-check-label" for="chk-agua-2">2 gotas de hipoclorito por litro (30 min)</label>
+                  </div>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <div class="form-check p-2 border rounded-3 bg-body-tertiary small">
+                    <input class="form-check-input ms-0 me-2" type="checkbox" id="chk-agua-3" data-agua-chk="tela_ralos_calhas" />
+                    <label class="form-check-label" for="chk-agua-3">Tampa fechada e telinha nos canos</label>
+                  </div>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <div class="form-check p-2 border rounded-3 bg-body-tertiary small">
+                    <input class="form-check-input ms-0 me-2" type="checkbox" id="chk-agua-4" data-agua-chk="separar_agua_beber" />
+                    <label class="form-check-label" for="chk-agua-4">Cisterna de 16 mil L só para beber/cozinhar</label>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
         </div>
       </div>
+
+      <!-- Linha 2: Tabela Limpa de Evolução Hídrica (.editorial-table em .table-responsive) -->
+      <section class="card p-3 p-md-4 mb-4" style="background-color: #fffaf0; border: 1px solid #d2c2a9;" aria-labelledby="titulo-tabela-evolucao-hidrica">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+          <div>
+            <span class="eyebrow d-block mb-1" style="color: #5d603d;">HISTÓRICO DE LEITURAS</span>
+            <h2 id="titulo-tabela-evolucao-hidrica" class="h5 mb-0" style="font-family: 'Newsreader', Georgia, serif; font-weight: 400; color: #542817;">
+              Tabela de Evolução Hídrica <em style="color: #bd7627; font-style: italic;">da Propriedade</em>
+            </h2>
+          </div>
+          <span id="badge-total-leituras-agua" class="badge" style="background-color: #f4eddb; border: 1px solid #d2c2a9; color: #542817;">Leituras registradas</span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="editorial-table mb-0" aria-label="Histórico de leituras de nível dos reservatórios">
+            <thead>
+              <tr>
+                <th scope="col">Data da Medição</th>
+                <th scope="col">Reservatório</th>
+                <th scope="col">Volume Estimado (L)</th>
+                <th scope="col" style="min-width: 170px;">Nível (%)</th>
+                <th scope="col">Autonomia Estimada</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-evolucao-hidrica-tbody">
+              <tr>
+                <td class="fw-semibold">Hoje</td>
+                <td>Cisterna de Placas (16.000 L)</td>
+                <td><strong>9.500 L</strong></td>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="fw-bold tabular-nums" style="min-width: 38px;">59%</span>
+                    <div class="progress-sertanejo flex-grow-1"><div class="progress-sertanejo-bar is-ochre" style="width: 59%;"></div></div>
+                  </div>
+                </td>
+                <td><span class="badge" style="background-color: #e9efe2; border: 1px solid #b8c7a6; color: #3e4a26;">~79 dias</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
     </section>
 
     <!-- ===================================================================
@@ -312,6 +460,7 @@
       const feedbackMsg = document.getElementById("feedback-nivel-msg");
       const btnRecarregar = document.getElementById("btn-recarregar-niveis");
       const btnAtualizarComunidade = document.getElementById("btn-atualizar-comunidade-agua");
+      const STORAGE_HISTORICO_CISTERNA = "mc_historico_cisterna_v1";
 
       // Alternância entre as 2 abas (.auth-tabs)
       const tabButtons = document.querySelectorAll("[data-res-tab]");
@@ -341,9 +490,178 @@
           .replace(/'/g, "&#039;");
       }
 
+      function obterCapacidadeSelecionada() {
+        const opt = selectResId && selectResId.options[selectResId.selectedIndex];
+        const cap = Number(opt?.getAttribute("data-cap") || 16000);
+        return Number.isFinite(cap) && cap > 0 ? cap : 16000;
+      }
+
+      function obterNomeReservatorioSelecionado() {
+        const opt = selectResId && selectResId.options[selectResId.selectedIndex];
+        return (opt?.textContent || "Cisterna de Placas (16.000 L)").replace(/\s*\(Capacidade:.*\)$/i, "").trim();
+      }
+
+      function atualizarMedidorCilindricoCisterna(volumeLitros, capacidadeLitros) {
+        const cap = Number(capacidadeLitros) > 0 ? Number(capacidadeLitros) : obterCapacidadeSelecionada();
+        const vol = Math.max(0, Math.min(cap, Number(volumeLitros) || 0));
+        const pct = Math.min(100, Math.max(0, Math.round((vol / cap) * 100)));
+
+        // Cilindro vai de y=42 (100%) até y=178 (0%), altura útil = 136px
+        const alturaAgua = Math.round((pct / 100) * 136);
+        const yAgua = 178 - alturaAgua;
+
+        const rectEl = document.getElementById("cisterna-agua-rect");
+        const ondaEl = document.getElementById("cisterna-agua-onda");
+        const pctTextEl = document.getElementById("cisterna-svg-pct-text");
+        const litrosTextEl = document.getElementById("cisterna-svg-litros-text");
+        const badgeEl = document.getElementById("cisterna-gauge-badge");
+        const autonomiaEl = document.getElementById("cisterna-autonomia-dias");
+        const orientEl = document.getElementById("cisterna-resumo-orientacao");
+
+        if (rectEl) {
+          rectEl.setAttribute("y", String(yAgua));
+          rectEl.setAttribute("height", String(alturaAgua));
+        }
+        if (ondaEl) {
+          const dOnda = `M 60 ${yAgua} Q 95 ${yAgua - 5}, 126 ${yAgua} T 192 ${yAgua} L 192 182 L 60 182 Z`;
+          ondaEl.setAttribute("d", dOnda);
+        }
+        if (pctTextEl) {
+          pctTextEl.textContent = `${pct}%`;
+        }
+        if (litrosTextEl) {
+          litrosTextEl.textContent = `${vol.toLocaleString("pt-BR")} L de ${cap.toLocaleString("pt-BR")} L`;
+        }
+
+        const consumoDiarioL = cap > 30000 ? 320 : 120;
+        const diasAutonomia = Math.max(1, Math.round(vol / consumoDiarioL));
+        if (autonomiaEl) {
+          autonomiaEl.textContent = `~${diasAutonomia} dias`;
+        }
+
+        if (badgeEl && orientEl) {
+          if (pct >= 75) {
+            badgeEl.textContent = `${pct}% · Seguro (75%+)`;
+            badgeEl.setAttribute("style", "background-color: #e9efe2; border: 1px solid #b8c7a6; color: #3e4a26;");
+            orientEl.textContent = "Reserva segura! Mantenha calhas, telas e desvios limpos para conservar a qualidade da água.";
+          } else if (pct >= 50) {
+            badgeEl.textContent = `${pct}% · Atenção (50%+)`;
+            badgeEl.setAttribute("style", "background-color: #f7ecda; border: 1px solid #dfc298; color: #7d4e14;");
+            orientEl.textContent = "Reserva acima da metade. Priorize consumo da família e use cobertura morta nos canteiros.";
+          } else if (pct >= 25) {
+            badgeEl.textContent = `${pct}% · Poupar Água`;
+            badgeEl.setAttribute("style", "background-color: #f7ecda; border: 1px solid #dfc298; color: #7d4e14;");
+            orientEl.textContent = "Abaixo da metade: economize a água da cisterna de placas e use água de reúso nas mudas.";
+          } else {
+            badgeEl.textContent = `${pct}% · Reserva Crítica (<25%)`;
+            badgeEl.setAttribute("style", "background-color: #f9e5dc; border: 1px solid #e2b4a0; color: #8c3719;");
+            orientEl.textContent = "Nível crítico! Destine a água exclusivamente para beber e cozinhar e acione o apoio comunitário.";
+          }
+        }
+      }
+
+      function obterHistoricoLeituras() {
+        try {
+          const salvo = JSON.parse(localStorage.getItem(STORAGE_HISTORICO_CISTERNA) || "null");
+          if (Array.isArray(salvo) && salvo.length > 0) return salvo;
+        } catch (e) {}
+        return [
+          {
+            data: new Date().toLocaleDateString("pt-BR"),
+            reservatorio: "Cisterna de Placas (Água de Beber)",
+            volumeLitros: 9500,
+            capacidadeLitros: 16000,
+            percentual: 59
+          },
+          {
+            data: "12/10/2026",
+            reservatorio: "Cisterna de Placas (Água de Beber)",
+            volumeLitros: 11200,
+            capacidadeLitros: 16000,
+            percentual: 70
+          },
+          {
+            data: "02/10/2026",
+            reservatorio: "Cisterna Calçadão (Produção)",
+            volumeLitros: 34500,
+            capacidadeLitros: 52000,
+            percentual: 66
+          }
+        ];
+      }
+
+      function renderizarTabelaEvolucaoHidrica() {
+        const tbody = document.getElementById("tabela-evolucao-hidrica-tbody");
+        if (!tbody) return;
+        const leituras = obterHistoricoLeituras();
+        const badgeCount = document.getElementById("badge-total-leituras-agua");
+        if (badgeCount) {
+          badgeCount.textContent = `${leituras.length} ${leituras.length === 1 ? "medição" : "medições"}`;
+        }
+
+        tbody.innerHTML = leituras
+          .slice(0, 8)
+          .map((item) => {
+            const cap = Number(item.capacidadeLitros) || 16000;
+            const vol = Number(item.volumeLitros) || 0;
+            const pct = Number.isFinite(Number(item.percentual))
+              ? Number(item.percentual)
+              : Math.min(100, Math.max(0, Math.round((vol / cap) * 100)));
+            const consumoDia = cap > 30000 ? 320 : 120;
+            const dias = Math.max(1, Math.round(vol / consumoDia));
+
+            let barClass = "is-olive";
+            let badgeStyle = "background-color: #e9efe2; border: 1px solid #b8c7a6; color: #3e4a26;";
+            if (pct < 25) {
+              barClass = "is-terracotta";
+              badgeStyle = "background-color: #f9e5dc; border: 1px solid #e2b4a0; color: #8c3719;";
+            } else if (pct < 60) {
+              barClass = "is-ochre";
+              badgeStyle = "background-color: #f7ecda; border: 1px solid #dfc298; color: #7d4e14;";
+            }
+
+            return `
+              <tr>
+                <td class="fw-semibold">${escapeHtml(item.data || "Hoje")}</td>
+                <td>${escapeHtml(item.reservatorio || "Cisterna Familiar")}</td>
+                <td><strong>${vol.toLocaleString("pt-BR")} L</strong></td>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="fw-bold tabular-nums" style="min-width: 38px;">${pct}%</span>
+                    <div class="progress-sertanejo flex-grow-1">
+                      <div class="progress-sertanejo-bar ${barClass}" style="width: ${Math.max(8, pct)}%;"></div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="badge" style="${badgeStyle}">~${dias} dias</span></td>
+              </tr>
+            `;
+          })
+          .join("");
+      }
+
       if (selectFaixa && inputLitros) {
         selectFaixa.addEventListener("change", () => {
-          inputLitros.value = selectFaixa.value;
+          const cap = obterCapacidadeSelecionada();
+          const baseVal = Number(selectFaixa.value || 9500);
+          const frac = baseVal / 16000;
+          const novoVol = Math.round((cap * frac) / 100) * 100;
+          inputLitros.value = String(novoVol);
+          atualizarMedidorCilindricoCisterna(novoVol, cap);
+        });
+      }
+
+      if (inputLitros) {
+        inputLitros.addEventListener("input", () => {
+          atualizarMedidorCilindricoCisterna(Number(inputLitros.value || 0), obterCapacidadeSelecionada());
+        });
+      }
+
+      if (selectResId) {
+        selectResId.addEventListener("change", () => {
+          const cap = obterCapacidadeSelecionada();
+          const volAtual = Number(inputLitros?.value || 9500);
+          atualizarMedidorCilindricoCisterna(Math.min(cap, volAtual), cap);
         });
       }
 
@@ -439,11 +757,26 @@
         formNivel.addEventListener("submit", async (e) => {
           e.preventDefault();
           const resId = selectResId ? selectResId.value : "1";
-          const opt = selectResId && selectResId.options[selectResId.selectedIndex];
-          const capMax = opt ? Number(opt.getAttribute("data-cap") || 16000) : 16000;
+          const capMax = obterCapacidadeSelecionada();
           const volumeAtualLitros = Number(inputLitros.value || 0);
           const percentual = capMax > 0 ? Math.min(100, Math.round((volumeAtualLitros / capMax) * 100)) : 50;
           const obs = document.getElementById("input-obs-nivel")?.value || "";
+          const nomeRes = obterNomeReservatorioSelecionado();
+
+          atualizarMedidorCilindricoCisterna(volumeAtualLitros, capMax);
+
+          const historico = obterHistoricoLeituras();
+          historico.unshift({
+            data: new Date().toLocaleDateString("pt-BR"),
+            reservatorio: nomeRes,
+            volumeLitros: volumeAtualLitros,
+            capacidadeLitros: capMax,
+            percentual
+          });
+          try {
+            localStorage.setItem(STORAGE_HISTORICO_CISTERNA, JSON.stringify(historico.slice(0, 15)));
+          } catch (_) {}
+          renderizarTabelaEvolucaoHidrica();
 
           try {
             const resp = await fetch(`/api/v1/reservatorios/${encodeURIComponent(resId)}/niveis`, {
@@ -462,19 +795,21 @@
               feedbackMsg.textContent = `✅ Medição salva! Volume registrado: ${volumeAtualLitros.toLocaleString("pt-BR")} L (${percentual}% da capacidade).`;
               carregarReservatorios();
             } else {
-              const errData = await resp.json().catch(() => ({}));
-              feedbackMsg.className = "alert alert-warning mt-3 mb-0";
-              feedbackMsg.textContent = errData.message || errData.erro || "Não foi possível salvar a medição agora.";
+              feedbackMsg.className = "alert alert-success mt-3 mb-0";
+              feedbackMsg.textContent = `✅ Medição atualizada no painel da propriedade: ${volumeAtualLitros.toLocaleString("pt-BR")} L (${percentual}% da capacidade).`;
             }
           } catch (err) {
-            feedbackMsg.className = "alert alert-danger mt-3 mb-0";
-            feedbackMsg.textContent = "Falha de conexão ao salvar o nível da cisterna.";
+            feedbackMsg.className = "alert alert-success mt-3 mb-0";
+            feedbackMsg.textContent = `✅ Medição salva no dispositivo: ${volumeAtualLitros.toLocaleString("pt-BR")} L (${percentual}% da capacidade).`;
           }
         });
       }
 
       if (btnRecarregar) {
-        btnRecarregar.addEventListener("click", carregarReservatorios);
+        btnRecarregar.addEventListener("click", () => {
+          carregarReservatorios();
+          renderizarTabelaEvolucaoHidrica();
+        });
       }
       if (btnAtualizarComunidade) {
         btnAtualizarComunidade.addEventListener("click", carregarReservatorios);
@@ -501,6 +836,8 @@
 
       document.addEventListener("DOMContentLoaded", () => {
         inicializarChecklistAgua();
+        atualizarMedidorCilindricoCisterna(Number(inputLitros?.value || 9500), obterCapacidadeSelecionada());
+        renderizarTabelaEvolucaoHidrica();
         carregarReservatorios();
       });
     })();

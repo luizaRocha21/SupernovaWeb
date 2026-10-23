@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-label="Água dos Açudes — Açude sereno, barrancos terracota, árvore sertaneja, cactos e cisterna no morro">
+  <defs>
+    <clipPath id="clip-medallion-acudes">
+      <circle cx="120" cy="120" r="110" />
+    </clipPath>
+  </defs>
+
+  <!-- Fundo base do medalhão -->
+  <circle cx="120" cy="120" r="112" fill="#fbf6e9" stroke="#542817" stroke-width="5" />
+
+  <g clip-path="url(#clip-medallion-acudes)" stroke="#542817" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Céu creme iluminado -->
+    <rect x="0" y="0" width="240" height="240" fill="#fbf6e9" stroke="none" />
+
+    <!-- Sol ocre radiante ao fundo -->
+    <g>
+      <circle cx="136" cy="64" r="24" fill="#bd7627" />
+      <line x1="136" y1="30" x2="136" y2="18" />
+      <line x1="160" y1="40" x2="170" y2="30" />
+      <line x1="170" y1="64" x2="182" y2="64" />
+      <line x1="112" y1="40" x2="102" y2="30" />
+      <line x1="102" y1="64" x2="90" y2="64" />
+    </g>
+
+    <!-- Morro ao fundo à direita com cisterna no alto -->
+    <path d="M110 144 Q168 106, 240 126 L240 170 L110 170 Z" fill="#d2b48c" />
+    <!-- Cisterna no alto do morro à direita -->
+    <g>
+      <rect x="176" y="98" width="26" height="18" rx="2" fill="#fffaf0" />
+      <polygon points="173,98 189,86 205,98" fill="#c8a97e" />
+      <line x1="176" y1="107" x2="202" y2="107" stroke-width="1.4" />
+    </g>
+
+    <!-- Barranco terracota à esquerda -->
+    <path d="M0 128 Q58 124, 114 146 L0 164 Z" fill="#a64f2e" />
+
+    <!-- Árvore sertaneja frondosa (Juazeiro/Umbuzeiro) à esquerda -->
+    <g>
+      <!-- Tronco e galhos -->
+      <path d="M52 136 L52 104 M52 116 L38 102 M52 112 L66 100" fill="none" stroke="#542817" stroke-width="3.5" />
+      <!-- Copa verde-oliva em camadas orgânicas -->
+      <path d="M24 104 C16 104, 12 92, 20 84 C18 74, 30 66, 40 70 C48 60, 66 60, 72 72 C82 70, 90 80, 84 90 C90 98, 82 106, 72 104 Z" fill="#5d603d" />
+      <path d="M32 92 Q48 84, 66 92" fill="none" stroke="#fbf6e9" stroke-width="1.5" opacity="0.6" />
+    </g>
+
+    <!-- Açude amplo de águas serenas no centro -->
+    <path d="M0 146 Q90 138, 240 144 L240 206 L0 206 Z" fill="#8ab0ab" />
+    <!-- Linhas de ondulação da água e reflexos -->
+    <g fill="none">
+      <path d="M34 158 Q62 154, 90 158 T146 158" stroke="#542817" stroke-width="1.8" />
+      <path d="M78 170 Q112 165, 146 170 T204 170" stroke="#542817" stroke-width="1.8" />
+      <path d="M28 182 Q68 177, 108 182 T178 182" stroke="#542817" stroke-width="1.8" />
+      <path d="M116 152 L152 152" stroke="#fffaf0" stroke-width="2" />
+      <path d="M122 163 L146 163" stroke="#fffaf0" stroke-width="1.8" />
+      <path d="M52 174 L84 174" stroke="#fffaf0" stroke-width="1.8" />
+    </g>
+
+    <!-- Margens e barrancos terracota em primeiro plano -->
+    <path d="M0 184 Q65 176, 118 196 L118 240 L0 240 Z" fill="#a64f2e" />
+    <path d="M122 196 Q178 176, 240 182 L240 240 L122 240 Z" fill="#8c4124" />
+    <path d="M0 204 Q120 192, 240 204 L240 240 L0 240 Z" fill="#542817" />
+
+    <!-- Cactos em primeiro plano (Mandacaru e Xique-xique) -->
+    <g>
+      <!-- Mandacaru à direita -->
+      <path d="M186 202 L186 140 C186 134, 196 134, 196 140 L196 202 Z" fill="#5d603d" />
+      <path d="M186 170 L176 170 C172 170, 170 166, 170 160 L170 148 C170 144, 177 144, 177 148 L177 160 L186 160 Z" fill="#5d603d" />
+      <!-- Pequeno cacto à esquerda -->
+      <path d="M48 200 L48 162 C48 157, 56 157, 56 162 L56 200 Z" fill="#5d603d" />
+      <path d="M56 182 L64 182 C67 182, 69 179, 69 175 L69 166 C69 162, 63 162, 63 166 L63 175 L56 175 Z" fill="#5d603d" />
+    </g>
+  </g>
+
+  <!-- Aro duplo editorial sertanejo -->
+  <circle cx="120" cy="120" r="112" fill="none" stroke="#542817" stroke-width="5" />
+  <circle cx="120" cy="120" r="106" fill="none" stroke="#542817" stroke-width="1.2" stroke-dasharray="6 4" opacity="0.65" />
+</svg>

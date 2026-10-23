@@ -150,7 +150,7 @@
         </div>
       </div>
 
-      <!-- 3 Cards de Referência sem códigos RN01/Zea mays, sem -- mm e sem undefined undefined (Foto 2) -->
+      <!-- 3 Cards de Referência sem códigos RN01/Zea mays, sem -- mm e sem undefined undefined + Barra Visual .progress-sertanejo -->
       <div class="row g-4 mb-4" id="grid-referencia-culturas">
         <!-- Card 1: Milho -->
         <div class="col-12 col-md-6 col-lg-4 d-flex">
@@ -162,7 +162,7 @@
                   Aguardar mais chuva
                 </span>
               </div>
-              <div class="row g-2 mb-3">
+              <div class="row g-2 mb-2">
                 <div class="col-6">
                   <div class="p-2 rounded-3" style="background-color: #f4eddb; border: 1px solid #d2c2a9;">
                     <span class="small d-block" style="color: #6e6252;">Chuva mínima (30 dias)</span>
@@ -174,6 +174,15 @@
                     <span class="small d-block" style="color: #6e6252;">Acumulado atual</span>
                     <strong id="ref-acumulado-milho" class="fs-6" style="color: #542817;">0.3 mm</strong>
                   </div>
+                </div>
+              </div>
+              <div class="mb-3">
+                <div class="d-flex justify-content-between small mb-1" style="color: #6e6252;">
+                  <span>Progresso hídrico</span>
+                  <strong id="ref-bar-label-milho" class="tabular-nums" style="color: #542817;">0.3 / 120 mm</strong>
+                </div>
+                <div class="progress-sertanejo" role="progressbar" aria-label="Progresso de chuva para plantio de Milho">
+                  <div id="ref-bar-milho" class="progress-sertanejo-bar is-terracotta" style="width: 6%;"></div>
                 </div>
               </div>
               <p id="ref-texto-milho" class="small mb-0" style="font-family: 'DM Sans', sans-serif; color: #6e6252; line-height: 1.55;">
@@ -197,7 +206,7 @@
                   Aguardar mais chuva
                 </span>
               </div>
-              <div class="row g-2 mb-3">
+              <div class="row g-2 mb-2">
                 <div class="col-6">
                   <div class="p-2 rounded-3" style="background-color: #f4eddb; border: 1px solid #d2c2a9;">
                     <span class="small d-block" style="color: #6e6252;">Chuva mínima (20 dias)</span>
@@ -209,6 +218,15 @@
                     <span class="small d-block" style="color: #6e6252;">Acumulado atual</span>
                     <strong id="ref-acumulado-caupi" class="fs-6" style="color: #542817;">0.3 mm</strong>
                   </div>
+                </div>
+              </div>
+              <div class="mb-3">
+                <div class="d-flex justify-content-between small mb-1" style="color: #6e6252;">
+                  <span>Progresso hídrico</span>
+                  <strong id="ref-bar-label-caupi" class="tabular-nums" style="color: #542817;">0.3 / 110 mm</strong>
+                </div>
+                <div class="progress-sertanejo" role="progressbar" aria-label="Progresso de chuva para plantio de Feijão-Caupi">
+                  <div id="ref-bar-caupi" class="progress-sertanejo-bar is-terracotta" style="width: 6%;"></div>
                 </div>
               </div>
               <p id="ref-texto-caupi" class="small mb-0" style="font-family: 'DM Sans', sans-serif; color: #6e6252; line-height: 1.55;">
@@ -232,7 +250,7 @@
                   Aguardar mais chuva
                 </span>
               </div>
-              <div class="row g-2 mb-3">
+              <div class="row g-2 mb-2">
                 <div class="col-6">
                   <div class="p-2 rounded-3" style="background-color: #f4eddb; border: 1px solid #d2c2a9;">
                     <span class="small d-block" style="color: #6e6252;">Chuva mínima (25 dias)</span>
@@ -244,6 +262,15 @@
                     <span class="small d-block" style="color: #6e6252;">Acumulado atual</span>
                     <strong id="ref-acumulado-mamona" class="fs-6" style="color: #542817;">0.3 mm</strong>
                   </div>
+                </div>
+              </div>
+              <div class="mb-3">
+                <div class="d-flex justify-content-between small mb-1" style="color: #6e6252;">
+                  <span>Progresso hídrico</span>
+                  <strong id="ref-bar-label-mamona" class="tabular-nums" style="color: #542817;">0.3 / 90 mm</strong>
+                </div>
+                <div class="progress-sertanejo" role="progressbar" aria-label="Progresso de chuva para plantio de Mamona">
+                  <div id="ref-bar-mamona" class="progress-sertanejo-bar is-terracotta" style="width: 6%;"></div>
                 </div>
               </div>
               <p id="ref-texto-mamona" class="small mb-0" style="font-family: 'DM Sans', sans-serif; color: #6e6252; line-height: 1.55;">
@@ -299,6 +326,101 @@
           </div>
           <div id="limiar-feedback" class="small fw-semibold mt-2 d-none" role="status" aria-live="polite"></div>
         </form>
+      </div>
+    </section>
+
+    <!-- Seção Visual Editorial: Medalhão "Calendário da Roça" + Tabela Resumo do Calendário e Ciclo de Plantio -->
+    <section class="mb-4" aria-labelledby="titulo-tabela-calendario">
+      <div class="row g-4 align-items-stretch">
+        <div class="col-12 col-lg-4">
+          <article class="medallion-card">
+            <div class="medallion-img-wrap">
+              <img
+                src="/assets/images/arte-calendario-roca.svg"
+                alt="Medalhão ilustrado: Calendário da Roça com agricultor sertanejo cuidando de milho e feijão"
+                class="medallion-svg"
+              />
+            </div>
+            <span class="eyebrow mb-1" style="color: #5d603d;">PLANEJAMENTO DE SAFRA</span>
+            <h2 id="titulo-tabela-calendario" class="h4 mb-2" style="font-family: 'Newsreader', Georgia, serif; font-weight: 400; color: #542817;">
+              Calendário e <em style="color: #bd7627; font-style: italic;">Ciclo da Roça</em>
+            </h2>
+            <p>
+              Compare lado a lado a exigência de chuva, o tempo até a colheita, o espaçamento entre linhas e covas e os consórcios mais produtivos para o Semiárido Baiano.
+            </p>
+          </article>
+        </div>
+
+        <div class="col-12 col-lg-8">
+          <div class="editorial-chart-box">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+              <div>
+                <span class="eyebrow d-block mb-1" style="color: #5d603d;">CONSULTA RÁPIDA POR CULTURA</span>
+                <h3 class="h5 mb-0" style="font-family: 'Newsreader', Georgia, serif; font-weight: 400; color: #542817;">
+                  Tabela de Ciclo, Espaçamento e Consórcio
+                </h3>
+              </div>
+              <span class="badge" style="background-color: #f4eddb; border: 1px solid #d2c2a9; color: #542817;">Semiárido Baiano</span>
+            </div>
+
+            <div class="table-responsive">
+              <table class="editorial-table mb-0" aria-label="Tabela Resumo do Calendário e Ciclo de Plantio">
+                <thead>
+                  <tr>
+                    <th scope="col">Lavoura</th>
+                    <th scope="col">Chuva Mínima Ideal</th>
+                    <th scope="col">Ciclo até a Colheita</th>
+                    <th scope="col">Espaçamento Recomendado</th>
+                    <th scope="col">Consórcio Indicado</th>
+                    <th scope="col">Situação Hoje na Roça</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="fw-bold">🌽 Milho Crioulo</td>
+                    <td id="tab-limiar-milho">120 mm (30d)</td>
+                    <td>90 a 110 dias</td>
+                    <td>0,80 m × 0,25 m</td>
+                    <td>Feijão-Caupi + Guandu</td>
+                    <td><span id="tab-status-milho" class="badge" style="background-color: #f7ecda; border: 1px solid #dfc298; color: #7d4e14;">Aguardar mais chuva</span></td>
+                  </tr>
+                  <tr>
+                    <td class="fw-bold">🫘 Feijão-Caupi</td>
+                    <td id="tab-limiar-caupi">110 mm (20d)</td>
+                    <td>60 a 75 dias</td>
+                    <td>0,50 m × 0,20 m</td>
+                    <td>Milho ou Mandioca</td>
+                    <td><span id="tab-status-caupi" class="badge" style="background-color: #f7ecda; border: 1px solid #dfc298; color: #7d4e14;">Aguardar mais chuva</span></td>
+                  </tr>
+                  <tr>
+                    <td class="fw-bold">🌿 Mamona</td>
+                    <td id="tab-limiar-mamona">90 mm (25d)</td>
+                    <td>140 a 160 dias</td>
+                    <td>3,00 m × 1,00 m</td>
+                    <td>Feijão-Caupi nas entrelinhas</td>
+                    <td><span id="tab-status-mamona" class="badge" style="background-color: #f7ecda; border: 1px solid #dfc298; color: #7d4e14;">Aguardar mais chuva</span></td>
+                  </tr>
+                  <tr>
+                    <td class="fw-bold">🥔 Mandioca de Sequeiro</td>
+                    <td>80 mm (30d)</td>
+                    <td>10 a 14 meses</td>
+                    <td>1,00 m × 0,80 m</td>
+                    <td>Feijão-Caupi nos primeiros 60d</td>
+                    <td><span id="tab-status-mandioca" class="badge" style="background-color: #f7ecda; border: 1px solid #dfc298; color: #7d4e14;">Aguardar primeiras águas</span></td>
+                  </tr>
+                  <tr>
+                    <td class="fw-bold">🌵 Palma &amp; Sorgo</td>
+                    <td>25 a 50 mm</td>
+                    <td>Sorgo: 85 dias / Palma: perene</td>
+                    <td>1,50 m × 0,20 m (fileira dupla)</td>
+                    <td>Gliricídia / Leucena</td>
+                    <td><span id="tab-status-palma" class="badge" style="background-color: #e9efe2; border: 1px solid #b8c7a6; color: #3e4a26;">Liberado para Manejo</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -626,7 +748,11 @@
             limiarId: "ref-limiar-milho",
             acumuladoId: "ref-acumulado-milho",
             textoId: "ref-texto-milho",
-            pctId: "ref-pct-milho"
+            pctId: "ref-pct-milho",
+            barId: "ref-bar-milho",
+            barLabelId: "ref-bar-label-milho",
+            tabLimiarId: "tab-limiar-milho",
+            tabStatusId: "tab-status-milho"
           },
           {
             slug: "feijao-caupi",
@@ -637,7 +763,11 @@
             limiarId: "ref-limiar-caupi",
             acumuladoId: "ref-acumulado-caupi",
             textoId: "ref-texto-caupi",
-            pctId: "ref-pct-caupi"
+            pctId: "ref-pct-caupi",
+            barId: "ref-bar-caupi",
+            barLabelId: "ref-bar-label-caupi",
+            tabLimiarId: "tab-limiar-caupi",
+            tabStatusId: "tab-status-caupi"
           },
           {
             slug: "mamona",
@@ -648,7 +778,11 @@
             limiarId: "ref-limiar-mamona",
             acumuladoId: "ref-acumulado-mamona",
             textoId: "ref-texto-mamona",
-            pctId: "ref-pct-mamona"
+            pctId: "ref-pct-mamona",
+            barId: "ref-bar-mamona",
+            barLabelId: "ref-bar-label-mamona",
+            tabLimiarId: "tab-limiar-mamona",
+            tabStatusId: "tab-status-mamona"
           }
         ];
 
@@ -663,7 +797,7 @@
           let status = "INAPTO";
           if (acumuladoReal >= limiarAtivo) {
             status = "FAVORAVEL";
-          } else if (acumuladoReal >= limiarAtivo * 0.65) {
+          } else if (acumuladoReal >= limiarAtivo * 0.5) {
             status = "ATENCAO";
           }
 
@@ -672,11 +806,31 @@
           const elAcumulado = document.getElementById(def.acumuladoId);
           const elTexto = document.getElementById(def.textoId);
           const elPct = document.getElementById(def.pctId);
+          const elBar = document.getElementById(def.barId);
+          const elBarLabel = document.getElementById(def.barLabelId);
+          const elTabLimiar = document.getElementById(def.tabLimiarId);
+          const elTabStatus = document.getElementById(def.tabStatusId);
 
           aplicarEstiloBadgeReferencia(elBadge, status);
+          aplicarEstiloBadgeReferencia(elTabStatus, status);
+
           if (elLimiar) elLimiar.textContent = `${limiarAtivo} mm`;
+          if (elTabLimiar) elTabLimiar.textContent = `${limiarAtivo} mm (${def.janelaDias}d)`;
           if (elAcumulado) elAcumulado.textContent = `${acumuladoReal.toFixed(1)} mm`;
           if (elPct) elPct.textContent = `${pct}% atingido`;
+          if (elBarLabel) elBarLabel.textContent = `${acumuladoReal.toFixed(1)} / ${limiarAtivo} mm`;
+
+          if (elBar) {
+            const larguraVisual = Math.min(100, Math.max(6, pct));
+            elBar.style.width = `${larguraVisual}%`;
+            if (pct >= 100) {
+              elBar.className = "progress-sertanejo-bar is-olive";
+            } else if (pct >= 50) {
+              elBar.className = "progress-sertanejo-bar is-ochre";
+            } else {
+              elBar.className = "progress-sertanejo-bar is-terracotta";
+            }
+          }
 
           if (elTexto) {
             if (def.slug === "mamona") {
@@ -691,6 +845,11 @@
             }
           }
         });
+
+        const tabMandioca = document.getElementById("tab-status-mandioca");
+        if (tabMandioca) {
+          aplicarEstiloBadgeReferencia(tabMandioca, acumuladoReal >= 80 ? "FAVORAVEL" : acumuladoReal >= 40 ? "ATENCAO" : "INAPTO");
+        }
       }
 
       function atualizarBadgesAptidao(chuva7d) {

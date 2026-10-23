@@ -501,3 +501,54 @@
     gap: 4px;
   }
 }
+
+/* PLANO 8 — MEDALHÕES CIRCULARES, GRÁFICOS DE CHUVA E MEDIDOR DE UMIDADE NO PAINEL */
+.clima-dinamico-card .medallion-img-wrap,
+.medallion-img-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.clima-dinamico-card img.medallion-svg {
+  border-radius: 50%;
+  object-fit: contain;
+  display: block;
+}
+
+.editorial-chart-box {
+  background: #fffaf0;
+  border: 1px solid #d2c2a9;
+  border-radius: 12px;
+  padding: 1.35rem;
+  height: 100%;
+}
+
+.soil-gauge-needle {
+  transform-origin: 150px 132px;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (max-width: 767.98px) {
+  .clima-dinamico-card img.medallion-svg {
+    width: 155px;
+    height: 155px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .clima-dinamico-card img.medallion-svg {
+    width: 170px;
+    height: 170px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .clima-dinamico-card img.medallion-svg {
+    width: 190px;
+    height: 190px;
+  }
+}
+

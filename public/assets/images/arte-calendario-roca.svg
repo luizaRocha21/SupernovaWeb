@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-label="Calendário da Roça — Agricultor sertanejo de chapéu de palha cuidando do milho e feijão">
+  <defs>
+    <clipPath id="clip-medallion-calendario">
+      <circle cx="120" cy="120" r="110" />
+    </clipPath>
+  </defs>
+
+  <!-- Fundo base do medalhão -->
+  <circle cx="120" cy="120" r="112" fill="#fbf6e9" stroke="#542817" stroke-width="5" />
+
+  <g clip-path="url(#clip-medallion-calendario)" stroke="#542817" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Céu creme -->
+    <rect x="0" y="0" width="240" height="240" fill="#fbf6e9" stroke="none" />
+
+    <!-- Sol ocre radiante com raios longos no céu -->
+    <g>
+      <circle cx="164" cy="58" r="24" fill="#bd7627" />
+      <g stroke="#bd7627" stroke-width="2">
+        <line x1="164" y1="24" x2="164" y2="12" />
+        <line x1="190" y1="34" x2="202" y2="22" />
+        <line x1="198" y1="58" x2="214" y2="58" />
+        <line x1="190" y1="82" x2="202" y2="94" />
+        <line x1="138" y1="34" x2="124" y2="20" />
+        <line x1="130" y1="58" x2="112" y2="58" />
+        <line x1="138" y1="82" x2="124" y2="94" />
+      </g>
+    </g>
+
+    <!-- Colinas suaves e cactos ao fundo -->
+    <path d="M0 152 Q75 134, 148 148 T240 142 L240 240 L0 240 Z" fill="#e9dec8" />
+    <!-- Mandacaru ao fundo direito -->
+    <path d="M196 154 L196 112 C196 108, 203 108, 203 112 L203 154 Z" fill="#5d603d" />
+    <path d="M196 136 L189 136 C186 136, 185 133, 185 129 L185 120 C185 117, 190 117, 190 120 L190 129 L196 129 Z" fill="#5d603d" />
+
+    <!-- Solo terracota preparado para o plantio -->
+    <path d="M0 168 Q92 156, 170 168 T240 164 L240 240 L0 240 Z" fill="#a64f2e" />
+
+    <!-- Camada de cobertura morta (palhada dourada) sobre o canteiro -->
+    <path d="M0 182 Q85 174, 165 184 T240 180 L240 202 L0 202 Z" fill="#d8a452" />
+    <g stroke="#542817" stroke-width="1.6">
+      <line x1="24" y1="188" x2="48" y2="185" />
+      <line x1="62" y1="190" x2="88" y2="186" />
+      <line x1="108" y1="188" x2="136" y2="192" />
+      <line x1="152" y1="191" x2="182" y2="187" />
+    </g>
+
+    <!-- Base escura do solo -->
+    <path d="M0 198 Q110 192, 240 198 L240 240 L0 240 Z" fill="#542817" />
+
+    <!-- Pés de milho com espiga à direita do agricultor -->
+    <g>
+      <path d="M156 188 L156 102" fill="none" stroke="#542817" stroke-width="3" />
+      <path d="M156 164 C140 152, 126 156, 120 166 C132 164, 144 166, 156 170 Z" fill="#5d603d" />
+      <path d="M156 142 C172 128, 188 132, 194 144 C182 140, 168 142, 156 148 Z" fill="#5d603d" />
+      <path d="M156 124 C140 112, 126 115, 120 126 C132 122, 144 125, 156 130 Z" fill="#5d603d" />
+      <path d="M156 118 C170 106, 184 110, 188 120 C178 117, 166 119, 156 124 Z" fill="#5d603d" />
+      <!-- Espiga dourada -->
+      <path d="M158 136 C165 124, 174 125, 172 138 C170 145, 163 148, 157 144 Z" fill="#bd7627" />
+      <!-- Pendão -->
+      <path d="M156 102 L150 92 M156 102 L156 90 M156 102 L162 92" stroke="#bd7627" stroke-width="2" />
+    </g>
+
+    <!-- Mudas de feijão no centro sendo cuidadas pelo agricultor -->
+    <g>
+      <path d="M118 186 C118 172, 120 162, 122 152" fill="none" stroke="#542817" stroke-width="2.5" />
+      <path d="M119 166 C109 158, 102 162, 105 170 C110 172, 116 170, 119 166 Z" fill="#5d603d" />
+      <path d="M121 160 C131 152, 138 156, 135 164 C130 166, 124 164, 121 160 Z" fill="#5d603d" />
+    </g>
+
+    <!-- Agricultor sertanejo de chapéu de palha agachado cuidando da terra (esquerda) -->
+    <g>
+      <!-- Perna dobrada e bota/alpercata -->
+      <path d="M52 186 L76 186 L72 164 L50 168 Z" fill="#6b7048" />
+      <rect x="44" y="182" width="18" height="7" rx="3" fill="#542817" />
+      <!-- Tronco / camisa clara de roça -->
+      <path d="M46 168 C44 146, 54 128, 70 128 L82 146 L68 170 Z" fill="#fffaf0" />
+      <!-- Braço estendido cuidando da muda de feijão -->
+      <path d="M68 136 L92 154 L108 160" fill="none" stroke="#8c583a" stroke-width="6" />
+      <path d="M68 136 L92 154 L108 160" fill="none" stroke="#542817" stroke-width="2.5" />
+      <path d="M64 132 L82 146 L74 154 L58 142 Z" fill="#bd7627" />
+      <!-- Cabeça inclinada olhando a planta -->
+      <circle cx="74" cy="116" r="10" fill="#8c583a" />
+      <!-- Chapéu de palha sertanejo de aba larga -->
+      <path d="M54 114 C64 110, 86 110, 98 116 C86 120, 64 120, 54 114 Z" fill="#d8a452" />
+      <path d="M63 113 C65 101, 83 101, 86 113 Z" fill="#d8a452" />
+      <path d="M64 111 L85 111" stroke="#542817" stroke-width="2" />
+    </g>
+  </g>
+
+  <!-- Aro duplo editorial sertanejo -->
+  <circle cx="120" cy="120" r="112" fill="none" stroke="#542817" stroke-width="5" />
+  <circle cx="120" cy="120" r="106" fill="none" stroke="#542817" stroke-width="1.2" stroke-dasharray="6 4" opacity="0.65" />
+</svg>
