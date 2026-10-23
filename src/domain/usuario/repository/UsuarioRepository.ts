@@ -3,10 +3,19 @@ import { RocaUsuario, Usuario } from '../model/Usuario.js';
 import { TipoPerfil } from '../enums/TipoPerfil.js';
 import { TipoFonteAgua } from '../enums/TipoFonteAgua.js';
 import { IUsuarioRepository, NovoUsuarioInput } from './IUsuarioRepository.js';
+import {
+  firebaseClient,
+  FIREBASE_COLLECTIONS
+} from '../../../infrastructure/database/FirebaseClient.js';
 
 const senhaPadraoHash = bcrypt.hashSync('Sertao@2026', 8);
 
-function criarRocaPadraoPorLocalidade(idRoca: number, usuarioId: number, localidadeId: number, nomePropriedade?: string): RocaUsuario {
+function criarRocaPadraoPorLocalidade(
+  idRoca: number,
+  usuarioId: number,
+  localidadeId: number,
+  nomePropriedade?: string
+): RocaUsuario {
   const isPresidenteDutra = Number(localidadeId) === 2 || Number(localidadeId) === 4;
   return {
     id: idRoca,
@@ -190,6 +199,74 @@ export class UsuarioRepository implements IUsuarioRepository {
     rocas: u.rocas.map((r) => ({ ...r, culturas: [...r.culturas] }))
   }));
 
+  constructor() {
+    void this.inicializarFirebase();
+  }
+
+  private async inicializarFirebase(): Promise<void> {
+    try {
+      const usuariosNuvem = await firebaseClient.listarColecao<Usuario>(
+        FIREBASE_COLLECTIONS.USUARIOS
+      );
+      const rocasNuvem = await firebaseClient.listarColecao<RocaUsuario>(
+        FIREBASE_COLLECTIONS.ROCAS
+      );
+
+      if (usuariosNuvem && usuariosNuvem.length > 0) {
+        const mapaPorId = new Map<number, Usuario>();
+        for (const u of this.usuarios) {
+          mapaPorId.set(Number(u.id), u);
+        }
+        for (const uNuvem of usuariosNuvem) {
+          if (!uNuvem || !uNuvem.id) continue;
+          const idNum = Number(uNuvem.id);
+          const rocasDoUsuario =
+            rocasNuvem && rocasNuvem.length > 0
+              ? rocasNuvem.filter((r) => Number(r.usuarioId) === idNum)
+              : [];
+          const rocasFinais =
+            rocasDoUsuario.length > 0
+              ? rocasDoUsuario
+              : Array.isArray(uNuvem.rocas) && uNuvem.rocas.length > 0
+              ? uNuvem.rocas
+              : [criarRocaPadraoPorLocalidade(this.proximoRocaId(), idNum, Number(uNuvem.localidadeId) || 1)];
+
+          mapaPorId.set(idNum, {
+            ...uNuvem,
+            id: idNum,
+            rocas: this.garantirRocaPrincipal(rocasFinais)
+          });
+        }
+        this.usuarios = Array.from(mapaPorId.values()).sort((a, b) => a.id - b.id);
+      }
+
+      // Garante que os 5 usuários oficiais e todas as suas roças estejam sincronizados no Firebase
+      for (const usuario of this.usuarios) {
+        await this.sincronizarUsuarioERocasNoFirebase(usuario);
+      }
+    } catch (erro) {
+      console.warn(
+        '[UsuarioRepository] Falha ao sincronizar carga inicial com Firebase:',
+        erro instanceof Error ? erro.message : String(erro)
+      );
+    }
+  }
+
+  private async sincronizarUsuarioERocasNoFirebase(usuario: Usuario): Promise<void> {
+    await firebaseClient.salvarDocumento(
+      FIREBASE_COLLECTIONS.USUARIOS,
+      String(usuario.id),
+      usuario as unknown as Record<string, unknown>
+    );
+    for (const roca of usuario.rocas || []) {
+      await firebaseClient.salvarDocumento(
+        FIREBASE_COLLECTIONS.ROCAS,
+        String(roca.id),
+        roca as unknown as Record<string, unknown>
+      );
+    }
+  }
+
   private proximoRocaId(): number {
     let maior = 6;
     for (const u of this.usuarios) {
@@ -269,6 +346,7 @@ export class UsuarioRepository implements IUsuarioRepository {
       criadoEm: dados.criadoEm || new Date().toISOString()
     };
     this.usuarios.push(novo);
+    void this.sincronizarUsuarioERocasNoFirebase(novo);
     return novo;
   }
 
@@ -288,13 +366,26 @@ export class UsuarioRepository implements IUsuarioRepository {
       rocas: dados.rocas ? this.garantirRocaPrincipal(dados.rocas) : atual.rocas
     };
     this.usuarios[idx] = atualizado;
+    void this.sincronizarUsuarioERocasNoFirebase(atualizado);
     return atualizado;
   }
 
   public remover(id: number): boolean {
+    const existente = this.usuarios.find((u) => u.id === id);
     const tamanhoAntes = this.usuarios.length;
     this.usuarios = this.usuarios.filter((u) => u.id !== id);
-    return this.usuarios.length < tamanhoAntes;
+    const removeu = this.usuarios.length < tamanhoAntes;
+
+    if (removeu) {
+      void firebaseClient.removerDocumento(FIREBASE_COLLECTIONS.USUARIOS, String(id));
+      if (existente && Array.isArray(existente.rocas)) {
+        for (const r of existente.rocas) {
+          void firebaseClient.removerDocumento(FIREBASE_COLLECTIONS.ROCAS, String(r.id));
+        }
+      }
+    }
+
+    return removeu;
   }
 
   public listarRocas(usuarioId: number): RocaUsuario[] {
@@ -303,7 +394,10 @@ export class UsuarioRepository implements IUsuarioRepository {
     return [...usuario.rocas];
   }
 
-  public adicionarRoca(usuarioId: number, dados: Omit<RocaUsuario, 'id' | 'usuarioId'>): RocaUsuario | undefined {
+  public adicionarRoca(
+    usuarioId: number,
+    dados: Omit<RocaUsuario, 'id' | 'usuarioId'>
+  ): RocaUsuario | undefined {
     const usuario = this.buscarPorId(usuarioId);
     if (!usuario) return undefined;
 
@@ -325,13 +419,15 @@ export class UsuarioRepository implements IUsuarioRepository {
       codigoIbge: (dados.codigoIbge || '2914604').trim(),
       latitude: Number(dados.latitude),
       longitude: Number(dados.longitude),
-      culturas: Array.isArray(dados.culturas) && dados.culturas.length > 0 ? dados.culturas : ['Milho'],
+      culturas:
+        Array.isArray(dados.culturas) && dados.culturas.length > 0 ? dados.culturas : ['Milho'],
       areaHectares: dados.areaHectares !== undefined ? Number(dados.areaHectares) : undefined,
       principal: deveSerPrincipal
     };
 
     usuario.rocas.push(novaRoca);
     this.garantirRocaPrincipal(usuario.rocas);
+    void this.sincronizarUsuarioERocasNoFirebase(usuario);
     return novaRoca;
   }
 
@@ -372,6 +468,7 @@ export class UsuarioRepository implements IUsuarioRepository {
     }
 
     this.garantirRocaPrincipal(usuario.rocas);
+    void this.sincronizarUsuarioERocasNoFirebase(usuario);
     return roca;
   }
 
@@ -394,9 +491,10 @@ export class UsuarioRepository implements IUsuarioRepository {
 
     usuario.rocas.splice(idx, 1);
     this.garantirRocaPrincipal(usuario.rocas);
+    void firebaseClient.removerDocumento(FIREBASE_COLLECTIONS.ROCAS, String(rocaId));
+    void this.sincronizarUsuarioERocasNoFirebase(usuario);
     return { removida: true, rocasRestantes: [...usuario.rocas] };
   }
 }
 
 export const usuarioRepository = new UsuarioRepository();
-

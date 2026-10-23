@@ -13,6 +13,7 @@ import { LoginRequestDTO } from '../dto/LoginRequestDTO.js';
 import { LoginResponseDTO, UsuarioResponseDTO } from '../dto/UsuarioResponseDTO.js';
 import { IUsuarioRepository } from '../repository/IUsuarioRepository.js';
 import { usuarioRepository } from '../repository/UsuarioRepository.js';
+import { CATALOGO_OFICIAL_CIDADES_BA } from '../../clima/service/RadarMeteorologicoService.js';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -22,6 +23,16 @@ interface MunicipioRef {
   codigoIbge: string;
   latitude: number;
   longitude: number;
+}
+
+function normalizarTextoCidade(valor: string): string {
+  return String(valor || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
 }
 
 const MUNICIPIOS_REFERENCIA: Record<string, MunicipioRef> = {
@@ -51,6 +62,23 @@ const MUNICIPIOS_REFERENCIA: Record<string, MunicipioRef> = {
   '2901155': { municipio: 'América Dourada', uf: 'BA', codigoIbge: '2901155', latitude: -11.4553, longitude: -41.4361 }
 };
 
+for (const cid of CATALOGO_OFICIAL_CIDADES_BA) {
+  const ref: MunicipioRef = {
+    municipio: cid.nome,
+    uf: 'BA',
+    codigoIbge: cid.codigo_ibge,
+    latitude: cid.latitude,
+    longitude: cid.longitude
+  };
+  const chaveExata = cid.nome.trim().toLowerCase();
+  const chaveNorm = normalizarTextoCidade(cid.nome);
+  if (!MUNICIPIOS_REFERENCIA[chaveExata]) MUNICIPIOS_REFERENCIA[chaveExata] = ref;
+  if (!MUNICIPIOS_REFERENCIA[chaveNorm]) MUNICIPIOS_REFERENCIA[chaveNorm] = ref;
+  if (cid.codigo_ibge && !MUNICIPIOS_REFERENCIA[cid.codigo_ibge]) {
+    MUNICIPIOS_REFERENCIA[cid.codigo_ibge] = ref;
+  }
+}
+
 function normalizarCulturas(culturas?: string[] | string): string[] {
   if (Array.isArray(culturas)) {
     const limpas = culturas.map((c) => String(c).trim()).filter(Boolean);
@@ -74,6 +102,10 @@ function resolverReferenciaMunicipio(
     const chave = municipioOuIbge.trim().toLowerCase();
     if (MUNICIPIOS_REFERENCIA[chave]) {
       return MUNICIPIOS_REFERENCIA[chave];
+    }
+    const chaveNorm = normalizarTextoCidade(municipioOuIbge);
+    if (MUNICIPIOS_REFERENCIA[chaveNorm]) {
+      return MUNICIPIOS_REFERENCIA[chaveNorm];
     }
   }
   if (Number(localidadeId) === 2 || Number(localidadeId) === 4) {

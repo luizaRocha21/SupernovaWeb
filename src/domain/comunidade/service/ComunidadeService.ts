@@ -95,8 +95,16 @@ export class ComunidadeService {
   }
 
   public publicar(dto: CriarComunicadoRequestDTO): ComunicadoResponseDTO {
-    const tituloBruto = (dto.titulo || '').trim();
-    const conteudoBruto = (dto.conteudo || dto.mensagem || '').trim();
+    let tituloBruto = (dto.titulo || '').trim();
+    let conteudoBruto = (dto.conteudo || dto.mensagem || '').trim();
+
+    if (!tituloBruto && conteudoBruto.includes(':')) {
+      const idx = conteudoBruto.indexOf(':');
+      tituloBruto = conteudoBruto.slice(0, idx).trim();
+      conteudoBruto = conteudoBruto.slice(idx + 1).trim();
+    } else if (!tituloBruto && conteudoBruto) {
+      tituloBruto = 'Aviso Comunitário';
+    }
 
     if (!tituloBruto || tituloBruto.length < 3) {
       throw new BusinessException(
@@ -119,10 +127,20 @@ export class ComunidadeService {
       SeveridadeAlerta.ATENCAO,
       SeveridadeAlerta.CRITICO
     ];
-    const severidade =
-      dto.severidade && severidadesValidas.includes(dto.severidade)
-        ? dto.severidade
-        : SeveridadeAlerta.INFO;
+    const candidatoSeveridade = (dto.severidade || dto.nivel || '').toUpperCase() as SeveridadeAlerta;
+    const severidade = severidadesValidas.includes(candidatoSeveridade)
+      ? candidatoSeveridade
+      : SeveridadeAlerta.INFO;
+
+    const tipoRaw = String(dto.tipo || '').toUpperCase();
+    const tipoNormalizado =
+      tipoRaw === 'ALERTA_CLIMATICO' || tipoRaw === 'AVISO_MURAL'
+        ? (tipoRaw as 'ALERTA_CLIMATICO' | 'AVISO_MURAL')
+        : 'AVISO_MURAL';
+
+    const categoriasValidas = ['SEMENTES', 'AGUA', 'MUTIRAO', 'DEFESA_CIVIL', 'GERAL'];
+    const categoriaCand = String(dto.categoria || (tipoRaw !== 'AVISO_MURAL' && tipoRaw !== 'ALERTA_CLIMATICO' ? tipoRaw : 'GERAL')).toUpperCase();
+    const categoria = categoriasValidas.includes(categoriaCand) ? categoriaCand : 'GERAL';
 
     const agora = new Date();
     const vigenteAte = new Date(agora.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -131,7 +149,9 @@ export class ComunidadeService {
       localidadeId: Number(dto.localidadeId) || 1,
       autorId: Number(dto.autorId) || 1,
       autorNome: escapeHtml((dto.autorNome || 'Liderança Comunitária').trim()),
-      tipo: dto.tipo || 'AVISO_MURAL',
+      tipo: tipoNormalizado,
+      categoria,
+      municipio: dto.municipio ? escapeHtml(dto.municipio.trim()) : 'Irecê',
       severidade,
       titulo: escapeHtml(tituloBruto),
       conteudo: escapeHtml(conteudoBruto),

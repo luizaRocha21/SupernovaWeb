@@ -1616,7 +1616,25 @@ footer {
    10. PLANO 8 — LOGO GRANDE HERO, MEDALHÕES CIRCULARES E GRÁFICOS EDITORIAIS
    -------------------------------------------------------------------------- */
 
-/* 1. Bloco Hero da index.html com Logo Grande (.hero-brand-showcase) */
+/* 1. Bloco Hero da index.html com Logo Grande no Topo (.hero-editorial-story e .hero-story-logo) */
+.hero-editorial-story {
+  background-color: #f4eddb;
+  border: 1px solid #d2c2a9;
+  border-radius: 12px;
+}
+
+img.hero-story-logo,
+.hero-story-logo {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  display: block;
+  width: 275px;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
 .hero-brand-showcase {
   display: flex;
   align-items: center;
@@ -1811,6 +1829,13 @@ img.medallion-svg {
 
 /* Dimensionamento Responsivo por Plataforma para Hero Logo e Medalhões */
 @media (max-width: 767.98px) {
+  img.hero-story-logo,
+  .hero-story-logo {
+    width: 210px;
+    max-width: 75%;
+    height: auto;
+  }
+
   img.hero-logo-large {
     width: 190px;
     max-width: 75vw;
@@ -1843,6 +1868,12 @@ img.medallion-svg {
 }
 
 @media (min-width: 768px) and (max-width: 1024px) {
+  img.hero-story-logo,
+  .hero-story-logo {
+    width: 245px;
+    height: auto;
+  }
+
   img.hero-logo-large {
     width: 240px;
     height: auto;
@@ -1855,6 +1886,12 @@ img.medallion-svg {
 }
 
 @media (min-width: 1025px) {
+  img.hero-story-logo,
+  .hero-story-logo {
+    width: 275px;
+    height: auto;
+  }
+
   img.hero-logo-large {
     width: 290px;
     max-width: 100%;

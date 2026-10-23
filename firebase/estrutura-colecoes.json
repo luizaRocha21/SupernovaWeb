@@ -1,0 +1,184 @@
+{
+  "projeto": "Manejo Caatingueiro",
+  "bancoDeDados": "Google Firebase — Cloud Firestore",
+  "versaoSchema": "2.0.0-pos-plano-8",
+  "descricao": "Estrutura completa das 8 coleções NoSQL do Manejo Caatingueiro para planejamento agrícola, monitoramento de chuvas, reservatórios e mural comunitário nos 283 municípios do Semiárido Baiano.",
+  "colecoes": {
+    "usuarios": {
+      "descricao": "Cadastro de agricultores familiares, lideranças comunitárias e gestores públicos.",
+      "chaveDocumento": "id (number/string) ou email normalizado",
+      "campos": {
+        "id": "number — Identificador único do usuário",
+        "nome": "string — Nome completo do agricultor ou gestor",
+        "email": "string — E-mail principal da conta",
+        "telefone": "string — Telefone/WhatsApp de contato",
+        "senhaHash": "string — Hash bcrypt da senha",
+        "perfil": "AGRICULTOR | LIDERANCA_COMUNITARIA | GESTOR_PUBLICO",
+        "abastecimento": "CISTERNA | POCO | ENCANADA | MISTO",
+        "localidadeId": "number — ID da localidade principal",
+        "cidade": "string — Município do Semiárido Baiano",
+        "rocaAtivaId": "string — ID da roça atualmente selecionada pelo agricultor",
+        "consentimentoLocalizacao": "boolean — Autorização para uso das coordenadas da roça",
+        "criadoEm": "string (ISO-8601)"
+      }
+    },
+    "rocas": {
+      "descricao": "Propriedades rurais (roças/sítios) vinculadas a cada agricultor com coordenadas geográficas fixas.",
+      "chaveDocumento": "id (ex: roca-1)",
+      "campos": {
+        "id": "string — Identificador único da roça",
+        "usuarioId": "number — ID do agricultor proprietário",
+        "nome": "string — Nome da propriedade (ex: Sítio Mandacaru)",
+        "cidade": "string — Município do Semiárido Baiano",
+        "comunidade": "string — Povoado ou comunidade rural",
+        "latitude": "number — Latitude exata da roça",
+        "longitude": "number — Longitude exata da roça",
+        "areaHectares": "number — Área cultivada em hectares",
+        "tipoSolo": "string — Classificação prática do solo (Arenoso, Argiloso, Massapê, Pedregoso)",
+        "culturasPrincipais": "string[] — Lavouras cultivadas na roça",
+        "ativa": "boolean — Indica se é a roça ativa no painel",
+        "criadoEm": "string (ISO-8601)"
+      }
+    },
+    "localidades": {
+      "descricao": "Catálogo dos municípios e povoados do Semiárido Baiano com coordenadas e normais climatológicas.",
+      "chaveDocumento": "id (number/string)",
+      "campos": {
+        "id": "number — Identificador da localidade",
+        "nome": "string — Nome do município ou povoado",
+        "tipo": "MUNICIPIO | POVOADO",
+        "paiId": "number | null — ID do município sede quando for povoado",
+        "latitude": "number — Latitude central",
+        "longitude": "number — Longitude central",
+        "uf": "string — BA"
+      },
+      "seedInicial": [
+        { "id": 1, "nome": "Irecê", "tipo": "MUNICIPIO", "paiId": null, "latitude": -11.3042, "longitude": -41.8558, "uf": "BA" },
+        { "id": 2, "nome": "Presidente Dutra", "tipo": "MUNICIPIO", "paiId": null, "latitude": -11.2958, "longitude": -41.9869, "uf": "BA" },
+        { "id": 3, "nome": "Povoado de Achado (Irecê)", "tipo": "POVOADO", "paiId": 1, "latitude": -11.2610, "longitude": -41.8210, "uf": "BA" },
+        { "id": 4, "nome": "Povoado de Umbuzeiro (Irecê)", "tipo": "POVOADO", "paiId": 1, "latitude": -11.3412, "longitude": -41.8840, "uf": "BA" },
+        { "id": 5, "nome": "Povoado de Campo Formoso (Pres. Dutra)", "tipo": "POVOADO", "paiId": 2, "latitude": -11.3120, "longitude": -41.9650, "uf": "BA" }
+      ]
+    },
+    "culturas": {
+      "descricao": "Referências agroclimáticas das culturas adaptadas à Caatinga (Milho, Feijão-Caupi, Mamona, Sorgo, Mandioca, Palma).",
+      "chaveDocumento": "id (number/string)",
+      "campos": {
+        "id": "number — Identificador da cultura",
+        "nome": "string — Nome da cultura (milho, mamona, feijão, sorgo)",
+        "tipoCriterio": "ACUMULADO_JANELA | VOLUME_POR_EVENTO | INICIO_ESTACAO",
+        "janelaDias": "number | null — Janela de dias de chuva acumulada",
+        "limiarPadraoMm": "number — Volume mínimo recomendado em milímetros (mm)",
+        "cicloDias": "string — Ciclo estimado até a colheita",
+        "espacamento": "string — Espaçamento recomendado",
+        "consorcioIndicado": "string — Culturas parceiras para consórcio",
+        "fonteLimiar": "string — Fonte científica (Embrapa Semiárido / ZARC BA)"
+      },
+      "seedInicial": [
+        {
+          "id": 1,
+          "nome": "milho",
+          "tipoCriterio": "ACUMULADO_JANELA",
+          "janelaDias": 30,
+          "limiarPadraoMm": 120.0,
+          "cicloDias": "90 a 120 dias",
+          "espacamento": "0,80 m × 0,25 m",
+          "consorcioIndicado": "Feijão-caupi ou Guandu",
+          "fonteLimiar": "Referência agroclimática Semiárido (Embrapa Semiárido / ZARC BA)"
+        },
+        {
+          "id": 2,
+          "nome": "mamona",
+          "tipoCriterio": "ACUMULADO_JANELA",
+          "janelaDias": 30,
+          "limiarPadraoMm": 90.0,
+          "cicloDias": "150 a 180 dias",
+          "espacamento": "3,0 m × 1,0 m",
+          "consorcioIndicado": "Feijão-caupi ou Amendoim",
+          "fonteLimiar": "Referência agroclimática Território de Irecê e Presidente Dutra"
+        },
+        {
+          "id": 3,
+          "nome": "feijão",
+          "tipoCriterio": "INICIO_ESTACAO",
+          "janelaDias": 30,
+          "limiarPadraoMm": 110.0,
+          "cicloDias": "65 a 75 dias",
+          "espacamento": "0,50 m × 0,20 m",
+          "consorcioIndicado": "Milho + Mandioca",
+          "fonteLimiar": "Referência para feijão-caupi no Semiárido Baiano"
+        },
+        {
+          "id": 4,
+          "nome": "sorgo",
+          "tipoCriterio": "VOLUME_POR_EVENTO",
+          "janelaDias": 7,
+          "limiarPadraoMm": 45.0,
+          "cicloDias": "90 a 110 dias",
+          "espacamento": "0,70 m × 0,15 m",
+          "consorcioIndicado": "Palma forrageira em aléias",
+          "fonteLimiar": "Cultura alternativa de alta resiliência hídrica para chuva irregular"
+        }
+      ]
+    },
+    "limiares_plantio": {
+      "descricao": "Limiares de chuva mínima (mm) customizados pelo agricultor para cada cultura em sua propriedade.",
+      "chaveDocumento": "{usuarioId}_{culturaNome}",
+      "campos": {
+        "usuarioId": "number — ID do agricultor",
+        "culturaNome": "string — Nome da cultura",
+        "limiarMm": "number — Limiar personalizado em mm",
+        "atualizadoEm": "string (ISO-8601)"
+      }
+    },
+    "precipitacoes": {
+      "descricao": "Registros de chuva em milímetros (mm) anotados no pluviômetro da roça ou capturados de estação meteorológica.",
+      "chaveDocumento": "id (number/string)",
+      "campos": {
+        "id": "number — Identificador do registro",
+        "usuarioId": "number — ID do agricultor que registrou",
+        "rocaId": "string — ID da roça correspondente",
+        "localidadeId": "number — ID da localidade",
+        "volumeMm": "number — Chuva medida em milímetros (0 a 500 mm)",
+        "dataEvento": "string (YYYY-MM-DD)",
+        "fonte": "PLUVIOMETRO_PROPRIO | ESTACAO | ESTIMATIVA",
+        "observacao": "string — Condição do solo ou tipo de chuva (mansa, trovoada, sereno)",
+        "criadoEm": "string (ISO-8601)"
+      }
+    },
+    "reservatorios": {
+      "descricao": "Cisternas de placa, cisternas calçadão, barreiros e poços com histórico de nível (%) e checklist sanitário.",
+      "chaveDocumento": "id (number/string)",
+      "campos": {
+        "id": "number — Identificador do reservatório",
+        "responsavelId": "number — ID do agricultor responsável",
+        "rocaId": "string — ID da roça vinculada",
+        "localidadeId": "number — ID da localidade",
+        "tipo": "CISTERNA | POCO",
+        "apelido": "string — Nome de identificação (ex: Cisterna de Placa da Casa)",
+        "capacidadeLitros": "number — Capacidade total em litros (ex: 16000 ou 52000)",
+        "ultimoNivelPercentual": "number — Último nível medido (0 a 100%)",
+        "ultimaEscala": "CHEIO | MEDIO | BAIXO | CRITICO",
+        "historicoNiveis": "Array<{ dataRegistro, nivelPercentual, escala, volumeEstimadoLitros, autonomiaDias }>",
+        "ultimoChecklistSanitario": "Object — Avaliação de calhas, tela de proteção, odor/cor e estrutura",
+        "atualizadoEm": "string (ISO-8601)"
+      }
+    },
+    "comunidade_avisos": {
+      "descricao": "Mural comunitário do Semiárido Baiano para avisos rurais, mutirões, feiras agroecológicas e trocas de sementes crioulas.",
+      "chaveDocumento": "id (number/string)",
+      "campos": {
+        "id": "number — Identificador do aviso",
+        "localidadeId": "number — ID da localidade",
+        "cidade": "string — Município do autor",
+        "autorId": "number — ID do agricultor ou liderança",
+        "autorNome": "string — Nome do autor exibido no mural",
+        "categoria": "SEMENTES_CRIOULAS | ALERTA_CLIMA | MUTIRAO_FEIRA | MANEJO_AGUA",
+        "titulo": "string — Título objetivo do aviso",
+        "conteudo": "string — Mensagem completa para a comunidade",
+        "publicadoEm": "string (ISO-8601)",
+        "visivelAte": "string (YYYY-MM-DD)"
+      }
+    }
+  }
+}

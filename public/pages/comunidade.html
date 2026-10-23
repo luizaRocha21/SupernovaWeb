@@ -661,15 +661,44 @@
         return AVISOS_INICIAIS;
       }
 
-      function renderizarMural() {
+      async function carregarAvisosMuralRemoto() {
+        try {
+          const resp = await fetch("/api/v1/comunidade");
+          if (!resp.ok) return;
+          const dados = await resp.json();
+          const avisosServidor = Array.isArray(dados?.avisosMural)
+            ? dados.avisosMural
+            : Array.isArray(dados?.todos)
+              ? dados.todos.filter((c) => c.tipo === "AVISO_MURAL")
+              : [];
+
+          if (avisosServidor.length > 0) {
+            const formatados = avisosServidor.map((item) => ({
+              id: item.id,
+              categoria: item.categoria || "GERAL",
+              titulo: item.titulo || "Aviso Comunitário",
+              mensagem: item.conteudo || item.mensagem || "",
+              data: item.publicadoEm
+                ? new Date(item.publicadoEm).toLocaleDateString("pt-BR")
+                : "Recente"
+            }));
+            localStorage.setItem(STORAGE_MURAL, JSON.stringify(formatados.slice(0, 15)));
+            renderizarMural(formatados);
+          }
+        } catch (_) {
+          // Mantém avisos locais caso offline
+        }
+      }
+
+      function renderizarMural(listaCustom) {
         const container = document.getElementById("lista-avisos-comunidade");
         if (!container) return;
-        const avisos = obterAvisosMural();
+        const avisos = Array.isArray(listaCustom) ? listaCustom : obterAvisosMural();
         container.innerHTML = avisos
           .map((item) => {
             const cat = escapeHtml(item.categoria || "GERAL");
             const tit = escapeHtml(item.titulo || "Aviso Comunitário");
-            const msg = escapeHtml(item.mensagem || "");
+            const msg = escapeHtml(item.mensagem || item.conteudo || "");
             const dt = escapeHtml(item.data || "Recente");
             return `
               <div class="col-12 d-flex">
@@ -716,16 +745,21 @@
           renderizarMural();
 
           try {
-            await fetch("/api/v1/alertas", {
+            const resp = await fetch("/api/v1/comunidade", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                tipo: categoria,
-                nivel: "INFO",
-                mensagem: `${titulo}: ${mensagem}`,
+                tipo: "AVISO_MURAL",
+                categoria,
+                titulo,
+                conteudo: mensagem,
+                mensagem,
                 localidadeId: 1
               })
             });
+            if (resp.ok) {
+              await carregarAvisosMuralRemoto();
+            }
           } catch (_) {}
 
           formAviso.reset();
@@ -743,6 +777,7 @@
         btnRecarregarAlertas.addEventListener("click", () => {
           carregarAlertasRadarBahia();
           carregarRankingTemperaturas();
+          carregarAvisosMuralRemoto();
         });
       }
 
@@ -757,6 +792,7 @@
         await popularSelectFiltroCidadesSemiarido();
         sincronizarSelectComRocaAtiva();
         renderizarMural();
+        carregarAvisosMuralRemoto();
         carregarAlertasRadarBahia();
         carregarRankingTemperaturas();
       });

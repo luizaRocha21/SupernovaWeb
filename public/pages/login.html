@@ -652,11 +652,18 @@
           const codigo = (document.getElementById("input-otp-codigo")?.value || "").trim();
           if (!codigo) return;
           try {
-            const resp = await fetch("/api/v1/auth/email/confirmar-codigo", {
+            let resp = await fetch("/api/v1/auth/email/verificar-codigo", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ email, codigo })
             });
+            if (resp.status === 404) {
+              resp = await fetch("/api/v1/auth/email/confirmar-codigo", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, codigo })
+              });
+            }
             const data = await resp.json();
             if (resp.ok) {
               showAlert(data.mensagem || "E-mail confirmado com sucesso!", "sucesso");

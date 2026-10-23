@@ -1,6 +1,10 @@
 import { EscalaNivelReservatorio, TipoReservatorio } from '../enums/TipoReservatorio.js';
 import { ChecklistSanitarioModel, Reservatorio } from '../model/Reservatorio.js';
 import { IReservatorioRepository } from './IReservatorioRepository.js';
+import {
+  firebaseClient,
+  FIREBASE_COLLECTIONS
+} from '../../../infrastructure/database/FirebaseClient.js';
 
 const RESERVATORIOS_INICIAIS: Reservatorio[] = [
   {
@@ -15,6 +19,22 @@ const RESERVATORIOS_INICIAIS: Reservatorio[] = [
     profundidadeMetros: null,
     consentimentoAgregacao: true,
     alertaEstiagemAtivo: false,
+    historicoLeituras: [
+      {
+        data: new Date().toLocaleDateString('pt-BR'),
+        volumeLitros: 10880,
+        capacidadeLitros: 16000,
+        percentual: 68,
+        observacao: 'Reserva segura após chuva na propriedade'
+      },
+      {
+        data: '12/10/2026',
+        volumeLitros: 11200,
+        capacidadeLitros: 16000,
+        percentual: 70,
+        observacao: 'Primeira água desviada corretamente'
+      }
+    ],
     atualizadoEm: new Date().toISOString()
   },
   {
@@ -31,6 +51,15 @@ const RESERVATORIOS_INICIAIS: Reservatorio[] = [
     alertaEstiagemAtivo: true,
     mensagemAlerta:
       'Alerta de Estiagem: nível abaixo de 25%. Priorize consumo humano e dessedentação animal.',
+    historicoLeituras: [
+      {
+        data: new Date().toLocaleDateString('pt-BR'),
+        volumeLitros: 11440,
+        capacidadeLitros: 52000,
+        percentual: 22,
+        observacao: 'Economizar para criação e canteiro'
+      }
+    ],
     atualizadoEm: new Date().toISOString()
   },
   {
@@ -45,6 +74,15 @@ const RESERVATORIOS_INICIAIS: Reservatorio[] = [
     profundidadeMetros: 48.5,
     consentimentoAgregacao: true,
     alertaEstiagemAtivo: false,
+    historicoLeituras: [
+      {
+        data: new Date().toLocaleDateString('pt-BR'),
+        volumeLitros: 30000,
+        capacidadeLitros: 40000,
+        percentual: 75,
+        observacao: 'Vazão normal no povoado'
+      }
+    ],
     atualizadoEm: new Date().toISOString()
   }
 ];
@@ -52,6 +90,52 @@ const RESERVATORIOS_INICIAIS: Reservatorio[] = [
 export class ReservatorioRepository implements IReservatorioRepository {
   private reservatorios: Reservatorio[] = [...RESERVATORIOS_INICIAIS];
   private checklists: ChecklistSanitarioModel[] = [];
+
+  constructor() {
+    void this.inicializarFirebase();
+  }
+
+  private async inicializarFirebase(): Promise<void> {
+    try {
+      const nuvem = await firebaseClient.listarColecao<Reservatorio>(
+        FIREBASE_COLLECTIONS.RESERVATORIOS
+      );
+
+      if (nuvem && nuvem.length > 0) {
+        const mapa = new Map<number, Reservatorio>();
+        for (const r of this.reservatorios) {
+          mapa.set(Number(r.id), r);
+        }
+        for (const rNuvem of nuvem) {
+          if (!rNuvem || !rNuvem.id) continue;
+          const idNum = Number(rNuvem.id);
+          mapa.set(idNum, {
+            ...rNuvem,
+            id: idNum,
+            capacidadeLitros: Number(rNuvem.capacidadeLitros) || 16000,
+            ultimoNivelPercentual: Number(rNuvem.ultimoNivelPercentual) || 50,
+            historicoLeituras: Array.isArray(rNuvem.historicoLeituras)
+              ? rNuvem.historicoLeituras
+              : []
+          });
+        }
+        this.reservatorios = Array.from(mapa.values()).sort((a, b) => a.id - b.id);
+      }
+
+      for (const res of this.reservatorios) {
+        await firebaseClient.salvarDocumento(
+          FIREBASE_COLLECTIONS.RESERVATORIOS,
+          String(res.id),
+          res as unknown as Record<string, unknown>
+        );
+      }
+    } catch (erro) {
+      console.warn(
+        '[ReservatorioRepository] Falha ao sincronizar reservatórios com Firebase:',
+        erro instanceof Error ? erro.message : String(erro)
+      );
+    }
+  }
 
   public listarTodos(localidadeId?: number): Reservatorio[] {
     if (localidadeId !== undefined && Number(localidadeId) > 0) {
@@ -72,6 +156,11 @@ export class ReservatorioRepository implements IReservatorioRepository {
       id: proximoId
     };
     this.reservatorios.push(novo);
+    void firebaseClient.salvarDocumento(
+      FIREBASE_COLLECTIONS.RESERVATORIOS,
+      String(novo.id),
+      novo as unknown as Record<string, unknown>
+    );
     return novo;
   }
 
@@ -86,6 +175,11 @@ export class ReservatorioRepository implements IReservatorioRepository {
       atualizadoEm: new Date().toISOString()
     };
     this.reservatorios[idx] = atualizado;
+    void firebaseClient.salvarDocumento(
+      FIREBASE_COLLECTIONS.RESERVATORIOS,
+      String(atualizado.id),
+      atualizado as unknown as Record<string, unknown>
+    );
     return atualizado;
   }
 

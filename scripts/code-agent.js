@@ -6,9 +6,10 @@
  * ============================================================================
  * Este agente analisa a integridade da arquitetura web Mobile First (Bootstrap 5
  * + Design Editorial Sertanejo), valida o backend em camadas no padrão FindPet
- * (src/domain/* e src/infrastructure/*, incluindo RadarMeteorologicoService),
- * audita práticas de segurança (prevenção de XSS, headers HTTP, rate limiting,
- * modal de logout) e valida as 13 tabelas do schema SQL do Supabase.
+ * (src/domain/* e src/infrastructure/*, incluindo RadarMeteorologicoService e
+ * FirebaseClient), audita práticas de segurança (prevenção de XSS, headers HTTP,
+ * rate limiting, modal de logout) e valida as 8 coleções oficiais do Google
+ * Firebase (Cloud Firestore).
  */
 
 import fs from 'fs';
@@ -63,9 +64,10 @@ frontendFiles.forEach(file => {
   check('Frontend', `Arquivo essencial: ${file}`, exists, 'Presente e acessível', `Arquivo não encontrado no caminho ${file}`);
 });
 
-// 2. Verificação de Arquitetura Backend (Padrão FindPet em Camadas + RadarMeteorologicoService) & Deploy
+// 2. Verificação de Arquitetura Backend (Padrão FindPet em Camadas + FirebaseClient + RadarMeteorologicoService)
 const backendFiles = [
   'server.ts',
+  'src/infrastructure/database/FirebaseClient.ts',
   'src/infrastructure/exception/BusinessException.ts',
   'src/infrastructure/exception/ErrorResponseDTO.ts',
   'src/infrastructure/exception/ApiExceptionHandler.ts',
@@ -83,12 +85,13 @@ const backendFiles = [
   'src/domain/comunidade/controller/ComunidadeController.ts',
   'src/domain/ia/controller/IaController.ts',
   'src/domain/ia/service/IaService.ts',
-  'supabase/schema.sql'
+  'firebase/firestore.rules',
+  'firebase/estrutura-colecoes.json'
 ];
 
 backendFiles.forEach(file => {
   const exists = fs.existsSync(path.join(ROOT_DIR, file));
-  check('Backend', `Componente backend/domínio: ${file}`, exists, 'Configurado corretamente no padrão FindPet', `Falta componente ${file}`);
+  check('Backend', `Componente backend/domínio: ${file}`, exists, 'Configurado corretamente na arquitetura Firebase + FindPet', `Falta componente ${file}`);
 });
 
 // 3. Auditoria de Segurança (Security Skills)
@@ -100,70 +103,73 @@ try {
 
   // a) Modal de confirmação para sair da conta
   const hasLogoutModalInHtml = indexHtml.includes('logout-confirm-modal');
-  check('Segurança', 'Modal de Confirmação de Logout no HTML', hasLogoutModalInHtml, 
-    'Elemento #logout-confirm-modal presente no HTML para evitar logouts acidentais', 
+  check('Segurança', 'Modal de Confirmação de Logout no HTML', hasLogoutModalInHtml,
+    'Elemento #logout-confirm-modal presente no HTML para evitar logouts acidentais',
     'Falta modal de confirmação no HTML');
 
   const hasLogoutModalHandler = appJs.includes('logout-confirm-modal') && appJs.includes('logoutConfirmBtn');
-  check('Segurança', 'Lógica defensiva de Logout no JavaScript', hasLogoutModalHandler, 
-    'Evento de clique exibe modal antes de encerrar sessão', 
+  check('Segurança', 'Lógica defensiva de Logout no JavaScript', hasLogoutModalHandler,
+    'Evento de clique exibe modal antes de encerrar sessão',
     'Logout direto sem confirmação detectado');
 
   // b) Sanitização XSS
   const hasXssEscape = appJs.includes('escapeHtml') && adminHtml.includes('escapeHtml');
-  check('Segurança', 'Sanitização de XSS em listas e tabelas dinâmicas', hasXssEscape, 
-    'Função escapeHtml aplicada em títulos, murais, alertas e tabela administrativa', 
+  check('Segurança', 'Sanitização de XSS em listas e tabelas dinâmicas', hasXssEscape,
+    'Função escapeHtml aplicada em títulos, murais, alertas e tabela administrativa',
     'Campos de usuário renderizados sem escape');
 
   // c) Headers defensivos no servidor
   const hasSecurityHeaders = serverTs.includes('X-Content-Type-Options') && serverTs.includes('Referrer-Policy');
-  check('Segurança', 'Headers HTTP de Proteção no Backend', hasSecurityHeaders, 
-    'X-Content-Type-Options, X-XSS-Protection, Referrer-Policy e Permissions-Policy ativos', 
+  check('Segurança', 'Headers HTTP de Proteção no Backend', hasSecurityHeaders,
+    'X-Content-Type-Options, X-XSS-Protection, Referrer-Policy e Permissions-Policy ativos',
     'Faltam headers de proteção HTTP no servidor');
 
   // d) Rate Limiting no Login
   const hasRateLimiting = serverTs.includes('loginRateLimiter');
-  check('Segurança', 'Rate Limiting / Proteção contra Força Bruta', hasRateLimiting, 
-    'Limite de tentativas ativado nos endpoints de autenticação', 
+  check('Segurança', 'Rate Limiting / Proteção contra Força Bruta', hasRateLimiting,
+    'Limite de tentativas ativado nos endpoints de autenticação',
     'Endpoint de login sem proteção contra força bruta');
 
   // e) Limpeza de links não desejados
   const hasOldDeployLink = indexHtml.includes('Guia de Deploy') || indexHtml.includes('Documentação da API (Swagger)');
-  check('Limpeza UI', 'Remoção de links desnecessários do rodapé', !hasOldDeployLink, 
-    'Links Guia de Deploy e Swagger removidos com sucesso', 
+  check('Limpeza UI', 'Remoção de links desnecessários do rodapé', !hasOldDeployLink,
+    'Links Guia de Deploy e Swagger removidos com sucesso',
     'Links desnecessários ainda presentes no index.html', true);
 
 } catch (e) {
   check('Segurança', 'Leitura dos arquivos de segurança', false, '', `Erro ao inspecionar arquivos: ${e.message}`);
 }
 
-// 4. Verificação do Schema SQL do Supabase
+// 4. Verificação do Banco de Dados Google Firebase (Cloud Firestore)
 try {
-  const schemaSql = fs.readFileSync(path.join(ROOT_DIR, 'supabase/schema.sql'), 'utf-8');
-  const requiredTables = [
-    'localidades',
+  const firebaseClientTs = fs.readFileSync(path.join(ROOT_DIR, 'src/infrastructure/database/FirebaseClient.ts'), 'utf-8');
+  const firestoreRules = fs.readFileSync(path.join(ROOT_DIR, 'firebase/firestore.rules'), 'utf-8');
+  const estruturaColecoesRaw = fs.readFileSync(path.join(ROOT_DIR, 'firebase/estrutura-colecoes.json'), 'utf-8');
+  const estruturaColecoes = JSON.parse(estruturaColecoesRaw);
+
+  const requiredCollections = [
     'usuarios',
+    'rocas',
+    'localidades',
     'culturas',
-    'culturas_limiares_usuarios',
-    'series_historicas',
-    'observacoes_externas',
+    'limiares_plantio',
     'precipitacoes',
-    'sugestoes_plantio',
     'reservatorios',
-    'registros_nivel',
-    'checklists_sanitarios',
-    'alertas',
-    'avisos_mural'
+    'comunidade_avisos'
   ];
 
-  requiredTables.forEach(table => {
-    const tableExists = schemaSql.includes(`CREATE TABLE IF NOT EXISTS ${table}`) || schemaSql.includes(`CREATE TABLE ${table}`);
-    check('Banco de Dados', `Tabela SQL Supabase: ${table}`, tableExists, 
-      `Tabela ${table} declarada no schema.sql`, 
-      `Tabela ${table} ausente no schema`);
+  requiredCollections.forEach(collectionName => {
+    const inClient = firebaseClientTs.includes(`'${collectionName}'`) || firebaseClientTs.includes(`"${collectionName}"`);
+    const inRules = firestoreRules.includes(`match /${collectionName}/`);
+    const inJson = Boolean(estruturaColecoes?.colecoes && estruturaColecoes.colecoes[collectionName]);
+    const collectionOk = inClient && inRules && inJson;
+
+    check('Banco de Dados', `Coleção Cloud Firestore: ${collectionName}`, collectionOk,
+      `Coleção ${collectionName} declarada em FirebaseClient.ts, firestore.rules e estrutura-colecoes.json`,
+      `Coleção ${collectionName} ausente em um dos arquivos do Firebase`);
   });
 } catch (e) {
-  check('Banco de Dados', 'Leitura do schema.sql', false, '', `Erro: ${e.message}`);
+  check('Banco de Dados', 'Leitura da configuração Firebase', false, '', `Erro: ${e.message}`);
 }
 
 // 5. Exibição e Cálculo de Pontuação
@@ -222,8 +228,8 @@ markdown += `
 ## Recomendações do Agente
 
 1. **Deploy Automático:** Execute \`npm run agent\` sempre antes de realizar commits no repositório.
-2. **Segurança Contínua:** Mantenha os tokens JWT com expiração máxima de 8 horas e valide a limpeza de credenciais no encerramento de sessão.
-3. **Sincronização Offline:** Garanta que a fila local \`mc_offline_queue\` continue sincronizando em segundo plano quando a conectividade com o Render for restabelecida.
+2. **Segurança Contínua:** Mantenha os tokens JWT com expiração máxima de 8 horas e as regras \`firebase/firestore.rules\` atualizadas no Cloud Firestore.
+3. **Sincronização Offline:** Garanta que a fila local \`mc_offline_queue\` continue sincronizando em segundo plano quando a conectividade com o Render/Firebase for restabelecida.
 `;
 
 fs.writeFileSync(path.join(ROOT_DIR, 'AGENT_HEALTH_REPORT.md'), markdown, 'utf-8');

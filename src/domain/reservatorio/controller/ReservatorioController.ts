@@ -14,8 +14,10 @@ export class ReservatorioController implements IReservatorioController {
     this.router.get('/', (req, res, next) => this.listar(req, res, next));
     this.router.post('/', (req, res, next) => this.cadastrar(req, res, next));
     this.router.put('/:id/nivel', (req, res, next) => this.atualizarNivel(req, res, next));
+    this.router.put('/:id/niveis', (req, res, next) => this.atualizarNivel(req, res, next));
     this.router.post('/:id/niveis', (req, res, next) => this.atualizarNivel(req, res, next));
     this.router.post('/:id/checklist', (req, res, next) => this.registrarChecklist(req, res, next));
+    this.router.put('/:id/checklist', (req, res, next) => this.registrarChecklist(req, res, next));
   }
 
   public listar(req: Request, res: Response, next: NextFunction): void {

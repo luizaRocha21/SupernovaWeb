@@ -1,5 +1,16 @@
 import { Cultura } from '../model/Cultura.js';
 import { IPlantioRepository } from './IPlantioRepository.js';
+import {
+  firebaseClient,
+  FIREBASE_COLLECTIONS
+} from '../../../infrastructure/database/FirebaseClient.js';
+
+interface LimiarPlantioDoc {
+  usuarioId: number;
+  culturaId: number;
+  limiarMm: number;
+  atualizadoEm: string;
+}
 
 const CULTURAS_CAATINGA: Cultura[] = [
   {
@@ -50,6 +61,42 @@ export class PlantioRepository implements IPlantioRepository {
   private readonly culturas: Cultura[] = [...CULTURAS_CAATINGA];
   private readonly limiaresPersonalizados = new Map<string, number>();
 
+  constructor() {
+    void this.inicializarFirebase();
+  }
+
+  private async inicializarFirebase(): Promise<void> {
+    try {
+      for (const cultura of this.culturas) {
+        await firebaseClient.salvarDocumento(
+          FIREBASE_COLLECTIONS.CULTURAS,
+          String(cultura.id),
+          cultura as unknown as Record<string, unknown>
+        );
+      }
+
+      const limiaresNuvem = await firebaseClient.listarColecao<LimiarPlantioDoc>(
+        FIREBASE_COLLECTIONS.LIMIARES_PLANTIO
+      );
+      if (limiaresNuvem && limiaresNuvem.length > 0) {
+        for (const item of limiaresNuvem) {
+          if (!item || !item.culturaId) continue;
+          const uId = Number(item.usuarioId) || 1;
+          const cId = Number(item.culturaId);
+          const val = Number(item.limiarMm);
+          if (Number.isFinite(val) && val > 0) {
+            this.limiaresPersonalizados.set(`${uId}:${cId}`, val);
+          }
+        }
+      }
+    } catch (erro) {
+      console.warn(
+        '[PlantioRepository] Falha ao sincronizar culturas/limiares com Firebase:',
+        erro instanceof Error ? erro.message : String(erro)
+      );
+    }
+  }
+
   public listarCulturas(): Cultura[] {
     return [...this.culturas];
   }
@@ -76,6 +123,15 @@ export class PlantioRepository implements IPlantioRepository {
     const valorNormalizado = Number(limiarMm.toFixed(1));
     const chave = `${usuarioId}:${culturaId}`;
     this.limiaresPersonalizados.set(chave, valorNormalizado);
+
+    const docId = `${usuarioId}_${culturaId}`;
+    void firebaseClient.salvarDocumento(FIREBASE_COLLECTIONS.LIMIARES_PLANTIO, docId, {
+      usuarioId,
+      culturaId,
+      limiarMm: valorNormalizado,
+      atualizadoEm: new Date().toISOString()
+    });
+
     return valorNormalizado;
   }
 }

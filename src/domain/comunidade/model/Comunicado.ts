@@ -8,6 +8,8 @@ export interface Comunicado {
   autorId: number;
   autorNome: string;
   tipo: TipoComunicado;
+  categoria?: string;
+  municipio?: string;
   severidade: SeveridadeAlerta;
   titulo: string;
   conteudo: string;
@@ -15,3 +17,4 @@ export interface Comunicado {
   publicadoEm: string;
   vigenteAte: string;
 }
+

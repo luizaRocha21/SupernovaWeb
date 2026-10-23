@@ -1,5 +1,13 @@
 import { EscalaNivelReservatorio, TipoReservatorio } from '../enums/TipoReservatorio.js';
 
+export interface LeituraNivelReservatorioModel {
+  data: string;
+  volumeLitros: number;
+  capacidadeLitros: number;
+  percentual: number;
+  observacao?: string;
+}
+
 export interface ChecklistSanitarioModel {
   id: number;
   reservatorioId: number;
@@ -27,5 +35,6 @@ export interface Reservatorio {
   alertaEstiagemAtivo: boolean;
   mensagemAlerta?: string;
   ultimoChecklist?: ChecklistSanitarioModel;
+  historicoLeituras?: LeituraNivelReservatorioModel[];
   atualizadoEm: string;
 }

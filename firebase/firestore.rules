@@ -1,0 +1,115 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Regra global padrão: bloqueia qualquer acesso não autorizado
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-@\\.]+$');
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && String(request.auth.uid) == String(userId);
+    }
+
+    function isGestorPublico() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/usuarios/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.perfil == 'GESTOR_PUBLICO';
+    }
+
+    // 1. Coleção: usuarios (Perfis de Agricultores, Lideranças e Gestores)
+    match /usuarios/{usuarioId} {
+      allow get: if isValidId(usuarioId) && (isOwner(usuarioId) || isGestorPublico());
+      allow list: if isGestorPublico();
+      allow create: if isValidId(usuarioId) && isOwner(usuarioId)
+        && request.resource.data.nome is string
+        && request.resource.data.nome.size() >= 2
+        && request.resource.data.nome.size() <= 120;
+      allow update: if isValidId(usuarioId) && (isOwner(usuarioId) || isGestorPublico());
+      allow delete: if isValidId(usuarioId) && isGestorPublico();
+    }
+
+    // 2. Coleção: rocas (Propriedades Rurais Cadastradas com Coordenadas Fixas)
+    match /rocas/{rocaId} {
+      allow get: if isValidId(rocaId) && isSignedIn() && (
+        String(resource.data.usuarioId) == String(request.auth.uid) || isGestorPublico()
+      );
+      allow list: if isSignedIn() && (
+        String(resource.data.usuarioId) == String(request.auth.uid) || isGestorPublico()
+      );
+      allow create: if isValidId(rocaId) && isSignedIn()
+        && String(request.resource.data.usuarioId) == String(request.auth.uid)
+        && request.resource.data.nome is string
+        && request.resource.data.nome.size() >= 2
+        && request.resource.data.nome.size() <= 120;
+      allow update, delete: if isValidId(rocaId) && isSignedIn() && (
+        String(resource.data.usuarioId) == String(request.auth.uid) || isGestorPublico()
+      );
+    }
+
+    // 3. Coleção: localidades (283 Municípios e Povoados do Semiárido Baiano)
+    match /localidades/{localidadeId} {
+      allow get, list: if true;
+      allow create, update, delete: if isGestorPublico();
+    }
+
+    // 4. Coleção: culturas (Culturas Agrícolas de Referência do Semiárido)
+    match /culturas/{culturaId} {
+      allow get, list: if true;
+      allow create, update, delete: if isGestorPublico();
+    }
+
+    // 5. Coleção: limiares_plantio (Metas Personalizadas de Chuva por Agricultor/Roça)
+    match /limiares_plantio/{limiarId} {
+      allow get, list: if isSignedIn() && (
+        String(resource.data.usuarioId) == String(request.auth.uid) || isGestorPublico()
+      );
+      allow create, update, delete: if isValidId(limiarId) && isSignedIn() && (
+        String(request.resource.data.usuarioId) == String(request.auth.uid) || isGestorPublico()
+      );
+    }
+
+    // 6. Coleção: precipitacoes (Registros do Pluviômetro Caseiro e Estações)
+    match /precipitacoes/{precipitacaoId} {
+      allow get, list: if isSignedIn();
+      allow create: if isValidId(precipitacaoId) && isSignedIn()
+        && request.resource.data.volumeMm is number
+        && request.resource.data.volumeMm >= 0
+        && request.resource.data.volumeMm <= 500;
+      allow update, delete: if isValidId(precipitacaoId) && isSignedIn() && (
+        String(resource.data.usuarioId) == String(request.auth.uid) || isGestorPublico()
+      );
+    }
+
+    // 7. Coleção: reservatorios (Cisternas, Açudes, Histórico de Nível e Checklist Sanitário)
+    match /reservatorios/{reservatorioId} {
+      allow get, list: if isSignedIn();
+      allow create, update: if isValidId(reservatorioId) && isSignedIn();
+      allow delete: if isValidId(reservatorioId) && isGestorPublico();
+    }
+
+    // 8. Coleção: comunidade_avisos (Mural Comunitário de Avisos e Trocas de Sementes Crioulas)
+    match /comunidade_avisos/{avisoId} {
+      allow get, list: if true;
+      allow create: if isValidId(avisoId) && isSignedIn()
+        && request.resource.data.titulo is string
+        && request.resource.data.titulo.size() >= 3
+        && request.resource.data.titulo.size() <= 140
+        && request.resource.data.conteudo is string
+        && request.resource.data.conteudo.size() >= 3
+        && request.resource.data.conteudo.size() <= 600;
+      allow update, delete: if isValidId(avisoId) && isSignedIn() && (
+        String(resource.data.autorId) == String(request.auth.uid) || isGestorPublico()
+      );
+    }
+  }
+}

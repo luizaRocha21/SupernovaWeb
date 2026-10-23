@@ -975,16 +975,31 @@
           console.warn("Falha ao carregar diagnóstico de plantio:", err);
         }
 
-        // Consulta API de diagnóstico de plantio por cultura para sincronizar limiares
+        // Consulta API de diagnóstico de plantio por cultura para sincronizar limiares do Firebase
+        let usuarioIdAtivo = 1;
+        try {
+          const sessaoRaw = localStorage.getItem("mc_auth_session_v4");
+          if (sessaoRaw) {
+            const parsed = JSON.parse(sessaoRaw);
+            const usr = parsed?.usuario || parsed?.user;
+            if (usr?.id) usuarioIdAtivo = Number(usr.id) || 1;
+          }
+        } catch (e) {}
+
         try {
           const resPlantio = await fetch(
-            `/api/v1/plantio/diagnostico?localidadeId=${encodeURIComponent(ctx.locId)}&precipitacaoMm=${encodeURIComponent(chuva30d)}`
+            `/api/v1/plantio/diagnostico?localidadeId=${encodeURIComponent(ctx.locId)}&precipitacaoMm=${encodeURIComponent(chuva30d)}&usuarioId=${encodeURIComponent(usuarioIdAtivo)}`
           );
           if (resPlantio.ok) {
             const payloadPlantio = await resPlantio.json();
             const dadosPlantio = payloadPlantio?.dados || payloadPlantio;
             if (Array.isArray(dadosPlantio?.culturas)) {
               ultimasCulturasApi = dadosPlantio.culturas;
+              ultimasCulturasApi.forEach((c) => {
+                if (c && c.limiarPersonalizado && Number.isFinite(Number(c.limiarAtivoMm))) {
+                  salvarLimiarLocal(c.culturaId, Number(c.limiarAtivoMm));
+                }
+              });
             }
           }
         } catch (e) {
@@ -1048,11 +1063,21 @@
 
           salvarLimiarLocal(culturaId, valorMm);
 
+          let usuarioId = 1;
+          try {
+            const sessaoRaw = localStorage.getItem("mc_auth_session_v4");
+            if (sessaoRaw) {
+              const parsed = JSON.parse(sessaoRaw);
+              const usr = parsed?.usuario || parsed?.user;
+              if (usr?.id) usuarioId = Number(usr.id) || 1;
+            }
+          } catch (e) {}
+
           try {
             await fetch("/api/v1/plantio/limiar", {
               method: "PUT",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ culturaId, limiarMm: valorMm })
+              body: JSON.stringify({ culturaId, limiarMm: valorMm, usuarioId })
             });
           } catch (e) {
             // Salvo localmente no aparelho mesmo offline

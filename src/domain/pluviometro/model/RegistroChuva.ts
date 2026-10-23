@@ -4,6 +4,8 @@ export interface RegistroChuva {
   id: number;
   localidadeId: number;
   usuarioId: number;
+  rocaId?: number;
+  municipio?: string;
   volumeMm: number;
   dataEvento: string;
   fonte: FonteRegistroChuva;

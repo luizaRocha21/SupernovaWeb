@@ -25,11 +25,13 @@ export class ReservatorioService {
     return {
       id: r.id,
       apelido: r.apelido,
+      nome: r.apelido,
       tipo: r.tipo,
       responsavelId: r.responsavelId,
       localidadeId: r.localidadeId,
       capacidadeLitros: r.capacidadeLitros,
       volumeEstimadoLitros,
+      volumeAtualLitros: volumeEstimadoLitros,
       ultimoNivelPercentual: r.ultimoNivelPercentual,
       escala: r.escala,
       profundidadeMetros: r.profundidadeMetros,
@@ -37,6 +39,7 @@ export class ReservatorioService {
       alertaEstiagemAtivo: r.alertaEstiagemAtivo,
       mensagemAlerta: r.mensagemAlerta,
       ultimoChecklist: r.ultimoChecklist,
+      historicoLeituras: r.historicoLeituras || [],
       atualizadoEm: r.atualizadoEm
     };
   }
@@ -66,6 +69,7 @@ export class ReservatorioService {
 
     const capacidade = Number(dto.capacidadeLitros) > 0 ? Number(dto.capacidadeLitros) : 16000;
     const alertaEstiagemAtivo = nivel < 25;
+    const pctArredondado = Math.round(nivel);
 
     const novo = this.repository.salvar({
       apelido,
@@ -73,7 +77,7 @@ export class ReservatorioService {
       responsavelId: Number(dto.responsavelId) || 1,
       localidadeId: Number(dto.localidadeId) || 1,
       capacidadeLitros: capacidade,
-      ultimoNivelPercentual: Math.round(nivel),
+      ultimoNivelPercentual: pctArredondado,
       escala: this.calcularEscala(nivel),
       profundidadeMetros: dto.profundidadeMetros ?? null,
       consentimentoAgregacao: dto.consentimentoAgregacao ?? true,
@@ -81,6 +85,15 @@ export class ReservatorioService {
       mensagemAlerta: alertaEstiagemAtivo
         ? 'Alerta de Estiagem: nível abaixo de 25%. Priorize água para consumo familiar e animais.'
         : undefined,
+      historicoLeituras: [
+        {
+          data: new Date().toLocaleDateString('pt-BR'),
+          volumeLitros: Math.round((capacidade * pctArredondado) / 100),
+          capacidadeLitros: capacidade,
+          percentual: pctArredondado,
+          observacao: 'Cadastro inicial do reservatório'
+        }
+      ],
       atualizadoEm: new Date().toISOString()
     });
 
@@ -96,8 +109,23 @@ export class ReservatorioService {
       throw new BusinessException('Reservatório não encontrado.', 404, 'RESERVATORIO_NAO_ENCONTRADO');
     }
 
-    const nivel = Number(dto.nivelPercentual);
-    if (Number.isNaN(nivel) || nivel < 0 || nivel > 100) {
+    let nivel = Number(dto.nivelPercentual ?? dto.percentual);
+    const volInformado = Number(dto.volumeLitros ?? dto.volumeAtualLitros);
+
+    if (
+      (Number.isNaN(nivel) || (dto.nivelPercentual === undefined && dto.percentual === undefined)) &&
+      Number.isFinite(volInformado) &&
+      volInformado >= 0 &&
+      existente.capacidadeLitros > 0
+    ) {
+      nivel = Math.round((volInformado / existente.capacidadeLitros) * 100);
+    }
+
+    if (Number.isNaN(nivel)) {
+      nivel = 50;
+    }
+
+    if (nivel < 0 || nivel > 100) {
       throw new BusinessException(
         'O nível percentual deve estar entre 0% e 100%.',
         400,
@@ -105,16 +133,36 @@ export class ReservatorioService {
       );
     }
 
-    const alertaEstiagemAtivo = nivel < 25;
+    const pctFinal = Math.round(nivel);
+    const volumeFinal =
+      Number.isFinite(volInformado) && volInformado >= 0
+        ? Math.round(volInformado)
+        : Math.round((existente.capacidadeLitros * pctFinal) / 100);
+
+    const novaLeitura = {
+      data: new Date().toLocaleDateString('pt-BR'),
+      volumeLitros: volumeFinal,
+      capacidadeLitros: existente.capacidadeLitros,
+      percentual: pctFinal,
+      observacao: dto.observacao?.trim() || undefined
+    };
+
+    const historicoAtual = Array.isArray(existente.historicoLeituras)
+      ? existente.historicoLeituras
+      : [];
+    const historicoAtualizado = [novaLeitura, ...historicoAtual].slice(0, 20);
+
+    const alertaEstiagemAtivo = pctFinal < 25;
     const atualizado = this.repository.atualizar(id, {
-      ultimoNivelPercentual: Math.round(nivel),
-      escala: this.calcularEscala(nivel),
+      ultimoNivelPercentual: pctFinal,
+      escala: this.calcularEscala(pctFinal),
       profundidadeMetros:
         dto.profundidadeMetros !== undefined ? dto.profundidadeMetros : existente.profundidadeMetros,
       alertaEstiagemAtivo,
       mensagemAlerta: alertaEstiagemAtivo
-        ? `Alerta de Estiagem Crítica (${Math.round(nivel)}%): nível abaixo de 25%. Reduza o uso agrícola e priorize o abastecimento doméstico.`
-        : undefined
+        ? `Alerta de Estiagem Crítica (${pctFinal}%): nível abaixo de 25%. Reduza o uso agrícola e priorize o abastecimento doméstico.`
+        : undefined,
+      historicoLeituras: historicoAtualizado
     });
 
     if (!atualizado) {

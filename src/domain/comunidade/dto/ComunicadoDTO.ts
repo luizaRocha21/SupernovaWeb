@@ -5,9 +5,12 @@ export interface CriarComunicadoRequestDTO {
   localidadeId?: number;
   autorId?: number;
   autorNome?: string;
-  tipo?: TipoComunicado;
+  tipo?: TipoComunicado | string;
+  categoria?: string;
+  municipio?: string;
   severidade?: SeveridadeAlerta;
-  titulo: string;
+  nivel?: string;
+  titulo?: string;
   conteudo?: string;
   mensagem?: string;
   fonte?: string;
@@ -19,6 +22,8 @@ export interface ComunicadoResponseDTO {
   autorId: number;
   autorNome: string;
   tipo: TipoComunicado;
+  categoria?: string;
+  municipio?: string;
   severidade: SeveridadeAlerta;
   titulo: string;
   conteudo: string;
@@ -26,3 +31,4 @@ export interface ComunicadoResponseDTO {
   publicadoEm: string;
   vigenteAte: string;
 }
+

@@ -12,7 +12,10 @@ export class PlantioController implements IPlantioController {
 
   private configurarRotas(): void {
     this.router.get('/', (req, res, next) => this.diagnosticar(req, res, next));
+    this.router.get('/diagnostico', (req, res, next) => this.diagnosticar(req, res, next));
     this.router.put('/:culturaId/limiar', (req, res, next) => this.atualizarLimiar(req, res, next));
+    this.router.put('/limiar', (req, res, next) => this.atualizarLimiar(req, res, next));
+    this.router.post('/limiar', (req, res, next) => this.atualizarLimiar(req, res, next));
   }
 
   public diagnosticar(req: Request, res: Response, next: NextFunction): void {
@@ -31,7 +34,7 @@ export class PlantioController implements IPlantioController {
 
   public atualizarLimiar(req: Request, res: Response, next: NextFunction): void {
     try {
-      const culturaId = Number(req.params.culturaId);
+      const culturaId = Number(req.params.culturaId || req.body.culturaId || 1);
       const limiarMm = Number(req.body.limiarMm ?? req.body.limiarUsuarioMm);
       const usuarioId = Number(req.body.usuarioId) || 1;
 

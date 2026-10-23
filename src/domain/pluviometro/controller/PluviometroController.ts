@@ -18,7 +18,9 @@ export class PluviometroController implements IPluviometroController {
   public listar(req: Request, res: Response, next: NextFunction): void {
     try {
       const localidadeId = Number(req.query.localidadeId) || 1;
-      const resultado = this.service.listarPorLocalidade(localidadeId);
+      const rocaId = req.query.rocaId !== undefined ? Number(req.query.rocaId) : undefined;
+      const size = req.query.size !== undefined ? Number(req.query.size) : undefined;
+      const resultado = this.service.listarPorLocalidade(localidadeId, rocaId, size);
       res.status(200).json(resultado);
     } catch (error) {
       next(error);
