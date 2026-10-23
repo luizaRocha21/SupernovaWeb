@@ -1058,34 +1058,28 @@ app.get('/pages/index.html', (_req: Request, res: Response) => {
   res.redirect(301, '/index.html');
 });
 
-// Rotas estáticas amigáveis para páginas dedicadas em public/pages/
-app.get('/login.html', (_req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, 'public', 'pages', 'login.html'));
-});
-app.get('/painel.html', (_req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, 'public', 'pages', 'painel.html'));
-});
-app.get('/perfil.html', (_req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, 'public', 'pages', 'perfil.html'));
-});
-app.get('/admin.html', (_req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, 'public', 'pages', 'admin.html'));
-});
-app.get('/assistente-ia.html', (_req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, 'public', 'pages', 'assistente-ia.html'));
-});
-app.get('/plantio.html', (_req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, 'public', 'pages', 'plantio.html'));
-});
-app.get('/reservatorios.html', (_req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, 'public', 'pages', 'reservatorios.html'));
-});
-app.get('/comunidade.html', (_req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, 'public', 'pages', 'comunidade.html'));
-});
+// Rotas estáticas amigáveis para páginas dedicadas em public/pages/ (com e sem .html)
+const paginasDedicadas = [
+  'login',
+  'painel',
+  'perfil',
+  'admin',
+  'assistente-ia',
+  'plantio',
+  'reservatorios',
+  'comunidade'
+];
 
-// Serve os arquivos estáticos oficiais de /public
-app.use(express.static(path.join(__dirname, 'public')));
+for (const pagina of paginasDedicadas) {
+  const arquivoHtml = path.join(__dirname, 'public', 'pages', `${pagina}.html`);
+  app.get(`/${pagina}.html`, (_req: Request, res: Response) => res.sendFile(arquivoHtml));
+  app.get(`/${pagina}`, (_req: Request, res: Response) => res.sendFile(arquivoHtml));
+  app.get(`/pages/${pagina}.html`, (_req: Request, res: Response) => res.sendFile(arquivoHtml));
+  app.get(`/pages/${pagina}`, (_req: Request, res: Response) => res.sendFile(arquivoHtml));
+}
+
+// Serve os arquivos estáticos oficiais de /public (com suporte a cleanUrls / extensions: ['html'])
+app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
 
 // Middleware global de tratamento de exceções (BusinessException -> ErrorResponseDTO)
 app.use(ApiExceptionHandler);

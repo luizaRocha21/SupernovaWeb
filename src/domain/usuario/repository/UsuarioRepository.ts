@@ -299,21 +299,36 @@ export class UsuarioRepository implements IUsuarioRepository {
 
   public buscarPorEmail(email: string): Usuario | undefined {
     const normalizado = email.trim().toLowerCase();
-    return this.usuarios.find((u) => (u.email || '').toLowerCase() === normalizado);
+    if (!normalizado) return undefined;
+    return this.usuarios.find((u) => (u.email || '').trim().toLowerCase() === normalizado);
   }
 
   public buscarPorTelefone(telefone: string): Usuario | undefined {
     const digitos = telefone.replace(/\D/g, '');
-    if (!digitos) return undefined;
-    return this.usuarios.find((u) => u.telefone.replace(/\D/g, '') === digitos);
+    if (!digitos || digitos.length < 8) return undefined;
+    return this.usuarios.find((u) => {
+      const uDigitos = (u.telefone || '').replace(/\D/g, '');
+      if (!uDigitos) return false;
+      return (
+        uDigitos === digitos ||
+        uDigitos.endsWith(digitos) ||
+        digitos.endsWith(uDigitos)
+      );
+    });
   }
 
   public buscarPorIdentificador(identificador: string): Usuario | undefined {
     const limpo = identificador.trim();
+    if (!limpo) return undefined;
     if (limpo.includes('@')) {
       return this.buscarPorEmail(limpo);
     }
-    return this.buscarPorTelefone(limpo) || this.buscarPorEmail(limpo);
+    const porTel = this.buscarPorTelefone(limpo);
+    if (porTel) return porTel;
+    const porEmail = this.buscarPorEmail(limpo);
+    if (porEmail) return porEmail;
+    const normNome = limpo.toLowerCase();
+    return this.usuarios.find((u) => (u.nome || '').trim().toLowerCase() === normNome);
   }
 
   public salvar(dados: NovoUsuarioInput): Usuario {

@@ -12,6 +12,43 @@
   const ROCAS_CACHE_STORAGE_KEY = "mc_rocas_lista_v1";
   const SETTINGS_OPEN_STORAGE_KEY = "mc_sidebar_settings_open_v1";
   const ADMIN_ROLES = ["GESTOR_PUBLICO", "PREFEITURA", "SINDICATO", "ADMIN"];
+  const RENDER_BACKEND_URL = "https://manejo-caatingueiro-api.onrender.com";
+
+  // Garante que chamadas relativas /api/v1/* funcionem tanto no Render/Local quanto no Vercel/GitHub Pages
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname || "";
+    if (!window.MC_API_BASE && (host.includes("vercel.app") || host.includes("github.io"))) {
+      window.MC_API_BASE = RENDER_BACKEND_URL;
+    }
+    if (!window.__mcFetchPatched && typeof window.fetch === "function") {
+      window.__mcFetchPatched = true;
+      const originalFetch = window.fetch.bind(window);
+      window.fetch = async function (input, init) {
+        const urlStr = typeof input === "string" ? input : (input && input.url ? input.url : "");
+        const isRelativeApi = urlStr.startsWith("/api/");
+        if (isRelativeApi && window.MC_API_BASE) {
+          try {
+            const resp = await originalFetch(`${window.MC_API_BASE}${urlStr}`, init);
+            if (resp.status !== 404 && resp.status !== 502 && resp.status !== 503) {
+              return resp;
+            }
+          } catch {}
+        }
+        try {
+          const respLocal = await originalFetch(input, init);
+          if (isRelativeApi && (respLocal.status === 404 || respLocal.status === 405) && !window.MC_API_BASE) {
+            return await originalFetch(`${RENDER_BACKEND_URL}${urlStr}`, init);
+          }
+          return respLocal;
+        } catch (err) {
+          if (isRelativeApi) {
+            return await originalFetch(`${RENDER_BACKEND_URL}${urlStr}`, init);
+          }
+          throw err;
+        }
+      };
+    }
+  }
 
   const DEFAULT_ROCAS_FALLBACK = [
     {
@@ -54,40 +91,43 @@
 
   function getAuthSession() {
     try {
-      const raw = localStorage.getItem(AUTH_STORAGE_KEY);
-      if (!raw) return null;
-      const parsed = JSON.parse(raw);
-      if (!parsed || typeof parsed !== "object") return null;
+      const keys = [AUTH_STORAGE_KEY, "mc_auth_session_v3", "mc_auth_session_v2"];
+      for (const k of keys) {
+        const raw = localStorage.getItem(k);
+        if (!raw) continue;
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== "object") continue;
 
-      const userObj = parsed.usuario || parsed.user || null;
-      if (!userObj && !parsed.token) return null;
+        const userObj = parsed.usuario || parsed.user || (parsed.id && parsed.nome ? parsed : null);
+        if (!userObj && !parsed.token) continue;
 
-      const normalizedUser = userObj
-        ? {
-            ...userObj,
-            nome: userObj.nome || userObj.name || "Agricultor(a)",
-            perfil:
-              userObj.perfil || userObj.tipoPerfil || userObj.role || "AGRICULTOR"
-          }
-        : null;
+        const normalizedUser = userObj
+          ? {
+              ...userObj,
+              id: Number(userObj.id || userObj.usuarioId) || 1,
+              nome: userObj.nome || userObj.name || "Agricultor(a)",
+              perfil:
+                userObj.perfil || userObj.tipoPerfil || userObj.role || "AGRICULTOR"
+            }
+          : null;
 
-      const normalizedSession = {
-        ...parsed,
-        token: parsed.token || "",
-        usuario: normalizedUser,
-        user: normalizedUser
-      };
+        const normalizedSession = {
+          ...parsed,
+          token: parsed.token || `local_token_${normalizedUser?.id || 1}`,
+          usuario: normalizedUser,
+          user: normalizedUser
+        };
 
-      if (normalizedUser && (!parsed.usuario || !parsed.user)) {
         try {
           localStorage.setItem(
             AUTH_STORAGE_KEY,
             JSON.stringify(normalizedSession)
           );
         } catch {}
-      }
 
-      return normalizedSession;
+        return normalizedSession;
+      }
+      return null;
     } catch {
       return null;
     }
@@ -115,40 +155,58 @@
   }
 
   function isEntryPage() {
-    const pathname = window.location.pathname || "/";
+    const pathname = (window.location.pathname || "/").replace(/\/+$/, "") || "/";
     return (
       pathname === "/" ||
       pathname.endsWith("/index.html") ||
-      pathname.endsWith("/login.html")
+      pathname.endsWith("/index") ||
+      pathname.endsWith("/login.html") ||
+      pathname.endsWith("/login")
     );
   }
 
   function isIndexPage() {
-    const pathname = window.location.pathname || "/";
-    return pathname === "/" || pathname.endsWith("/index.html");
+    const pathname = (window.location.pathname || "/").replace(/\/+$/, "") || "/";
+    return (
+      pathname === "/" ||
+      pathname.endsWith("/index.html") ||
+      pathname.endsWith("/index")
+    );
+  }
+
+  function isLoginPage() {
+    const pathname = (window.location.pathname || "").replace(/\/+$/, "");
+    return pathname.endsWith("/login.html") || pathname.endsWith("/login");
   }
 
   function isLoggedPanelPage() {
-    const pathname = window.location.pathname || "";
-    const panelPages = [
-      "painel.html",
-      "perfil.html",
-      "plantio.html",
-      "reservatorios.html",
-      "comunidade.html",
-      "assistente-ia.html",
-      "admin.html"
+    const pathname = (window.location.pathname || "").replace(/\/+$/, "");
+    const panelSlugs = [
+      "painel",
+      "perfil",
+      "plantio",
+      "reservatorios",
+      "comunidade",
+      "assistente-ia",
+      "admin"
     ];
-    return panelPages.some((p) => pathname.endsWith(p));
+    return panelSlugs.some(
+      (slug) => pathname.endsWith(`/${slug}.html`) || pathname.endsWith(`/${slug}`)
+    );
   }
 
   function isPathActive(href) {
-    const pathname = window.location.pathname || "/index.html";
-    if (href === "/index.html") {
-      return pathname === "/" || pathname.endsWith("/index.html");
+    const pathname = (window.location.pathname || "/index.html").replace(/\/+$/, "") || "/index.html";
+    if (href.startsWith("/index.html")) {
+      return pathname === "/" || pathname.endsWith("/index.html") || pathname.endsWith("/index");
     }
-    const targetFile = href.split("/").pop();
-    return Boolean(targetFile && pathname.endsWith(targetFile));
+    const cleanHref = href.split("?")[0].split("#")[0];
+    const targetFile = cleanHref.split("/").pop() || "";
+    const targetSlug = targetFile.replace(/\.html$/i, "");
+    return Boolean(
+      targetSlug &&
+        (pathname.endsWith(`/${targetFile}`) || pathname.endsWith(`/${targetSlug}`))
+    );
   }
 
   function removeSkipLinksFromDom() {
@@ -446,37 +504,42 @@
   }
 
   /* ==========================================================================
-     MODAL DE CONFIRMAÇÃO DE LOGOUT
+     MODAL DE CONFIRMAÇÃO DE LOGOUT (NORMALIZADO CONTRA .modal.fade INVISÍVEL)
      ========================================================================== */
   function ensureLogoutModalExists() {
     let modal = document.getElementById("logout-confirm-modal");
-    if (modal) return modal;
+    if (!modal) {
+      modal = document.createElement("div");
+      modal.id = "logout-confirm-modal";
+      document.body.appendChild(modal);
+    }
 
-    modal = document.createElement("div");
-    modal.id = "logout-confirm-modal";
-    modal.className = "modal-overlay";
-    modal.hidden = true;
-    modal.setAttribute("role", "dialog");
-    modal.setAttribute("aria-modal", "true");
-    modal.setAttribute("aria-labelledby", "logout-modal-title");
-    modal.innerHTML = `
-      <div class="modal-box card shadow">
-        <p class="eyebrow eyebrow-ochre">CONFIRMAÇÃO DE SAÍDA</p>
-        <h3 id="logout-modal-title">Deseja sair da sua conta?</h3>
-        <p class="muted small">
-          Você poderá entrar novamente a qualquer momento para consultar o painel da sua roça.
-        </p>
-        <div class="modal-actions">
-          <button type="button" class="btn btn-outline-secondary button button-secondary" id="logout-cancel-btn">
-            Continuar na conta
-          </button>
-          <button type="button" class="btn btn-primary button button-primary" id="logout-confirm-btn">
-            Sim, sair agora
-          </button>
+    if (!modal.dataset.normalizedOverlay) {
+      modal.dataset.normalizedOverlay = "true";
+      modal.className = "modal-overlay";
+      modal.hidden = true;
+      modal.style.display = "none";
+      modal.setAttribute("role", "dialog");
+      modal.setAttribute("aria-modal", "true");
+      modal.setAttribute("aria-labelledby", "logout-modal-title");
+      modal.innerHTML = `
+        <div class="modal-box card shadow" style="background-color: #fffaf0; border: 1px solid #d2c2a9; border-radius: 14px; padding: 1.5rem; max-width: 420px; width: 100%;">
+          <p class="eyebrow eyebrow-ochre mb-1" style="font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; color: #8c3719; text-transform: uppercase;">CONFIRMAÇÃO DE SAÍDA</p>
+          <h3 id="logout-modal-title" class="h5 mb-2" style="font-family: 'Newsreader', Georgia, serif; color: #542817; font-weight: 600;">Deseja sair da sua conta?</h3>
+          <p class="muted small mb-3" style="color: #6e6252;">
+            Você poderá entrar novamente a qualquer momento para consultar o painel da sua roça.
+          </p>
+          <div class="modal-actions d-flex justify-content-end gap-2 flex-wrap">
+            <button type="button" class="btn btn-outline-secondary button button-secondary" id="logout-cancel-btn" style="border-radius: 8px; min-height: 42px; font-weight: 600;">
+              Continuar na conta
+            </button>
+            <button type="button" class="btn btn-primary button button-primary" id="logout-confirm-btn" style="background-color: #8c3719; border-color: #8c3719; color: #fffaf0; border-radius: 8px; min-height: 42px; font-weight: 700;">
+              Sim, sair agora
+            </button>
+          </div>
         </div>
-      </div>
-    `;
-    document.body.appendChild(modal);
+      `;
+    }
     return modal;
   }
 
@@ -495,8 +558,13 @@
   function openLogoutModal() {
     closeAllSidebarsImmediately();
     const modal = ensureLogoutModalExists();
+    modal.classList.remove("fade", "modal");
+    modal.classList.add("modal-overlay");
     modal.hidden = false;
     modal.removeAttribute("hidden");
+    modal.style.display = "grid";
+    modal.style.opacity = "1";
+    modal.style.zIndex = "2000";
   }
 
   function closeLogoutModal() {
@@ -504,6 +572,7 @@
     if (modal) {
       modal.hidden = true;
       modal.setAttribute("hidden", "");
+      modal.style.display = "none";
     }
   }
 
@@ -516,35 +585,79 @@
     window.dispatchEvent(
       new CustomEvent("mc:auth-changed", { detail: { loggedIn: false } })
     );
-    window.location.href = "/index.html";
+    window.location.href = "/index.html?ver=inicio";
   }
+
+  let globalLogoutDelegationBound = false;
 
   function bindLogoutButtons() {
     const modal = ensureLogoutModalExists();
     const cancelBtn = modal.querySelector("#logout-cancel-btn");
-    const confirmBtn = modal.querySelector("#logout-confirm-btn");
+    const confirmBtn =
+      modal.querySelector("#logout-confirm-btn") ||
+      modal.querySelector("#confirm-logout-btn");
 
     if (cancelBtn && !cancelBtn.dataset.boundLogout) {
       cancelBtn.dataset.boundLogout = "true";
-      cancelBtn.addEventListener("click", closeLogoutModal);
+      cancelBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        closeLogoutModal();
+      });
     }
 
     if (confirmBtn && !confirmBtn.dataset.boundLogout) {
       confirmBtn.dataset.boundLogout = "true";
-      confirmBtn.addEventListener("click", executeLogout);
+      confirmBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        executeLogout();
+      });
     }
 
     document
-      .querySelectorAll('#btn-logout, #nav-btn-logout, [data-action="logout"]')
+      .querySelectorAll('#btn-logout, #nav-btn-logout, [data-action="logout"], .btn-sidebar-logout')
       .forEach((btn) => {
         if (btn.dataset.boundLogoutTrigger) return;
         btn.dataset.boundLogoutTrigger = "true";
         btn.addEventListener("click", (e) => {
           e.preventDefault();
+          e.stopPropagation();
           closeAllSidebarsImmediately();
           openLogoutModal();
         });
       });
+
+    if (!globalLogoutDelegationBound) {
+      globalLogoutDelegationBound = true;
+      document.addEventListener("click", (e) => {
+        const trigger =
+          e.target && typeof e.target.closest === "function"
+            ? e.target.closest('#btn-logout, #nav-btn-logout, [data-action="logout"], .btn-sidebar-logout')
+            : null;
+        if (trigger) {
+          e.preventDefault();
+          closeAllSidebarsImmediately();
+          openLogoutModal();
+          return;
+        }
+        const confirmTrigger =
+          e.target && typeof e.target.closest === "function"
+            ? e.target.closest("#logout-confirm-btn, #confirm-logout-btn")
+            : null;
+        if (confirmTrigger) {
+          e.preventDefault();
+          executeLogout();
+          return;
+        }
+        const cancelTrigger =
+          e.target && typeof e.target.closest === "function"
+            ? e.target.closest("#logout-cancel-btn")
+            : null;
+        if (cancelTrigger) {
+          e.preventDefault();
+          closeLogoutModal();
+        }
+      });
+    }
   }
 
   function bindUserBadgeClick() {
@@ -562,88 +675,12 @@
   }
 
   /* ==========================================================================
-     TOOLBAR DE TEMAS (USADA TANTO NA VITRINE QUANTO NAS CONFIGURAÇÕES DA SIDEBAR)
-     ========================================================================== */
-  function buildThemeToolbarHtml() {
-    const currentTheme =
-      document.documentElement.getAttribute("data-theme") ||
-      localStorage.getItem(THEME_STORAGE_KEY) ||
-      "claro";
-
-    const isLight = currentTheme === "claro";
-    const toggleIcon = isLight ? "🌙" : "☀️";
-    const toggleTitle = isLight
-      ? "Mudar para tema escuro"
-      : "Mudar para tema claro";
-
-    const isDaltonico = currentTheme === "daltonico";
-    const isContraste = currentTheme === "baixa-visao";
-
-    return `
-      <div class="theme-icon-toolbar" role="toolbar" aria-label="Controles de aparência e leitura em voz">
-        <button
-          type="button"
-          class="theme-icon-btn ${currentTheme === "escuro" ? "active" : ""}"
-          id="btn-theme-toggle-light-dark"
-          title="${toggleTitle}"
-          aria-label="${toggleTitle}"
-          aria-pressed="${currentTheme === "escuro" ? "true" : "false"}"
-        >
-          <span aria-hidden="true">${toggleIcon}</span>
-        </button>
-        <button
-          type="button"
-          class="theme-icon-btn ${isDaltonico ? "active" : ""}"
-          id="btn-theme-daltonico"
-          data-set-theme="daltonico"
-          title="Modo para daltônicos"
-          aria-label="Modo para daltônicos"
-          aria-pressed="${isDaltonico ? "true" : "false"}"
-        >
-          <span aria-hidden="true">👁️</span>
-        </button>
-        <button
-          type="button"
-          class="theme-icon-btn ${isContraste ? "active" : ""}"
-          id="btn-theme-contraste"
-          data-set-theme="baixa-visao"
-          title="Alto contraste e letras maiores"
-          aria-label="Alto contraste e letras maiores"
-          aria-pressed="${isContraste ? "true" : "false"}"
-        >
-          <span aria-hidden="true">◐</span>
-        </button>
-        <button
-          type="button"
-          class="theme-icon-btn btn-sound-icon"
-          id="btn-tts-icon"
-          title="Ouvir resumo desta página"
-          aria-label="Ouvir resumo desta página"
-        >
-          <span aria-hidden="true">🔊</span>
-        </button>
-      </div>
-    `;
-  }
-
-  /* ==========================================================================
-     BARRA SUPERIOR DE VISITANTE (INDEX.HTML / LOGIN.HTML DESLOGADO)
-     ========================================================================== */
-  function buildGuestTopbarInnerHtml() {
-    const themeToolbarHtml = buildThemeToolbarHtml();
-    return `
-      <div class="ms-auto d-flex align-items-center gap-2 flex-wrap">
-        ${themeToolbarHtml}
-        <a href="/pages/login.html" class="btn btn-sm" id="nav-btn-login" data-guest-only style="background-color: #fffaf0; border: 1px solid #d2c2a9; color: #542817; font-family: 'DM Sans', sans-serif; font-weight: 600;">Entrar na conta</a>
-        <a href="/pages/login.html?modo=cadastro" class="btn btn-sm" id="nav-btn-register" data-guest-only style="background-color: #5d603d; border: 1px solid #5d603d; color: #fffaf0; font-family: 'DM Sans', sans-serif; font-weight: 600;">Criar cadastro</a>
-      </div>
-    `;
-  }
-
-  /* ==========================================================================
      BARRA SUPERIOR SUTIL (.app-topbar) E GAVETA LATERAL RETRÁTIL (.app-sidebar-nav)
      ========================================================================== */
-  function buildLoggedTopbarHtml(rocaAtiva) {
+  function buildLoggedTopbarHtml(rocaAtiva, loggedIn) {
+    const onIndex = isIndexPage();
+    const brandHref = loggedIn ? "/pages/painel.html" : "/index.html?ver=inicio";
+
     return `
       <div class="d-flex align-items-center gap-2 flex-wrap">
         <button
@@ -651,7 +688,7 @@
           class="btn-menu-drawer"
           id="btn-open-drawer"
           data-open-sidebar
-          aria-label="Abrir menu de navegação"
+          aria-label="Abrir menu de navegação e opções"
           aria-controls="menu"
           aria-expanded="false"
           style="background-color: #fffaf0; border: 1px solid #d2c2a9; color: #542817; font-family: 'DM Sans', sans-serif; font-weight: 600;"
@@ -664,22 +701,26 @@
           <span>Menu</span>
         </button>
 
-        <a href="/pages/painel.html" class="topbar-brand d-inline-flex align-items-center gap-2 text-decoration-none">
+        <a href="${brandHref}" class="topbar-brand d-inline-flex align-items-center gap-2 text-decoration-none">
           <img src="/assets/images/logo.png" alt="Manejo Caatingueiro" width="34" height="34" style="border-radius: 8px;">
           <span style="font-family: 'Newsreader', Georgia, serif; font-weight: 500; color: #542817; font-size: 1.15rem;">Manejo Caatingueiro</span>
         </a>
       </div>
 
       <div class="d-flex align-items-center gap-2">
-        <a
-          href="/pages/perfil.html"
-          class="d-none d-md-inline-flex align-items-center gap-1 px-2 py-1 rounded-2 small fw-semibold text-decoration-none"
-          data-topbar-roca-indicator
-          title="Roça analisada no momento (clique para gerenciar suas roças)"
-          style="background-color: #e9efe2; color: #3e4a26; border: 1px solid #b8c7a6; font-family: 'DM Sans', sans-serif;"
-        >
-          ${escapeAttr(formatTopbarRocaLabel(rocaAtiva))}
-        </a>
+        ${
+          !onIndex
+            ? `<a
+                href="/pages/perfil.html"
+                class="d-none d-md-inline-flex align-items-center gap-1 px-2 py-1 rounded-2 small fw-semibold text-decoration-none"
+                data-topbar-roca-indicator
+                title="Roça analisada no momento (clique para gerenciar suas roças)"
+                style="background-color: #e9efe2; color: #3e4a26; border: 1px solid #b8c7a6; font-family: 'DM Sans', sans-serif;"
+              >
+                ${escapeAttr(formatTopbarRocaLabel(rocaAtiva))}
+              </a>`
+            : ""
+        }
 
         <button
           type="button"
@@ -692,27 +733,32 @@
           <span aria-hidden="true">🔊</span>
         </button>
 
-        <button
-          type="button"
-          class="btn btn-sm"
-          id="nav-btn-logout"
-          data-action="logout"
-          title="Sair da sua conta"
-          style="background-color: #fffaf0; border: 1px solid #d2c2a9; color: #542817; font-family: 'DM Sans', sans-serif; font-weight: 600;"
-        >
-          Sair
-        </button>
+        ${
+          loggedIn || !onIndex
+            ? `<button
+                type="button"
+                class="btn btn-sm"
+                id="nav-btn-logout"
+                data-action="logout"
+                title="Sair da sua conta"
+                style="background-color: #fffaf0; border: 1px solid #d2c2a9; color: #542817; font-family: 'DM Sans', sans-serif; font-weight: 600;"
+              >
+                Sair
+              </button>`
+            : ""
+        }
       </div>
     `;
   }
 
   function buildUnifiedSidebarHtml(session) {
+    const loggedIn = Boolean(session && session.usuario);
     const usuario = session?.usuario || {
-      nome: "Agricultor(a)",
+      nome: "Visitante Sertanejo",
       perfil: "AGRICULTOR"
     };
-    const primeiroNome = getFirstName(usuario.nome);
-    const nomeCompleto = usuario.nome || "Agricultor(a)";
+    const primeiroNome = loggedIn ? getFirstName(usuario.nome) : "Visitante";
+    const nomeCompleto = loggedIn ? usuario.nome || "Agricultor(a)" : "Visitante (Acesso Livre)";
     const rocas = getRocasUsuario();
     const rocaAtiva = getRocaAtiva();
 
@@ -733,6 +779,11 @@
       localStorage.getItem(SETTINGS_OPEN_STORAGE_KEY) === "true";
 
     const navItems = [
+      {
+        href: "/index.html?ver=inicio",
+        icon: "🏡",
+        label: "Apresentação (Início)"
+      },
       {
         href: "/pages/painel.html",
         icon: "🏠",
@@ -762,20 +813,18 @@
         href: "/pages/assistente-ia.html",
         icon: "💬",
         label: "Assistente da Roça"
-      }
-    ];
-
-    if (isAdminProfile(usuario)) {
-      navItems.push({
+      },
+      {
         href: "/pages/admin.html",
         icon: "🏛️",
         label: "Administração"
-      });
-    }
+      }
+    ];
 
     const linksHtml = navItems
       .map((item) => {
-        const isActive = isPathActive(item.href);
+        const cleanHref = item.href.split("?")[0];
+        const isActive = isPathActive(cleanHref);
         const activeClass = isActive ? "active" : "";
         const ariaCurrent = isActive ? 'aria-current="page"' : "";
         const linkInlineStyle = isActive
@@ -827,8 +876,8 @@
           type="button"
           class="user-badge btn btn-sm w-100 text-start d-flex align-items-center justify-content-between"
           id="user-badge"
-          title="Conta conectada: ${escapeAttr(nomeCompleto)} (clique para abrir seu perfil)"
-          aria-label="Conta conectada de ${escapeAttr(primeiroNome)}"
+          title="Conta: ${escapeAttr(nomeCompleto)} (clique para abrir seu perfil)"
+          aria-label="Conta de ${escapeAttr(primeiroNome)}"
           style="background-color: #fffaf0; border: 1px solid #d2c2a9; color: #542817; font-family: 'DM Sans', sans-serif;"
         >
           <span>👤 ${escapeAttr(primeiroNome)}</span>
@@ -955,7 +1004,18 @@
           </div>
         </div>
 
-        <div class="sidebar-footer-actions mt-2">
+        <div class="sidebar-footer-actions mt-2 d-grid gap-2">
+          ${
+            !loggedIn
+              ? `<a
+                  href="/pages/login.html"
+                  class="btn btn-sm w-100"
+                  style="background: #5d603d; color: #fffaf0; border: 1px solid #5d603d; border-radius: 8px; width: 100%; min-height: 44px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-family: 'DM Sans', sans-serif; text-decoration: none;"
+                >
+                  🔑 Entrar ou Cadastrar Conta
+                </a>`
+              : ""
+          }
           <button
             type="button"
             class="btn btn-sm w-100 btn-sidebar-logout"
@@ -977,8 +1037,9 @@
     let backdrop = document.querySelector(".app-sidebar-backdrop");
     let workspace = document.querySelector(".app-main-workspace");
     const rocaAtiva = getRocaAtiva();
+    const loggedIn = Boolean(session && session.usuario);
 
-    // Oculta a antiga navbar horizontal superior quando o layout em Aba Lateral está ativo
+    // Oculta a antiga navbar horizontal superior quando o layout em Aba Lateral Retrátil está ativo
     const legacyHeader = document.querySelector("body > header.sticky-top, body > header");
     const legacyNavMenu = document.getElementById("menu");
     if (legacyHeader && (!sidebar || !legacyHeader.contains(sidebar))) {
@@ -1001,7 +1062,7 @@
       topbar.id = "app-topbar";
       topbar.style.backgroundColor = "#f4eddb";
       topbar.style.borderBottom = "1px solid #d2c2a9";
-      topbar.innerHTML = buildLoggedTopbarHtml(rocaAtiva);
+      topbar.innerHTML = buildLoggedTopbarHtml(rocaAtiva, loggedIn);
 
       sidebar = document.createElement("aside");
       sidebar.className = "app-sidebar-nav";
@@ -1012,7 +1073,7 @@
       } else {
         sidebar.id = "app-sidebar";
       }
-      sidebar.setAttribute("aria-label", "Menu Lateral do Agricultor");
+      sidebar.setAttribute("aria-label", "Menu Lateral Retrátil");
 
       backdrop = document.createElement("div");
       backdrop.className = "app-sidebar-backdrop";
@@ -1048,7 +1109,7 @@
       topbar.id = "app-topbar";
       topbar.style.backgroundColor = "#f4eddb";
       topbar.style.borderBottom = "1px solid #d2c2a9";
-      topbar.innerHTML = buildLoggedTopbarHtml(rocaAtiva);
+      topbar.innerHTML = buildLoggedTopbarHtml(rocaAtiva, loggedIn);
 
       if (!sidebar) {
         sidebar = document.createElement("aside");
@@ -1151,56 +1212,13 @@
   }
 
   function syncSessionVisibility(loggedIn, session) {
-    const guestSelectors = [
-      "#guest-home-section",
-      "#nav-btn-login",
-      "#nav-btn-register",
-      "#btn-open-auth",
-      "[data-guest-only]",
-      "[data-nav-guest]"
-    ];
-    document.querySelectorAll(guestSelectors.join(", ")).forEach((el) => {
-      el.hidden = loggedIn;
-      if (loggedIn) {
-        el.setAttribute("hidden", "");
-        el.classList.add("d-none");
-      } else {
-        el.removeAttribute("hidden");
-        el.classList.remove("d-none");
-      }
-    });
-
-    document.querySelectorAll('a[href*="/pages/login.html"]').forEach((link) => {
-      if (loggedIn) {
-        link.hidden = true;
-        link.setAttribute("hidden", "");
-        link.classList.add("d-none");
-      } else {
-        link.hidden = false;
-        link.removeAttribute("hidden");
-        link.classList.remove("d-none");
-      }
-    });
-
-    const loggedSelectors = [
-      "#logged-manejo-workspace",
-      "#sidebar-nav-logged",
-      "#main-nav",
-      "#btn-logout",
-      "#user-badge",
-      "[data-logged-only]",
-      "[data-nav-logged]"
-    ];
-    document.querySelectorAll(loggedSelectors.join(", ")).forEach((el) => {
-      el.hidden = !loggedIn;
-      if (!loggedIn) {
-        el.setAttribute("hidden", "");
-        el.classList.add("d-none");
-      } else {
-        el.removeAttribute("hidden");
-        el.classList.remove("d-none");
-      }
-    });
+    // Mantém todas as áreas de trabalho e abas acessíveis (sem ocultar #logged-manejo-workspace ou #btn-logout)
+    const workspaceEl = document.getElementById("logged-manejo-workspace");
+    if (workspaceEl) {
+      workspaceEl.hidden = false;
+      workspaceEl.removeAttribute("hidden");
+      workspaceEl.classList.remove("d-none");
+    }
 
     const userBadge = document.getElementById("user-badge");
     if (userBadge && loggedIn && session?.usuario) {
@@ -1215,78 +1233,16 @@
     removeSkipLinksFromDom();
     const session = getAuthSession();
     const loggedIn = Boolean(session && session.usuario);
+    const forceHome = window.location.search.includes("ver=inicio");
 
-    // 1. Se o usuário estiver em /index.html e já tiver sessão ativa, redireciona para /pages/painel.html
-    if (loggedIn && isIndexPage()) {
+    // 1. Se o usuário estiver em /index.html e já tiver sessão ativa (sem ?ver=inicio), redireciona para /pages/painel.html
+    if (loggedIn && isIndexPage() && !forceHome) {
       window.location.replace("/pages/painel.html");
       return;
     }
 
-    // 2. Se estiver em página interna do painel, injeta a Barra Superior Sutil (.app-topbar) + Gaveta Lateral Retrátil (.app-sidebar-nav)
-    if (isLoggedPanelPage() || !isEntryPage()) {
-      ensureUnifiedSidebarShell(session);
-    } else {
-      // 3. Visitante em index.html / login.html: renderiza topbar limpa de visitante
-      const navMenu = document.getElementById("menu");
-      if (navMenu && !navMenu.classList.contains("app-sidebar-nav")) {
-        navMenu.classList.remove("d-none");
-        navMenu.hidden = false;
-        const brandImg = navMenu.querySelector(".navbar-brand img");
-        if (brandImg) {
-          brandImg.setAttribute("src", "/assets/images/logo.png");
-        }
-
-        let collapseContainer = navMenu.querySelector("#navbarConteudo");
-        if (!collapseContainer) {
-          navMenu.innerHTML = `
-            <div class="container">
-              <a class="navbar-brand d-inline-flex align-items-center gap-2 fw-bold" href="/index.html">
-                <img src="/assets/images/logo.png" alt="Logotipo Manejo Caatingueiro" width="32" height="32">
-                <span>Manejo Caatingueiro</span>
-              </a>
-              <button
-                class="navbar-toggler"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#navbarConteudo"
-                aria-controls="navbarConteudo"
-                aria-expanded="false"
-                aria-label="Alternar menu de navegação"
-                style="min-height: 44px; min-width: 44px;"
-              >
-                <span class="navbar-toggler-icon"></span>
-              </button>
-              <div class="collapse navbar-collapse" id="navbarConteudo"></div>
-            </div>
-          `;
-          collapseContainer = navMenu.querySelector("#navbarConteudo");
-        }
-
-        const dynamicMount =
-          collapseContainer.querySelector("[data-navbar-dynamic]") ||
-          collapseContainer;
-        if (!collapseContainer.hasAttribute("data-preserve-static")) {
-          dynamicMount.innerHTML = buildGuestTopbarInnerHtml();
-        }
-
-        const toggler = navMenu.querySelector(
-          '.navbar-toggler[data-bs-target="#navbarConteudo"]'
-        );
-        if (toggler && collapseContainer && !toggler.dataset.boundCollapse) {
-          toggler.dataset.boundCollapse = "true";
-          toggler.addEventListener("click", () => {
-            if (
-              typeof window.bootstrap !== "undefined" &&
-              window.bootstrap.Collapse
-            ) {
-              return;
-            }
-            const isShown = collapseContainer.classList.toggle("show");
-            toggler.setAttribute("aria-expanded", String(isShown));
-          });
-        }
-      }
-    }
+    // 2. Injeta a Barra Superior Sutil (.app-topbar) + Gaveta Lateral Retrátil (.app-sidebar-nav) em TODAS as páginas (incluindo index.html)
+    ensureUnifiedSidebarShell(session);
 
     populateSidebarRocaSelector();
     syncSessionVisibility(loggedIn, session);
@@ -1346,3 +1302,4 @@
     initSidebarMenu();
   }
 })();
+

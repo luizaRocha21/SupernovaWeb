@@ -22,7 +22,7 @@ function resolveApiBase() {
     return "http://localhost:3000";
   }
   if (window.location.hostname.includes("vercel.app") || window.location.hostname.includes("github.io")) {
-    return "https://supernovaweb-1.onrender.com";
+    return "https://manejo-caatingueiro-api.onrender.com";
   }
   return "";
 }
@@ -41,7 +41,62 @@ const STORAGE_KEYS = {
 // Contas oficiais de teste pré-configuradas (disponíveis tanto online quanto offline)
 const SEED_TEST_ACCOUNTS = [
   {
+    id: 1,
+    nome: "João Batista da Silva",
+    telefone: "74999110001",
+    email: "joao@email.com",
+    senha: "Sertao@2026",
+    perfil: "AGRICULTOR",
+    abastecimento: "CISTERNA",
+    localidadeId: 1,
+    localidadeNome: "Irecê"
+  },
+  {
     id: 2,
+    nome: "Maria Francisca Souza",
+    telefone: "74999110002",
+    email: "maria.sertao@email.com",
+    senha: "Sertao@2026",
+    perfil: "LIDERANCA_COMUNITARIA",
+    abastecimento: "CISTERNA",
+    localidadeId: 3,
+    localidadeNome: "Povoado de Achado (Irecê)"
+  },
+  {
+    id: 3,
+    nome: "Secretaria de Agricultura — Irecê",
+    telefone: "7436410003",
+    email: "convenio.agri@irece.ba.gov.br",
+    senha: "Sertao@2026",
+    perfil: "GESTOR_PUBLICO",
+    abastecimento: "ENCANADA",
+    localidadeId: 1,
+    localidadeNome: "Irecê"
+  },
+  {
+    id: 4,
+    nome: "Sindicato dos Trabalhadores Rurais",
+    telefone: "7436410004",
+    email: "contato@str-regional.org.br",
+    senha: "Sertao@2026",
+    perfil: "SINDICATO_COOPERATIVA",
+    abastecimento: "CISTERNA",
+    localidadeId: 1,
+    localidadeNome: "Irecê"
+  },
+  {
+    id: 5,
+    nome: "Antônio Oliveira",
+    telefone: "74999110005",
+    email: "antonio.palma@email.com",
+    senha: "Sertao@2026",
+    perfil: "AGRICULTOR",
+    abastecimento: "POCO",
+    localidadeId: 5,
+    localidadeNome: "Lapão"
+  },
+  {
+    id: 6,
     nome: "Zé Ronaldo",
     telefone: "74988880000",
     email: "zeronaldo.roca@gmail.com",
@@ -52,7 +107,7 @@ const SEED_TEST_ACCOUNTS = [
     localidadeNome: "Irecê"
   },
   {
-    id: 6,
+    id: 7,
     nome: "Dona Maria do Achado",
     telefone: "74988880004",
     email: "donamaria.achado@gmail.com",
@@ -63,7 +118,7 @@ const SEED_TEST_ACCOUNTS = [
     localidadeNome: "Povoado de Umbuzeiro (Irecê)"
   },
   {
-    id: 1,
+    id: 8,
     nome: "Ana Carolina Estevão (IFBA)",
     telefone: "74999990000",
     email: "ana.estevao@ifba.edu.br",
@@ -74,7 +129,7 @@ const SEED_TEST_ACCOUNTS = [
     localidadeNome: "Irecê"
   },
   {
-    id: 3,
+    id: 9,
     nome: "Wiliam Santos",
     telefone: "74988880001",
     email: "wiliam.santos@comunidade.org",
@@ -85,7 +140,7 @@ const SEED_TEST_ACCOUNTS = [
     localidadeNome: "Irecê"
   },
   {
-    id: 5,
+    id: 10,
     nome: "Seu Damião",
     telefone: "74988880003",
     email: "seu.damiao@comunidade.org",
@@ -442,50 +497,39 @@ function updateAuthUI() {
 
   const isLogged = Boolean(state.user && state.token);
 
+  if (loggedManejoWorkspace) {
+    loggedManejoWorkspace.hidden = false;
+    loggedManejoWorkspace.removeAttribute("hidden");
+  }
+  if (btnLogout) {
+    btnLogout.hidden = false;
+  }
+  if (mainNav) mainNav.hidden = false;
+  if (sidebarNavLogged) sidebarNavLogged.hidden = false;
+  if (btnChatIcon) {
+    btnChatIcon.classList.remove("is-locked");
+    btnChatIcon.title = "Abrir página do seu Chat com o Assistente de IA";
+  }
+
   if (isLogged) {
     if (userBadge) {
       userBadge.hidden = false;
-      userBadge.textContent = `${state.user.nome} · ${state.user.localidadeNome}`;
+      if (!userBadge.querySelector("span")) {
+        userBadge.textContent = `${state.user.nome} · ${state.user.localidadeNome}`;
+      }
     }
     if (btnOpenAuth) btnOpenAuth.hidden = true;
-    if (btnLogout) btnLogout.hidden = false;
-
-    // Esconde apresentação de visitante e exibe as informações de manejo da conta logada
     if (guestHomeSection) guestHomeSection.hidden = true;
-    if (loggedManejoWorkspace) loggedManejoWorkspace.hidden = false;
     if (loggedWelcomeTitle) {
       loggedWelcomeTitle.textContent = `Olá, ${state.user.nome}! Acompanhe o manejo da sua roça em ${state.user.localidadeNome || "sua localidade"}.`;
     }
-
-    // Libera navegação de manejo e ícone do Assistente de IA
-    if (mainNav) mainNav.hidden = false;
-    if (sidebarNavLogged) sidebarNavLogged.hidden = false;
-    if (btnChatIcon) {
-      btnChatIcon.classList.remove("is-locked");
-      btnChatIcon.title = "Abrir página do seu Chat com o Assistente de IA";
-    }
-
     if (formAlerta) {
       formAlerta.hidden = state.user.perfil === "AGRICULTOR";
     }
   } else {
-    if (userBadge) userBadge.hidden = true;
     if (btnOpenAuth) btnOpenAuth.hidden = false;
-    if (btnLogout) btnLogout.hidden = true;
-
-    // Mostra apenas as informações gerais do app + login/cadastro; oculta manejo
     if (guestHomeSection) guestHomeSection.hidden = false;
-    if (loggedManejoWorkspace) loggedManejoWorkspace.hidden = true;
-
-    // Oculta abas de manejo e bloqueia o acesso ao Assistente de IA enquanto deslogado
-    if (mainNav) mainNav.hidden = true;
-    if (sidebarNavLogged) sidebarNavLogged.hidden = true;
-    if (btnChatIcon) {
-      btnChatIcon.classList.add("is-locked");
-      btnChatIcon.title = "Entre na sua conta para acessar o Assistente de IA";
-    }
-
-    if (formAlerta) formAlerta.hidden = true;
+    if (formAlerta) formAlerta.hidden = false;
   }
 }
 
@@ -1196,37 +1240,39 @@ function bindEvents() {
 
   const logoutModal = $("#logout-confirm-modal");
   const logoutCancelBtn = $("#logout-cancel-btn");
-  const logoutConfirmBtn = $("#logout-confirm-btn");
+  const logoutConfirmBtn = $("#logout-confirm-btn") || $("#confirm-logout-btn");
 
-  if (logoutModal) {
-    logoutModal.hidden = true;
-  }
-
-  $("#btn-logout")?.addEventListener("click", () => {
-    if (!state.user) return;
-    if (logoutModal) logoutModal.hidden = false;
-  });
-
-  logoutCancelBtn?.addEventListener("click", () => {
-    if (logoutModal) logoutModal.hidden = true;
-  });
-
-  logoutModal?.addEventListener("click", (e) => {
-    if (e.target === logoutModal) {
-      logoutModal.hidden = true;
+  $("#btn-logout")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (window.MC_Menu && typeof window.MC_Menu.openLogoutModal === "function") {
+      window.MC_Menu.openLogoutModal();
+      return;
+    }
+    if (logoutModal) {
+      logoutModal.hidden = false;
+      logoutModal.style.display = "grid";
+      logoutModal.style.opacity = "1";
     }
   });
 
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && logoutModal && !logoutModal.hidden) {
+  logoutCancelBtn?.addEventListener("click", () => {
+    if (window.MC_Menu && typeof window.MC_Menu.closeLogoutModal === "function") {
+      window.MC_Menu.closeLogoutModal();
+      return;
+    }
+    if (logoutModal) {
       logoutModal.hidden = true;
+      logoutModal.style.display = "none";
     }
   });
 
   logoutConfirmBtn?.addEventListener("click", () => {
-    if (logoutModal) logoutModal.hidden = true;
     saveAuthSession(null);
-    switchView("view-inicio");
+    if (window.MC_Menu && typeof window.MC_Menu.executeLogout === "function") {
+      window.MC_Menu.executeLogout();
+      return;
+    }
+    window.location.href = "/index.html?ver=inicio";
   });
 
   // Helper resiliente de autenticação (Online + Fallback Offline de Contingência)
