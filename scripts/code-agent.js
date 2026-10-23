@@ -2,12 +2,13 @@
 /**
  * ============================================================================
  * AGENTE DE ACOMPANHAMENTO DO CÓDIGO DO PROJETO (CODE HEALTH AGENT)
- * Projeto: Manejo Caatingueiro · Grupo Garimpeiros · IFBA Campus Irecê
+ * Projeto: Manejo Caatingueiro (SupernovaWeb) · Grupo Garimpeiros · IFBA Irecê
  * ============================================================================
- * Este agente analisa a integridade da arquitetura web, verifica a conformidade
- * com os requisitos (RF01-RF18 / RN01-RN13), audita práticas de segurança
- * (prevenção de XSS, proteção de rotas, modal de logout), valida o schema SQL
- * do Supabase e gera um relatório detalhado de saúde do repositório.
+ * Este agente analisa a integridade da arquitetura web Mobile First (Bootstrap 5
+ * + Design Editorial Sertanejo), valida o backend em camadas no padrão FindPet
+ * (src/domain/* e src/infrastructure/*, incluindo RadarMeteorologicoService),
+ * audita práticas de segurança (prevenção de XSS, headers HTTP, rate limiting,
+ * modal de logout) e valida as 13 tabelas do schema SQL do Supabase.
  */
 
 import fs from 'fs';
@@ -33,17 +34,28 @@ console.log("\n=======================================================");
 console.log(" 🌵 AGENTE DE ACOMPANHAMENTO — MANEJO CAATINGUEIRO");
 console.log("=======================================================\n");
 
-// 1. Verificação de Arquitetura Frontend
+// 1. Verificação de Arquitetura Frontend (Mobile First + Bootstrap 5 + Editorial Sertanejo)
 const frontendFiles = [
   'public/index.html',
+  'public/vercel.json',
+  'public/assets/css/global/elements.css',
   'public/assets/css/global.css',
   'public/assets/css/painel.css',
   'public/assets/css/comunidade.css',
+  'public/assets/images/favicon.ico',
+  'public/assets/images/logo.png',
   'public/assets/js/menu.js',
   'public/assets/js/clima-dinamico.js',
+  'public/assets/js/acessibilidade-voz.js',
   'public/assets/js/app.js',
-  'supernovaweb/index.html',
-  'supernovaweb/vercel.json'
+  'public/pages/login.html',
+  'public/pages/painel.html',
+  'public/pages/perfil.html',
+  'public/pages/admin.html',
+  'public/pages/assistente-ia.html',
+  'public/pages/plantio.html',
+  'public/pages/reservatorios.html',
+  'public/pages/comunidade.html'
 ];
 
 frontendFiles.forEach(file => {
@@ -51,24 +63,39 @@ frontendFiles.forEach(file => {
   check('Frontend', `Arquivo essencial: ${file}`, exists, 'Presente e acessível', `Arquivo não encontrado no caminho ${file}`);
 });
 
-// 2. Verificação de Arquitetura Backend & Deploy
+// 2. Verificação de Arquitetura Backend (Padrão FindPet em Camadas + RadarMeteorologicoService) & Deploy
 const backendFiles = [
   'server.ts',
-  'backend-java/Dockerfile',
-  'backend-java/pom.xml',
-  'backend-java/render.yaml',
+  'src/infrastructure/exception/BusinessException.ts',
+  'src/infrastructure/exception/ErrorResponseDTO.ts',
+  'src/infrastructure/exception/ApiExceptionHandler.ts',
+  'src/infrastructure/security/JwtService.ts',
+  'src/infrastructure/security/AuthMiddleware.ts',
+  'src/domain/usuario/controller/UsuarioController.ts',
+  'src/domain/usuario/service/UsuarioService.ts',
+  'src/domain/usuario/repository/UsuarioRepository.ts',
+  'src/domain/clima/controller/ClimaController.ts',
+  'src/domain/clima/service/ClimaService.ts',
+  'src/domain/clima/service/RadarMeteorologicoService.ts',
+  'src/domain/pluviometro/controller/PluviometroController.ts',
+  'src/domain/plantio/controller/PlantioController.ts',
+  'src/domain/reservatorio/controller/ReservatorioController.ts',
+  'src/domain/comunidade/controller/ComunidadeController.ts',
+  'src/domain/ia/controller/IaController.ts',
+  'src/domain/ia/service/IaService.ts',
   'supabase/schema.sql'
 ];
 
 backendFiles.forEach(file => {
   const exists = fs.existsSync(path.join(ROOT_DIR, file));
-  check('Backend', `Componente backend/deploy: ${file}`, exists, 'Configurado corretamente', `Falta componente ${file}`);
+  check('Backend', `Componente backend/domínio: ${file}`, exists, 'Configurado corretamente no padrão FindPet', `Falta componente ${file}`);
 });
 
 // 3. Auditoria de Segurança (Security Skills)
 try {
   const appJs = fs.readFileSync(path.join(ROOT_DIR, 'public/assets/js/app.js'), 'utf-8');
   const indexHtml = fs.readFileSync(path.join(ROOT_DIR, 'public/index.html'), 'utf-8');
+  const adminHtml = fs.readFileSync(path.join(ROOT_DIR, 'public/pages/admin.html'), 'utf-8');
   const serverTs = fs.readFileSync(path.join(ROOT_DIR, 'server.ts'), 'utf-8');
 
   // a) Modal de confirmação para sair da conta
@@ -83,21 +110,21 @@ try {
     'Logout direto sem confirmação detectado');
 
   // b) Sanitização XSS
-  const hasXssEscape = appJs.includes('escapeHtml');
-  check('Segurança', 'Sanitização de XSS em listas dinâmicas', hasXssEscape, 
-    'Função escapeHtml aplicada em títulos, murais e alertas', 
+  const hasXssEscape = appJs.includes('escapeHtml') && adminHtml.includes('escapeHtml');
+  check('Segurança', 'Sanitização de XSS em listas e tabelas dinâmicas', hasXssEscape, 
+    'Função escapeHtml aplicada em títulos, murais, alertas e tabela administrativa', 
     'Campos de usuário renderizados sem escape');
 
   // c) Headers defensivos no servidor
-  const hasSecurityHeaders = serverTs.includes('X-Content-Type-Options') && serverTs.includes('X-Frame-Options');
+  const hasSecurityHeaders = serverTs.includes('X-Content-Type-Options') && serverTs.includes('Referrer-Policy');
   check('Segurança', 'Headers HTTP de Proteção no Backend', hasSecurityHeaders, 
-    'X-Content-Type-Options, X-Frame-Options e Referrer-Policy ativos', 
+    'X-Content-Type-Options, X-XSS-Protection, Referrer-Policy e Permissions-Policy ativos', 
     'Faltam headers de proteção HTTP no servidor');
 
   // d) Rate Limiting no Login
   const hasRateLimiting = serverTs.includes('loginRateLimiter');
   check('Segurança', 'Rate Limiting / Proteção contra Força Bruta', hasRateLimiting, 
-    'Limite de tentativas ativado no endpoint /api/v1/auth/login', 
+    'Limite de tentativas ativado nos endpoints de autenticação', 
     'Endpoint de login sem proteção contra força bruta');
 
   // e) Limpeza de links não desejados

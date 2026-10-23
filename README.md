@@ -1,81 +1,108 @@
-# 🌵 Manejo Caatingueiro
+# 🌵 Manejo Caatingueiro (`supernovaweb`)
 
-> **Painel de Chuva Hiperlocal, Diagnóstico Automático da Roça e Assistente de Plantio com IA para a Agricultura Familiar no Semiárido**  
-> *Grupo Garimpeiros · IFBA Campus Irecê (Bahia)*
-
-[![Code Health Agent](https://img.shields.io/badge/Code_Health-100%25_Aprovado-286947?style=for-the-badge)](./AGENT_HEALTH_REPORT.md)
-[![Stack](https://img.shields.io/badge/Stack-HTML5%20%7C%20CSS3%20%7C%20JS%20%7C%20Node%20%7C%20PostgreSQL-c47a2b?style=for-the-badge)](#arquitetura-do-projeto)
+Plataforma web de convivência com o Semiárido Baiano, segurança hídrica familiar e comunitária, orientação de plantio e assistente da roça com acessibilidade por voz (`pt-BR`).
 
 ---
 
-## 📋 Visão Geral do Projeto
+## 🎨 Design Editorial Sertanejo, 3 Plataformas & Acessibilidade Rural
 
-O **Manejo Caatingueiro** é uma plataforma web progressiva (PWA) construída para apoiar agricultores e agricultoras familiares do **Território de Irecê e Presidente Dutra (BA)** na tomada de decisão sobre o manejo do plantio de sequeiro (**milho**, **mamona** e **feijão-caupi**) e na segurança hídrica de **cisternas e poços**.
+A interface foi projetada com a identidade visual **Editorial Sertanejo**, unindo **Bootstrap 5.3** a uma estética acolhedora inspirada na Caatinga e adaptada para **3 plataformas distintas**:
 
-### Principais Funcionalidades Implementadas
+1. **Mobile (`< 768px`)**: Layout em 1 coluna, botões de toque amplos (`min-height: 44px`), leitura fluida em campo e abas compactas.
+2. **Tablet (`768px – 1024px`)**: Layout balanceado em 2 colunas (`col-md-6`), aproveitando a largura intermediária para comparar dados de chuva e cisternas.
+3. **Desktop Widescreen (`>= 1025px`)**: Containers amplos (`max-width: 1280px`), vitrine comercial em duas colunas para visitantes e painel de trabalho estruturado em abas e grades de 3 a 4 colunas para produtores e gestores.
 
-1. **Página Inicial Separada por Estado de Acesso (Visitante x Agricultor Conectado)**
-   - **Antes de Entrar na Conta**: A tela inicial exibe apenas a apresentação clara dos recursos do aplicativo (*acompanhamento do manejo da roça, assistente de IA, pluviômetro, cisterna/poço e acessibilidade*) ao lado do painel de login e cadastro, sem carregar nem expor dados de outras contas.
-   - **Após Entrar na Conta**: O painel libera os dados exclusivos da conta conectada, incluindo o diagnóstico da propriedade, o painel de chuva da localidade, o pluviômetro pessoal e as abas de manejo.
-
-2. **Diagnóstico Automático da Situação da Roça e Guia de Manejo**
-   - Ao entrar na conta, o sistema analisa automaticamente a precipitação acumulada e a necessidade hídrica da cultura, indicando a situação atual (**Situação Favorável**, **Situação de Transição / Atenção** ou **Situação de Estiagem**) e exibindo orientações práticas de manejo do solo.
-
-3. **Assistente de IA em Página Exclusiva (`/pages/assistente-ia.html`)**
-   - **Ícone de Chat ao lado do Botão de Áudio**: Posicionado no cabeçalho ao lado do ícone de som, com acesso liberado **exclusivamente quando o usuário está logado**.
-   - **Página Dedicada de Chat**: Ao clicar no ícone de chat conectado, abre-se uma página exclusiva apenas com o chat do agricultor com o Assistente de IA (`/pages/assistente-ia.html`), fundamentado nos dados meteorológicos da localidade do usuário.
-
-4. **Leitura Natural da Página em Voz Alta (Ícone de Som)**
-   - Um único botão com **ícone de alto-falante (`🔊`)** no topo gera um resumo natural por IA (`POST /api/v1/ia/resumo-voz`) e lê o conteúdo em Português do Brasil.
-
-5. **Menu Lateral com Configurações de Acessibilidade e Tela**
-   - **Temas Visuais**: **Claro**, **Escuro**, **Daltônico** e **Alto Contraste (Baixa Visão)**.
-   - **Tamanho da Fonte**: Controles **A-**, **Padrão** e **A+** (de `100%` a `145%`).
-   - **Velocidade do Áudio**: Ajuste da cadência da fala (`0.85x`, `1.0x`, `1.2x`).
-
-6. **Perfil do Usuário com Edição de Dados (`PUT /api/v1/usuarios/me`)**
-   - Tela dedicada (**Meu Perfil**) permitindo consultar e atualizar nome, telefone/WhatsApp, e-mail, localidade da propriedade, fonte principal de água e senha.
-
-7. **Login e Cadastro Simplificados + Funcionamento Offline**
-   - Acesso rápido com **Conta Google** ou telefone/e-mail, com validação de e-mail e fila de sincronização offline (`IndexedDB` + `Service Worker`).
+### Paleta e Tipografia
+- **Paleta Terrosa Quente & Papel de Algodão**:
+  - Fundo principal: `#f5efdf` / `#f4eddb` | Superfícies: `#fbf6e9` / `#fffaf0`
+  - Tipografia principal: `#1e1b18` | Tipografia secundária: `#4a3b2c`
+  - Destaques: Terracota (`#542817`), Ocre Solar (`#d97706`), Verde Mandacaru (`#2d6a4f`) e Azul Cisterna (`#1d4ed8`).
+- **Tipografia Editorial**: Títulos em **Fraunces** (serifada com personalidade) e corpo em **Source Sans 3** de alta legibilidade.
+- **Barra Superior Clean com Ícones Intuitivos**:
+  - `☀️` / `🌙` Botão único que alterna entre **Sertão Claro** e **Sertão Escuro**.
+  - `👁️` **Alto Contraste** (Fundo preto `#000000` e destaque amarelo `#ffd60a` para leitura sob sol forte).
+  - `🎨` **Modo Daltônico** (Paleta segura Okabe-Ito).
+  - `A+` Alternador de tamanho de letra (`Normal` ↔ `Grande` ↔ `Extra Grande`).
+  - `🔊` Leitor de resumo da página em voz alta (`Web Speech API` `speechSynthesis` em `pt-BR`) e `🎤` ditado por voz (`SpeechRecognition`).
 
 ---
 
-## 🏗️ Arquitetura do Projeto
+## 🌦️ Integração Climática e Radar Meteorológico da Bahia
+
+O sistema combina dados da **Open-Meteo**, **INMET** e da **API Pública do Radar Meteorológico (`https://radarmeteorologico.com.br/api/v1`)** com botão **`📍 Minha localização`** (que atualiza imediatamente o `<select>` para a cidade baiana mais próxima via GPS + Haversine) e cache inteligente em `localStorage`:
+
+| Recurso | Endpoint Público (Radar) | Rota Backend (Fallback / Proxy) | Cache Front-End |
+| :--- | :--- | :--- | :--- |
+| **Alertas INMET (Bahia)** | `GET /api/v1/alertas?uf=BA&codigo_ibge=...` | `GET /api/v1/clima/alertas` | **10 minutos** |
+| **Temperaturas de Hoje** | `GET /api/v1/temperaturas?limite=5` | `GET /api/v1/clima/temperaturas` | **1 hora** |
+| **Cidades da Bahia (IBGE)** | `GET /api/v1/cidades?uf=BA` | `GET /api/v1/clima/cidades` | **24 horas** |
+| **Diagnóstico de Plantio** | Open-Meteo + Pluviômetro Local | `GET /api/v1/clima/diagnostico` | Tempo real |
+
+---
+
+## 🏛️ Arquitetura Limpa do Repositório
+
+O projeto segue uma árvore de diretórios enxuta, sem pastas duplicadas:
 
 ```text
-├── public/ & supernovaweb/         # Frontend Web Responsivo (PWA)
-│   ├── index.html                  # Tela inicial (Apresentação Visitante / Painel Logado)
-│   ├── pages/
-│   │   ├── assistente-ia.html      # Página exclusiva do Chat com o Assistente de IA
-│   │   ├── plantio.html            # Matriz consultiva de culturas
-│   │   ├── reservatorios.html      # Gestão de poços, cisternas e qualidade da água
-│   │   └── comunidade.html         # Alertas e mural comunitário
+├── public/                        # Frontend Oficial (Servido na raiz)
+│   ├── index.html                 # Vitrine Comercial (Visitante) + Painel em Abas (Logado)
+│   ├── manifest.json              # Manifesto PWA e funcionamento offline
+│   ├── sw.js                      # Service Worker
 │   ├── assets/
-│   │   ├── css/                    # Estilos responsivos e temas de acessibilidade
-│   │   └── js/                     # Lógica de sessão isolada, áudio IA, menu e clima
-│   └── sw.js                       # Service Worker Offline-First
-├── server.ts                       # Servidor Full-Stack TypeScript / Express
-├── repositorio-backend/            # Pacote isolado do Backend para deploy no Render
-├── backend-java/                   # Implementação de referência Spring Boot 3 / Java 21
-└── supabase/schema.sql             # Modelagem relacional PostgreSQL
+│   │   ├── css/
+│   │   │   ├── global/elements.css # Tokens Editoriais Sertanejos + 3 Plataformas + 4 Temas
+│   │   │   ├── global.css         # Folha de estilo global
+│   │   │   └── painel.css         # Estilos operacionais dos cards e painéis
+│   │   └── js/
+│   │       ├── menu.js            # Sessão unificada + Barra de temas/voz por ícones
+│   │       ├── acessibilidade-voz.js # Motor Web Speech API (TTS 🔊 + STT 🎤)
+│   │       ├── clima-dinamico.js  # Cliente window.MC_Radar + GPS no <select>
+│   │       └── app.js             # Controlador principal da Vitrine e do Painel em Abas
+│   └── pages/
+│       ├── login.html             # Autenticação unificada em abas + redirecionamento se logado
+│       ├── plantio.html           # Orientação para o Plantio + Checklist de solo
+│       ├── reservatorios.html     # 2 Abas: Minha Cisterna ou Poço + Água na Comunidade
+│       ├── comunidade.html        # 2 Abas: Mural de Sementes + Alertas de Clima e Temperaturas
+│       ├── assistente-ia.html     # Assistente da Sua Roça (2 colunas no Desktop + Voz)
+│       └── admin.html             # Gestão de Cadastros (3 cards de resumo + Tabela CRUD)
+├── src/                           # Backend TypeScript / Express em Camadas
+│   ├── config/                    # Banco de dados (Supabase / SQLite Fallback) e constantes
+│   ├── controllers/               # Auth, Clima, IA, Localidade, Monitoramento, Reservatorio, Usuario
+│   ├── middlewares/               # Autenticação JWT (Bearer) e RBAC
+│   ├── models/                    # Interfaces e tipos de domínio
+│   ├── repositories/              # Persistência híbrida (Supabase PostgreSQL + SQLite)
+│   ├── routes/                    # Roteador central REST (/api/v1/*)
+│   └── services/                  # Lógica de negócio agronômica, hídrica, clima e IA
+├── supabase/
+│   └── schema.sql                 # Script DDL PostgreSQL / Supabase
+├── scripts/
+│   └── code-agent.js              # Auditoria automatizada da arquitetura e rotas
+└── server.ts                      # Ponto de entrada do servidor Express (Porta 3000)
 ```
 
 ---
 
-## 🚀 Como Executar Localmente
+## 🚀 Como Executar e Auditar o Projeto
 
+### 1. Instalar dependências
 ```bash
-# 1. Instalar dependências
 npm install
+```
 
-# 2. Iniciar o servidor na porta 3000
+### 2. Iniciar o servidor em desenvolvimento (Porta 3000)
+```bash
 npm run dev
 ```
 
----
+### 3. Executar o Agente Auditor de Qualidade (`code-agent.js`)
+Verifica a estrutura em camadas, a existência das páginas oficiais em `public/` e a proteção anti-XSS (`escapeHtml`):
+```bash
+npm run agent
+```
 
-## 👥 Autoria
-
-**Grupo Garimpeiros — IFBA Campus Irecê**  
-- Ana Carolina Estevão · Luiza Rocha · Wiliam Santos · Zé Ronaldo
+### 4. Compilar para Produção
+```bash
+npm run build
+npm start
+```

@@ -236,13 +236,35 @@ function loadPersistedState() {
     const rawAuth = localStorage.getItem(STORAGE_KEYS.AUTH);
     if (rawAuth) {
       const parsed = JSON.parse(rawAuth);
-      if (parsed && parsed.token && parsed.user && parsed.user.id) {
+      const u = parsed && (parsed.usuario || parsed.user);
+      if (parsed && parsed.token && u && typeof u === "object") {
+        const normalizedUser = {
+          id: u.id || u.usuarioId || 1,
+          usuarioId: u.usuarioId || u.id || 1,
+          nome: u.nome || "Agricultor(a)",
+          telefone: u.telefone || "",
+          email: u.email || null,
+          emailVerificado: Boolean(u.emailVerificado ?? true),
+          provedorAuth: u.provedorAuth || "LOCAL",
+          perfil: u.perfil || "AGRICULTOR",
+          abastecimento: u.abastecimento || "CISTERNA",
+          localidadeId: Number(u.localidadeId || 1),
+          localidadeNome: u.localidadeNome || "Irecê",
+          consentimentoLocalizacao:
+            u.consentimentoLocalizacao !== undefined
+              ? Boolean(u.consentimentoLocalizacao)
+              : true
+        };
         state.token = parsed.token;
-        state.user = parsed.user;
-        if (parsed.user.localidadeId) {
-          state.localidadeId = Number(parsed.user.localidadeId);
-        }
+        state.user = normalizedUser;
+        state.localidadeId = Number(normalizedUser.localidadeId || 1);
+      } else {
+        state.token = null;
+        state.user = null;
       }
+    } else {
+      state.token = null;
+      state.user = null;
     }
     const rawQueue = localStorage.getItem(STORAGE_KEYS.QUEUE);
     if (rawQueue) {
@@ -270,10 +292,11 @@ function saveAuthSession(authPayload) {
       precipList.innerHTML = `<p class="muted">Nenhum registro de chuva anotado na sua conta ainda.</p>`;
     }
   } else {
-    const u = authPayload.usuario || authPayload;
+    const u = authPayload.usuario || authPayload.user || authPayload;
     state.token = authPayload.token || state.token;
     state.user = {
-      id: u.usuarioId || u.id || state.user?.id,
+      id: u.usuarioId || u.id || state.user?.id || 1,
+      usuarioId: u.usuarioId || u.id || state.user?.id || 1,
       nome: u.nome || state.user?.nome || "Agricultor(a)",
       telefone: u.telefone || state.user?.telefone || "",
       email: u.email || state.user?.email || null,
@@ -289,10 +312,17 @@ function saveAuthSession(authPayload) {
           : true
     };
     state.localidadeId = Number(state.user.localidadeId);
-    OfflineDB.setCache(STORAGE_KEYS.AUTH, { token: state.token, user: state.user });
+    OfflineDB.setCache(STORAGE_KEYS.AUTH, {
+      token: state.token,
+      user: state.user,
+      usuario: state.user
+    });
   }
   updateAuthUI();
   populateProfileScreen();
+  if (window.MC_Menu && typeof window.MC_Menu.renderizarMenu === "function") {
+    window.MC_Menu.renderizarMenu();
+  }
 }
 
 function saveOfflineQueue() {
@@ -1579,6 +1609,18 @@ function bindEvents() {
     } catch {}
   });
 
+  window.addEventListener("mc:session-changed", () => {
+    loadPersistedState();
+    updateAuthUI();
+    updateSyncBadge();
+    if (state.user && state.token) {
+      populateProfileScreen();
+      loadAllLocalityData();
+    } else {
+      switchView("view-inicio");
+    }
+  });
+
   window.addEventListener("online", () => {
     updateSyncBadge();
     if (state.user && state.token) {
@@ -1620,6 +1662,18 @@ async function initApp() {
   // Só carrega dados de manejo da roça quando o usuário estiver logado na sua própria conta
   if (state.user && state.token) {
     populateProfileScreen();
+
+    // Tenta sincronizar dados do perfil com /api/v1/usuarios/me sem jamais derrubar a sessão local se demorar ou falhar
+    apiFetch("/api/v1/usuarios/me")
+      .then((meData) => {
+        if (meData && (meData.id || meData.usuarioId || meData.usuario)) {
+          saveAuthSession({ ...meData, token: state.token });
+        }
+      })
+      .catch(() => {
+        // Mantém a sessão local ativa (#guest-home-section oculta e #logged-manejo-workspace visível)
+      });
+
     await flushOfflineQueue();
     await loadAllLocalityData();
   }

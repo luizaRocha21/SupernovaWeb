@@ -1,107 +1,754 @@
-<!doctype html>
-<html lang="pt-BR" data-theme="claro">
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="sertao-claro" data-font-scale="normal">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Alertas e Mural Comunitário · Manejo Caatingueiro</title>
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/css/global.css">
-  <link rel="stylesheet" href="/assets/css/comunidade.css">
-  <script src="/assets/js/acessibilidade-voz.js" defer></script>
-  <script src="/assets/js/menu.js" defer></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Comunidade, Sementes Crioulas e Alertas do Tempo — Mural comunitário, troca de sementes e avisos de chuva e calor no Semiárido Baiano." />
+  <title>Comunidade &amp; Alertas do Tempo — Manejo Caatingueiro</title>
+
+  <!-- Fontes Editoriais Sertanejas (Newsreader 400 + DM Sans) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet" />
+
+  <!-- Bootstrap 5.3 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Design System Editorial Sertanejo (elements.css por último para sobrescrever Bootstrap) -->
+  <link rel="stylesheet" href="/assets/css/global.css" />
+  <link rel="stylesheet" href="/assets/css/painel.css" />
+  <link rel="stylesheet" href="/assets/css/comunidade.css" />
+  <link rel="stylesheet" href="/assets/css/global/elements.css" />
 </head>
 <body>
-  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
-  <aside class="app-sidebar" id="app-sidebar" aria-label="Menu Lateral e Configurações" aria-hidden="true">
-    <div>
-      <div class="sidebar-header">
-        <div class="brand">
-          <span class="brand-mark"><img src="/assets/images/logo-mark.svg" alt="" width="24" height="24"></span>
-          <span>Manejo Caatingueiro</span>
-        </div>
-        <button class="sidebar-close" id="sidebar-close" type="button" aria-label="Fechar menu">&times;</button>
-      </div>
-      <div class="sidebar-body">
-        <div>
-          <p class="sidebar-group-title">Navegação</p>
-          <div class="sidebar-nav-list">
-            <a class="sidebar-nav-btn" href="/">🌦️ Painel Inicial</a>
-            <a class="sidebar-nav-btn" href="/pages/plantio.html">🌱 Critérios de Plantio</a>
-            <a class="sidebar-nav-btn" href="/pages/reservatorios.html">💧 Poço e Cisterna</a>
-            <a class="sidebar-nav-btn active" href="/pages/comunidade.html">📢 Alertas e Mural</a>
-          </div>
-        </div>
-        <div>
-          <p class="sidebar-group-title">Configurações de Tela</p>
-          <div class="sidebar-settings-box">
-            <div class="theme-grid">
-              <button type="button" class="theme-option-btn active" data-set-theme="claro">☀️ Claro</button>
-              <button type="button" class="theme-option-btn" data-set-theme="escuro">🌙 Escuro</button>
-              <button type="button" class="theme-option-btn" data-set-theme="daltonico">👁️ Daltônico</button>
-              <button type="button" class="theme-option-btn" data-set-theme="baixa-visao">🔍 Contraste</button>
-            </div>
-            <div class="font-controls-row">
-              <button type="button" class="font-btn" data-font-action="dec">A-</button>
-              <span class="font-scale-display">100%</span>
-              <button type="button" class="font-btn" data-font-action="reset">Padrão</button>
-              <button type="button" class="font-btn" data-font-action="inc">A+</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </aside>
-
-  <header class="topbar">
-    <div class="topbar-left">
-      <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="app-sidebar">
-        <span aria-hidden="true">&#9776;</span>
-        <span>Menu</span>
-      </button>
-      <a class="brand" href="/">
-        <span class="brand-mark"><img src="/assets/images/logo-mark.svg" alt="" width="24" height="24"></span>
-        <span>Manejo<br>Caatingueiro</span>
-      </a>
-    </div>
-    <nav class="main-nav" aria-label="Navegação entre páginas">
-      <a class="nav-link" href="/">Painel Inicial</a>
-      <a class="nav-link" href="/pages/plantio.html">Critérios de Plantio</a>
-      <a class="nav-link" href="/pages/reservatorios.html">Poço e Cisterna</a>
-      <a class="nav-link active" href="/pages/comunidade.html">Alertas e Mural</a>
-    </nav>
-    <div class="topbar-right">
-      <button class="btn-sound-icon" id="btn-tts-icon" type="button" aria-label="Ouvir resumo em áudio desta página" title="Ouvir resumo da página">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-        </svg>
-      </button>
-      <button class="btn-sound-icon btn-chat-icon" id="btn-chat-ia-icon" type="button" aria-label="Abrir Assistente de IA" title="Assistente de IA">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-        </svg>
-      </button>
-      <a class="button button-primary" href="/" style="min-height: 38px; padding: 6px 14px; font-size: 0.85rem;">Abrir Painel</a>
-    </div>
+  <!-- CABEÇALHO / GAVETA RETRÁTIL UNIFICADA GERENCIADA POR MENU.JS -->
+  <header>
+    <nav id="menu" class="navbar navbar-expand-lg navbar-light shadow-sm" aria-label="Navegação Principal"></nav>
   </header>
 
-  <main class="page-content">
-    <p class="eyebrow eyebrow-green">REDE DE CONFIANÇA LOCAL</p>
-    <h1 style="font-family: var(--serif); font-size: clamp(1.8rem, 3.2vw, 2.4rem); font-weight: 500; margin: 0 0 18px;">Alertas da Localidade e Mural Comunitário</h1>
-    <div class="two-col-grid">
-      <article class="card-box">
-        <h3>Alertas Climáticos da Região</h3>
-        <p class="muted">Alertas meteorológicos atualizados automaticamente para o território de Irecê e Presidente Dutra ou emitidos pela Liderança Comunitária.</p>
-      </article>
-      <article class="card-box">
-        <h3>Mural de Sementes e Avisos</h3>
-        <p class="muted">Espaço comunitário para divulgação de troca de sementes crioulas, mutirões de limpeza de aguadas e reuniões da associação.</p>
-      </article>
+  <main id="conteudo-principal" class="container py-4">
+    <!-- Hero Editorial Comunitário -->
+    <section class="hero-card p-4 mb-4" style="background-color: #f4eddb; border: 1px solid #d2c2a9; color: #542817;">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+          <span class="eyebrow hero-kicker" style="font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase; color: #5d603d;">🤝 REDE COMUNITÁRIA E VIGILÂNCIA DO TEMPO</span>
+          <h1 class="h3 mt-1 mb-1" style="font-family: 'Newsreader', Georgia, serif; font-weight: 400; color: #542817;">Mural de Sementes, Mutirões e <em style="color: #bd7627; font-style: italic;">Alertas de Clima</em></h1>
+          <p id="comunidade-resumo-voz" class="mb-0" style="font-family: 'DM Sans', sans-serif; color: #6e6252; line-height: 1.55;">
+            Troque sementes crioulas e mudas com seus vizinhos, combine mutirões no povoado e acompanhe os alertas de chuva forte ou calor intenso nos municípios do Semiárido Baiano.
+          </p>
+        </div>
+        <button
+          type="button"
+          class="btn btn-speak"
+          style="background-color: #fffaf0; border: 1px solid #d2c2a9; color: #542817;"
+          data-speak-target="#comunidade-resumo-voz"
+          aria-label="Ouvir apresentação da página de comunidade"
+        >
+          🔊 Ouvir página
+        </button>
+      </div>
+    </section>
+
+    <!-- Navegação em 2 Abas Limpas (.auth-tabs + .auth-tab) -->
+    <div class="auth-tabs d-flex flex-wrap align-items-stretch gap-2 mb-4" role="tablist" aria-label="Seções da Comunidade e Clima" style="background-color: #eeefeb; border: 1px solid #d2c2a9; border-radius: 10px; padding: 0.25rem;">
+      <button
+        type="button"
+        class="auth-tab auth-tab-btn active flex-fill d-flex align-items-center justify-content-center py-2"
+        id="tab-btn-mural-sementes"
+        data-com-tab="aba-mural-sementes"
+        role="tab"
+        aria-selected="true"
+        aria-controls="aba-mural-sementes"
+      >
+        🌾 Mural de Sementes e Avisos
+      </button>
+      <button
+        type="button"
+        class="auth-tab auth-tab-btn flex-fill d-flex align-items-center justify-content-center py-2"
+        id="tab-btn-alertas-clima"
+        data-com-tab="aba-alertas-clima"
+        role="tab"
+        aria-selected="false"
+        aria-controls="aba-alertas-clima"
+      >
+        ⚠️ Alertas Climáticos da Região e Temperaturas
+      </button>
     </div>
+
+    <!-- ===================================================================
+         ABA 1: MURAL DE SEMENTES E AVISOS
+         =================================================================== -->
+    <section id="aba-mural-sementes" role="tabpanel" aria-labelledby="tab-btn-mural-sementes">
+      <div class="row g-4">
+        <!-- Formulário de Publicação no Mural -->
+        <div class="col-12 col-lg-6">
+          <section class="card h-100 p-3 p-md-4" style="background-color: #fffaf0; border: 1px solid #d2c2a9;" aria-labelledby="titulo-novo-aviso">
+            <span class="eyebrow section-kicker" style="font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase; color: #5d603d;">📢 PUBLICAR NO MURAL DA COMUNIDADE</span>
+            <h2 id="titulo-novo-aviso" class="h5 mb-2" style="font-family: 'Newsreader', Georgia, serif; font-weight: 400; color: #542817;">Compartilhar Semente, <em style="color: #bd7627; font-style: italic;">Muda ou Aviso</em></h2>
+            <p class="small mb-3" style="font-family: 'DM Sans', sans-serif; color: #6e6252; line-height: 1.55;">
+              Avise seus vizinhos sobre sobra de sementes crioulas, raquetes de palma para doação ou data de reunião da associação.
+            </p>
+
+            <form id="form-aviso-comunidade" class="row g-3" novalidate>
+              <div class="col-12">
+                <label for="aviso-categoria" class="form-label fw-semibold" style="color: #542817;">Assunto do aviso</label>
+                <select id="aviso-categoria" class="form-select" required>
+                  <option value="SEMENTES">🌾 Casa de Sementes / Troca de Mudas</option>
+                  <option value="MUTIRAO">🤝 Mutirão / Limpeza de Aguada ou Barreiro</option>
+                  <option value="CLIMA">🌧️ Aviso de Chuva ou Vento na Comunidade</option>
+                  <option value="GERAL">📋 Comunicado da Associação</option>
+                </select>
+              </div>
+
+              <div class="col-12">
+                <label for="aviso-titulo" class="form-label fw-semibold" style="color: #542817;">Título curto</label>
+                <input
+                  type="text"
+                  id="aviso-titulo"
+                  class="form-control"
+                  placeholder="Ex.: Sementes de Feijão-Caupi Coruja disponíveis para troca"
+                  required
+                />
+              </div>
+
+              <div class="col-12">
+                <label for="aviso-mensagem" class="form-label fw-semibold" style="color: #542817;">Mensagem para os vizinhos</label>
+                <textarea
+                  id="aviso-mensagem"
+                  class="form-control"
+                  rows="3"
+                  placeholder="Informe a comunidade, horário de encontro ou como procurar você..."
+                  required
+                ></textarea>
+              </div>
+
+              <div class="col-12">
+                <button type="submit" class="btn w-100 fw-bold" style="background-color: #5d603d; border: 1px solid #5d603d; color: #fffaf0;">
+                  📌 Publicar no Mural da Comunidade
+                </button>
+              </div>
+            </form>
+
+            <div id="feedback-aviso-comunidade" class="alert d-none mt-3 mb-0" role="status" aria-live="polite"></div>
+          </section>
+        </div>
+
+        <!-- Lista de Avisos da Comunidade Nivelada (row g-3 align-items-stretch) -->
+        <div class="col-12 col-lg-6">
+          <section
+            class="card h-100 p-3 p-md-4"
+            style="background-color: #fffaf0; border: 1px solid #d2c2a9; border-left: 4px solid #542817;"
+            aria-labelledby="titulo-mural-comunidade"
+          >
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+              <div>
+                <span class="eyebrow section-kicker" style="font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase; color: #5d603d;">📋 MURAL COLETIVO DO TERRITÓRIO</span>
+                <h2 id="titulo-mural-comunidade" class="h5 mb-0" style="font-family: 'Newsreader', Georgia, serif; font-weight: 400; color: #542817;">Últimos Avisos e <em style="color: #bd7627; font-style: italic;">Trocas de Sementes</em></h2>
+              </div>
+              <button
+                type="button"
+                class="btn btn-speak"
+                style="background-color: #fffaf0; border: 1px solid #d2c2a9; color: #542817;"
+                data-speak-target="#lista-avisos-comunidade"
+                aria-label="Ouvir avisos do mural comunitário"
+              >
+                🔊 Ouvir mural
+              </button>
+            </div>
+
+            <div id="lista-avisos-comunidade" class="row g-3 align-items-stretch">
+              <div class="col-12">
+                <div class="p-3 rounded-3" style="background-color: #f4eddb; border: 1px solid #d2c2a9; color: #6e6252;">
+                  Carregando avisos da comunidade...
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         ABA 2: ALERTAS CLIMÁTICOS DA REGIÃO E TEMPERATURAS DO SEMIÁRIDO BAIANO
+         =================================================================== -->
+    <section id="aba-alertas-clima" class="d-none" role="tabpanel" aria-labelledby="tab-btn-alertas-clima">
+      <!-- Central de Alertas INMET no Semiárido Baiano e na Roça Ativa -->
+      <section
+        class="card p-4 mb-4"
+        style="background-color: #fffaf0; border: 1px solid #d2c2a9; border-left: 4px solid #542817;"
+        aria-labelledby="titulo-central-alertas-ba"
+      >
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+          <div>
+            <span class="eyebrow section-kicker" style="font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase; color: #5d603d;">⚠️ AVISOS OFICIAIS DE CHUVA, CALOR E VENTANIA</span>
+            <h2 id="titulo-central-alertas-ba" class="h5 mb-0" style="font-family: 'Newsreader', Georgia, serif; font-weight: 400; color: #542817;">Alertas Climáticos do <em style="color: #bd7627; font-style: italic;">Semiárido Baiano</em></h2>
+          </div>
+
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            <label for="filtro-cidade-alerta" class="small fw-bold mb-0" style="color: #542817;">Município:</label>
+            <select id="filtro-cidade-alerta" class="form-select form-select-sm" style="min-width: 220px;" aria-label="Filtrar alertas por cidade do Semiárido Baiano">
+              <optgroup label="Território de Irecê (Destaque)">
+                <option value="2914604" data-ibge="2914604" data-lat="-11.3042" data-lon="-41.8558" data-nome="Irecê">Irecê - BA</option>
+                <option value="2925709" data-ibge="2925709" data-lat="-11.2958" data-lon="-41.9869" data-nome="Presidente Dutra">Presidente Dutra - BA</option>
+                <option value="2919157" data-ibge="2919157" data-lat="-11.3831" data-lon="-41.8319" data-nome="Lapão">Lapão - BA</option>
+                <option value="2907608" data-ibge="2907608" data-lat="-11.1358" data-lon="-42.1125" data-nome="Central">Central - BA</option>
+                <option value="2930154" data-ibge="2930154" data-lat="-11.2294" data-lon="-41.9122" data-nome="São Gabriel">São Gabriel - BA</option>
+                <option value="2918357" data-ibge="2918357" data-lat="-11.3500" data-lon="-41.6639" data-nome="João Dourado">João Dourado - BA</option>
+              </optgroup>
+              <optgroup label="Municípios do Semiárido Baiano (A a X)" id="optgroup-filtro-semiarido">
+                <option value="2918407" data-ibge="2918407" data-lat="-9.4162" data-lon="-40.5033" data-nome="Juazeiro">Juazeiro - BA</option>
+                <option value="2933604" data-ibge="2933604" data-lat="-10.8236" data-lon="-42.7276" data-nome="Xique-Xique">Xique-Xique - BA</option>
+                <option value="2924405" data-ibge="2924405" data-lat="-12.1794" data-lon="-41.7689" data-nome="Piatã">Piatã - BA</option>
+                <option value="2933307" data-ibge="2933307" data-lat="-14.8619" data-lon="-40.8444" data-nome="Vitória da Conquista">Vitória da Conquista - BA</option>
+              </optgroup>
+            </select>
+            <button id="btn-recarregar-alertas-ba" type="button" class="btn btn-sm fw-bold" style="background-color: #5d603d; border: 1px solid #5d603d; color: #fffaf0;">
+              🔄 Atualizar alertas
+            </button>
+            <button
+              type="button"
+              class="btn btn-speak"
+              style="background-color: #fffaf0; border: 1px solid #d2c2a9; color: #542817;"
+              data-speak-target="#container-alertas-radar-ba"
+              aria-label="Ouvir alertas meteorológicos ativos em voz alta"
+            >
+              🔊 Ouvir alertas
+            </button>
+          </div>
+        </div>
+
+        <div id="container-alertas-radar-ba" class="row g-3" aria-live="polite">
+          <!-- Conteúdo inicial rico e imediato para nunca ficar em branco -->
+          <div class="col-12">
+            <article class="p-4 rounded-3" style="background-color: #f4eddb; border: 1px solid #d2c2a9;">
+              <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                <span class="badge" style="background-color: #e9efe2; border: 1px solid #b8c7a6; color: #3e4a26;">☀️ Monitoramento Ativo — Semiárido Baiano</span>
+                <span class="small" style="color: #6e6252;">Fonte: INMET · Open-Meteo · Radar Bahia</span>
+              </div>
+              <h3 class="h6 mb-2" style="font-family: 'Newsreader', Georgia, serif; font-weight: 500; color: #542817;">☀️ Clima Estável na Região — Consultando dados atualizados da sua Roça Ativa...</h3>
+              <p class="small mb-0" style="font-family: 'DM Sans', sans-serif; color: #6e6252; line-height: 1.55;">
+                Verificando temperatura, umidade relativa do ar, chuva acumulada e avisos preventivos para o cuidado com as cisternas e o roçado.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Temperaturas de Hoje (100% Semiárido Baiano — Sem estados externos) -->
+      <section class="card p-4" style="background-color: #fffaf0; border: 1px solid #d2c2a9;" aria-labelledby="titulo-ranking-temperaturas">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+          <div>
+            <span class="eyebrow section-kicker" style="font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase; color: #5d603d;">🌡️ TEMPERATURAS DE HOJE NO SEMIÁRIDO BAIANO</span>
+            <h2 id="titulo-ranking-temperaturas" class="h5 mb-0" style="font-family: 'Newsreader', Georgia, serif; font-weight: 400; color: #542817;">Cidades Mais Quentes e Mais Amenas Hoje no <em style="color: #bd7627; font-style: italic;">Semiárido Baiano</em></h2>
+          </div>
+          <button
+            type="button"
+            class="btn btn-speak"
+            style="background-color: #fffaf0; border: 1px solid #d2c2a9; color: #542817;"
+            data-speak-target="#container-ranking-temperaturas"
+            aria-label="Ouvir temperaturas extremas de hoje no Semiárido Baiano"
+          >
+            🔊 Ouvir temperaturas
+          </button>
+        </div>
+
+        <div id="container-ranking-temperaturas" class="row g-4">
+          <div class="col-12 col-lg-6">
+            <div class="p-3 rounded-3 h-100" style="background-color: #f4eddb; border: 1px solid #d2c2a9;">
+              <h3 class="h6 fw-bold mb-3" style="color: #8c3719;">🔥 5 Cidades Mais Quentes Hoje no Semiárido Baiano</h3>
+              <ul id="lista-mais-quentes-comunidade" class="list-unstyled mb-0 d-flex flex-column gap-2">
+                <li class="small" style="color: #6e6252;">Consultando medições das estações do Semiárido Baiano...</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-12 col-lg-6">
+            <div class="p-3 rounded-3 h-100" style="background-color: #f4eddb; border: 1px solid #d2c2a9;">
+              <h3 class="h6 fw-bold mb-3" style="color: #3e4a26;">🍃 5 Cidades Mais Amenas Hoje no Semiárido Baiano</h3>
+              <ul id="lista-mais-frias-comunidade" class="list-unstyled mb-0 d-flex flex-column gap-2">
+                <li class="small" style="color: #6e6252;">Consultando medições das estações do Semiárido Baiano...</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
   </main>
+
+  <footer class="container py-4 mt-4 border-top text-center small text-muted">
+    <p class="mb-1"><strong>Manejo Caatingueiro</strong> — Sabedoria comunitária, sementes crioulas e vigilância do tempo no Semiárido Baiano.</p>
+  </footer>
+
+  <!-- Scripts Globais -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/assets/js/menu.js"></script>
+  <script src="/assets/js/acessibilidade-voz.js"></script>
+  <script src="/assets/js/clima-dinamico.js"></script>
+  <script>
+    (function () {
+      const selectFiltroCidade = document.getElementById("filtro-cidade-alerta");
+      const optgroupSemiarido = document.getElementById("optgroup-filtro-semiarido");
+      const btnRecarregarAlertas = document.getElementById("btn-recarregar-alertas-ba");
+      const formAviso = document.getElementById("form-aviso-comunidade");
+
+      // Alternância entre as 2 abas (.auth-tabs)
+      const tabButtons = document.querySelectorAll("[data-com-tab]");
+      tabButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const targetId = btn.getAttribute("data-com-tab");
+          tabButtons.forEach((b) => {
+            const ativo = b === btn;
+            b.classList.toggle("active", ativo);
+            b.setAttribute("aria-selected", ativo ? "true" : "false");
+          });
+          ["aba-mural-sementes", "aba-alertas-clima"].forEach((id) => {
+            const painel = document.getElementById(id);
+            if (painel) {
+              painel.classList.toggle("d-none", id !== targetId);
+            }
+          });
+        });
+      });
+
+      function escapeHtml(str) {
+        return String(str ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      async function popularSelectFiltroCidadesSemiarido() {
+        if (!optgroupSemiarido) return;
+        try {
+          let cidades = [];
+          if (window.MC_Radar && typeof window.MC_Radar.buscarCidades === "function") {
+            cidades = await window.MC_Radar.buscarCidades({ uf: "BA" });
+          } else {
+            const resp = await fetch("/api/v1/clima/cidades?uf=BA");
+            if (resp.ok) cidades = await resp.json();
+          }
+
+          if (Array.isArray(cidades) && cidades.length > 0) {
+            const destaque = new Set(["2914604", "2925709", "2919157", "2907608", "2930154", "2918357"]);
+            const ordenadas = [...cidades]
+              .filter((c) => !destaque.has(String(c.codigo_ibge || "")))
+              .sort((a, b) => String(a.nome || "").localeCompare(String(b.nome || ""), "pt-BR"));
+
+            optgroupSemiarido.innerHTML = ordenadas
+              .map((c) => {
+                const ibge = escapeHtml(c.codigo_ibge || "");
+                const nome = escapeHtml(String(c.nome || "").replace(/\s*-\s*[A-Z]{2}$/i, "").trim());
+                const lat = Number.isFinite(Number(c.latitude)) ? Number(c.latitude) : -11.3042;
+                const lon = Number.isFinite(Number(c.longitude)) ? Number(c.longitude) : -41.8558;
+                return `<option value="${ibge}" data-ibge="${ibge}" data-lat="${lat}" data-lon="${lon}" data-nome="${nome}">${nome} - BA</option>`;
+              })
+              .join("");
+          }
+        } catch (_) {}
+      }
+
+      function sincronizarSelectComRocaAtiva() {
+        if (!selectFiltroCidade) return;
+        let roca = null;
+        if (window.MC_Menu && typeof window.MC_Menu.getRocaAtiva === "function") {
+          roca = window.MC_Menu.getRocaAtiva();
+        }
+        if (!roca) return;
+
+        const nomeMun = String(roca.municipioNome || roca.municipio || "Irecê")
+          .replace(/\s*-\s*[A-Z]{2}$/i, "")
+          .trim();
+
+        for (let i = 0; i < selectFiltroCidade.options.length; i++) {
+          const opt = selectFiltroCidade.options[i];
+          const optNome = (opt.getAttribute("data-nome") || opt.textContent || "")
+            .replace(/\s*-\s*[A-Z]{2}$/i, "")
+            .trim();
+          if (optNome.toLowerCase() === nomeMun.toLowerCase()) {
+            selectFiltroCidade.selectedIndex = i;
+            return;
+          }
+        }
+      }
+
+      async function carregarAlertasRadarBahia() {
+        const container = document.getElementById("container-alertas-radar-ba");
+        if (!container) return;
+
+        let roca = null;
+        if (window.MC_Menu && typeof window.MC_Menu.getRocaAtiva === "function") {
+          roca = window.MC_Menu.getRocaAtiva();
+        }
+
+        const codigoIbge = selectFiltroCidade ? selectFiltroCidade.value : "2914604";
+        const opt = selectFiltroCidade && selectFiltroCidade.options[selectFiltroCidade.selectedIndex];
+        const nomeCidadeFiltro =
+          opt && codigoIbge
+            ? (opt.getAttribute("data-nome") || opt.textContent.replace(/\s*-\s*BA$/i, "").trim())
+            : String(roca?.municipioNome || roca?.municipio || "Irecê").replace(/\s*-\s*[A-Z]{2}$/i, "").trim();
+
+        const lat =
+          opt && opt.getAttribute("data-lat")
+            ? Number(opt.getAttribute("data-lat"))
+            : Number.isFinite(Number(roca?.latitude))
+            ? Number(roca.latitude)
+            : -11.3042;
+        const lon =
+          opt && opt.getAttribute("data-lon")
+            ? Number(opt.getAttribute("data-lon"))
+            : Number.isFinite(Number(roca?.longitude))
+            ? Number(roca.longitude)
+            : -41.8558;
+        const nomeRoca = escapeHtml(roca?.nome || "Roça Principal");
+
+        try {
+          let payload = null;
+          if (window.MC_Radar && typeof window.MC_Radar.obterAlertas === "function") {
+            payload = await window.MC_Radar.obterAlertas("BA", codigoIbge);
+          } else {
+            const url = `/api/v1/clima/alertas?uf=BA${codigoIbge ? `&codigo_ibge=${encodeURIComponent(codigoIbge)}` : ""}`;
+            const resp = await fetch(url);
+            payload = await resp.json();
+          }
+
+          const alertas = Array.isArray(payload?.alertas)
+            ? payload.alertas
+            : Array.isArray(payload)
+            ? payload
+            : [];
+
+          if (alertas.length === 0) {
+            let tempAtual = "28.8";
+            let umidAtual = "52";
+            let et0Atual = "4.9";
+            let chuva7d = "12.0";
+
+            try {
+              const diagResp = await fetch(
+                `/api/v1/clima/diagnostico?localidadeId=1&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`
+              );
+              if (diagResp.ok) {
+                const diag = await diagResp.json();
+                const t = Number(diag.temperaturaAtualC ?? diag.temperaturaC);
+                const u = Number(diag.umidadeRelativaPct ?? diag.umidadeAr);
+                const e = Number(diag.evapotranspiracaoMmDia);
+                const c = Number(diag.acumuladoChuva7dMm ?? diag.chuvaAcumulada7d);
+                if (Number.isFinite(t)) tempAtual = t.toFixed(1);
+                if (Number.isFinite(u)) umidAtual = String(Math.round(u));
+                if (Number.isFinite(e)) et0Atual = e.toFixed(1);
+                if (Number.isFinite(c)) chuva7d = c.toFixed(1);
+              }
+            } catch (_) {}
+
+            container.innerHTML = `
+              <div class="col-12">
+                <article class="p-4 rounded-3 border bg-body-tertiary">
+                  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                    <span class="badge text-bg-success">☀️ Sem Alertas Severos Ativos</span>
+                    <span class="small text-muted">Roça monitorada: <strong>${nomeRoca}</strong> (${escapeHtml(nomeCidadeFiltro)} - BA)</span>
+                  </div>
+                  <h3 class="h5 fw-bold mb-2">
+                    ☀️ Clima Estável em ${escapeHtml(nomeCidadeFiltro)} - BA — Sem Alertas Severos no Momento
+                  </h3>
+                  <p class="small text-muted mb-3">
+                    Não há avisos de tempestade severa, granizo ou vendaval emitidos pelo INMET para ${escapeHtml(nomeCidadeFiltro)} - BA agora. Confira as condições atuais da sua região e os cuidados preventivos:
+                  </p>
+
+                  <div class="row g-3 mb-3">
+                    <div class="col-12 col-sm-6 col-lg-3">
+                      <div class="p-3 rounded-3 border bg-body h-100">
+                        <span class="small text-muted d-block">Temperatura Atual</span>
+                        <strong class="fs-5">${tempAtual} °C</strong>
+                        <span class="d-block small text-muted">Condição típica do sertão</span>
+                      </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-lg-3">
+                      <div class="p-3 rounded-3 border bg-body h-100">
+                        <span class="small text-muted d-block">Umidade Relativa do Ar</span>
+                        <strong class="fs-5">${umidAtual}%</strong>
+                        <span class="d-block small text-muted">Atenção à hidratação</span>
+                      </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-lg-3">
+                      <div class="p-3 rounded-3 border bg-body h-100">
+                        <span class="small text-muted d-block">Evapotranspiração Diária</span>
+                        <strong class="fs-5">${et0Atual} mm/dia</strong>
+                        <span class="d-block small text-muted">Mantenha palhada no solo</span>
+                      </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-lg-3">
+                      <div class="p-3 rounded-3 border bg-body h-100">
+                        <span class="small text-muted d-block">Chuva Acumulada (7 dias)</span>
+                        <strong class="fs-5">${chuva7d} mm</strong>
+                        <span class="d-block small text-muted">Monitoramento pluviométrico</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="p-3 rounded-3 border bg-body">
+                    <h4 class="h6 fw-bold mb-2">🛡️ Recomendações Preventivas para Cisternas e Plantio</h4>
+                    <ul class="small mb-0 ps-3">
+                      <li><strong>Calhas e bicas da cisterna:</strong> Aproveite o tempo firme para limpar folhas e poeira das calhas antes da próxima pancada de chuva.</li>
+                      <li><strong>Proteção da umidade da roça:</strong> Com evapotranspiração de ${et0Atual} mm/dia, mantenha cobertura morta (restos de palhada) nos canteiros e linhas de plantio.</li>
+                      <li><strong>Cuidado com o rebanho:</strong> Garanta sombra e água limpa nos bebedouros das cabras, ovelhas e aves nos horários entre 11h e 15h.</li>
+                    </ul>
+                  </div>
+                </article>
+              </div>
+            `;
+            return;
+          }
+
+          container.innerHTML = alertas
+            .map((a) => {
+              const evento = escapeHtml(a.evento || a.descricao || "Aviso Meteorológico");
+              const severidade = escapeHtml(a.severidade || "Perigo Potencial");
+              const vigencia = escapeHtml(a.fim_vigencia || a.fim || "Vigência ativa hoje");
+              const resumo = escapeHtml(
+                a.resumo ||
+                  a.instrucoes ||
+                  "Fique atento às calhas das cisternas, proteja os animais e evite áreas abertas durante trovoadas."
+              );
+              const isSevero = /grande perigo|perigo(?! potencial)/i.test(severidade);
+              const badgeCls = isSevero ? "text-bg-danger" : "text-bg-warning";
+
+              return `
+                <div class="col-12 col-md-6 d-flex">
+                  <article class="p-3 border rounded-3 bg-body-tertiary h-100 w-100">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                      <span class="badge ${badgeCls}">⚠️ ${severidade}</span>
+                      <span class="small text-muted">Até: ${vigencia}</span>
+                    </div>
+                    <h3 class="h6 fw-bold mb-1">${evento}</h3>
+                    <p class="small text-muted mb-0">${resumo}</p>
+                  </article>
+                </div>
+              `;
+            })
+            .join("");
+        } catch (err) {
+          container.innerHTML = `
+            <div class="col-12">
+              <div class="alert alert-warning mb-0">
+                Não foi possível atualizar os alertas agora. Tente novamente em instantes.
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      const FALLBACK_QUENTES_BA = [
+        { cidade: "Xique-Xique", uf: "BA", temperatura_max: 35.8, temperatura_min: 23.4 },
+        { cidade: "Juazeiro", uf: "BA", temperatura_max: 35.2, temperatura_min: 22.9 },
+        { cidade: "Bom Jesus da Lapa", uf: "BA", temperatura_max: 34.9, temperatura_min: 22.5 },
+        { cidade: "Paulo Afonso", uf: "BA", temperatura_max: 34.4, temperatura_min: 22.1 },
+        { cidade: "Ibotirama", uf: "BA", temperatura_max: 34.1, temperatura_min: 22.0 }
+      ];
+
+      const FALLBACK_AMENAS_BA = [
+        { cidade: "Piatã", uf: "BA", temperatura_min: 14.8, temperatura_max: 25.2 },
+        { cidade: "Morro do Chapéu", uf: "BA", temperatura_min: 15.6, temperatura_max: 25.8 },
+        { cidade: "Vitória da Conquista", uf: "BA", temperatura_min: 16.1, temperatura_max: 26.4 },
+        { cidade: "Mucugê", uf: "BA", temperatura_min: 16.4, temperatura_max: 26.7 },
+        { cidade: "Rio de Contas", uf: "BA", temperatura_min: 16.9, temperatura_max: 27.1 }
+      ];
+
+      function filtrarSomenteSemiaridoBaiano(lista, padraoFallback) {
+        const filtrada = (Array.isArray(lista) ? lista : []).filter((c) => {
+          const uf = String(c?.uf || "BA").toUpperCase();
+          const nome = String(c?.cidade || c?.municipio || c?.nome || "");
+          if (uf !== "BA") return false;
+          if (/teresina|cuiab|urupema|campos do jord|são joaquim|boa vista/i.test(nome)) return false;
+          return true;
+        });
+        return filtrada.length >= 3 ? filtrada.slice(0, 5) : padraoFallback;
+      }
+
+      async function carregarRankingTemperaturas() {
+        const ulQuentes = document.getElementById("lista-mais-quentes-comunidade");
+        const ulFrias = document.getElementById("lista-mais-frias-comunidade");
+        if (!ulQuentes || !ulFrias) return;
+
+        try {
+          let data = null;
+          if (window.MC_Radar && typeof window.MC_Radar.obterTemperaturas === "function") {
+            data = await window.MC_Radar.obterTemperaturas(5);
+          } else {
+            const resp = await fetch("/api/v1/clima/temperaturas?limite=5");
+            data = await resp.json();
+          }
+
+          const quentes = filtrarSomenteSemiaridoBaiano(data?.mais_quentes, FALLBACK_QUENTES_BA);
+          const frias = filtrarSomenteSemiaridoBaiano(data?.mais_frias, FALLBACK_AMENAS_BA);
+
+          ulQuentes.innerHTML = quentes
+            .map((c, idx) => {
+              const cidade = escapeHtml(
+                String(c.cidade || c.municipio || c.nome || "Xique-Xique")
+                  .replace(/\s*-\s*[A-Z]{2}$/i, "")
+                  .trim()
+              );
+              const maxNum = Number(c.temperatura_max ?? c.temperatura ?? 34.5);
+              const minNum = Number(c.temperatura_min ?? maxNum - 10);
+              const tempMax = Number.isFinite(maxNum) ? maxNum.toFixed(1) : "34.5";
+              const tempMin = Number.isFinite(minNum) ? minNum.toFixed(1) : "22.0";
+              return `
+                <li class="d-flex flex-wrap justify-content-between align-items-center gap-2 p-2 border-bottom" style="border-color: #d2c2a9 !important;">
+                  <span style="color: #542817;"><strong>${idx + 1}. ${cidade} - BA</strong></span>
+                  <span class="badge" style="background-color: #f9e5dc; border: 1px solid #e2b4a0; color: #8c3719;">${tempMax} °C (mín ${tempMin} °C)</span>
+                </li>
+              `;
+            })
+            .join("");
+
+          ulFrias.innerHTML = frias
+            .map((c, idx) => {
+              const cidade = escapeHtml(
+                String(c.cidade || c.municipio || c.nome || "Piatã")
+                  .replace(/\s*-\s*[A-Z]{2}$/i, "")
+                  .trim()
+              );
+              const minNum = Number(c.temperatura_min ?? c.temperatura ?? 15.2);
+              const maxNum = Number(c.temperatura_max ?? minNum + 9);
+              const tempMin = Number.isFinite(minNum) ? minNum.toFixed(1) : "15.2";
+              const tempMax = Number.isFinite(maxNum) ? maxNum.toFixed(1) : "24.5";
+              return `
+                <li class="d-flex flex-wrap justify-content-between align-items-center gap-2 p-2 border-bottom" style="border-color: #d2c2a9 !important;">
+                  <span style="color: #542817;"><strong>${idx + 1}. ${cidade} - BA</strong></span>
+                  <span class="badge" style="background-color: #e9efe2; border: 1px solid #b8c7a6; color: #3e4a26;">${tempMin} °C (máx ${tempMax} °C)</span>
+                </li>
+              `;
+            })
+            .join("");
+        } catch (err) {
+          console.warn("Falha ao carregar ranking de temperaturas:", err);
+        }
+      }
+
+      const STORAGE_MURAL = "mc_mural_comunidade_v1";
+      const AVISOS_INICIAIS = [
+        {
+          categoria: "SEMENTES",
+          titulo: "Sementes Crioulas de Feijão-Caupi e Sorgo",
+          mensagem: "A Casa de Sementes Comunitária de Irecê está com lotes sadios de feijão-de-corda e sorgo forrageiro para empréstimo solidário aos associados.",
+          data: "Hoje"
+        },
+        {
+          categoria: "MUTIRAO",
+          titulo: "Mutirão de Limpeza do Barreiro Comunitário",
+          mensagem: "Neste sábado às 7h da manhã faremos a limpeza das valetas de entrada do barreiro e revisão das cercas de proteção.",
+          data: "Esta semana"
+        }
+      ];
+
+      function obterAvisosMural() {
+        try {
+          const salvo = JSON.parse(localStorage.getItem(STORAGE_MURAL) || "null");
+          if (Array.isArray(salvo) && salvo.length > 0) return salvo;
+        } catch (e) {}
+        return AVISOS_INICIAIS;
+      }
+
+      function renderizarMural() {
+        const container = document.getElementById("lista-avisos-comunidade");
+        if (!container) return;
+        const avisos = obterAvisosMural();
+        container.innerHTML = avisos
+          .map((item) => {
+            const cat = escapeHtml(item.categoria || "GERAL");
+            const tit = escapeHtml(item.titulo || "Aviso Comunitário");
+            const msg = escapeHtml(item.mensagem || "");
+            const dt = escapeHtml(item.data || "Recente");
+            return `
+              <div class="col-12 d-flex">
+                <article class="p-3 border rounded-3 bg-body-tertiary h-100 w-100 d-flex flex-column justify-content-between">
+                  <div>
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                      <span class="badge text-bg-secondary">${cat}</span>
+                      <small class="text-muted">${dt}</small>
+                    </div>
+                    <h3 class="h6 fw-bold mb-1">${tit}</h3>
+                  </div>
+                  <p class="small mb-0">${msg}</p>
+                </article>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      if (formAviso) {
+        formAviso.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const categoria = document.getElementById("aviso-categoria")?.value || "SEMENTES";
+          const titulo = (document.getElementById("aviso-titulo")?.value || "").trim();
+          const mensagem = (document.getElementById("aviso-mensagem")?.value || "").trim();
+          const feedback = document.getElementById("feedback-aviso-comunidade");
+
+          if (!titulo || !mensagem) {
+            if (feedback) {
+              feedback.className = "alert alert-warning mt-3 mb-0";
+              feedback.textContent = "Preencha o título e a mensagem para publicar no mural.";
+            }
+            return;
+          }
+
+          const atual = obterAvisosMural();
+          atual.unshift({
+            categoria,
+            titulo,
+            mensagem,
+            data: new Date().toLocaleDateString("pt-BR")
+          });
+          localStorage.setItem(STORAGE_MURAL, JSON.stringify(atual.slice(0, 15)));
+          renderizarMural();
+
+          try {
+            await fetch("/api/v1/alertas", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                tipo: categoria,
+                nivel: "INFO",
+                mensagem: `${titulo}: ${mensagem}`,
+                localidadeId: 1
+              })
+            });
+          } catch (_) {}
+
+          formAviso.reset();
+          if (feedback) {
+            feedback.className = "alert alert-success mt-3 mb-0";
+            feedback.textContent = "✅ Aviso publicado no Mural da Comunidade!";
+          }
+        });
+      }
+
+      if (selectFiltroCidade) {
+        selectFiltroCidade.addEventListener("change", carregarAlertasRadarBahia);
+      }
+      if (btnRecarregarAlertas) {
+        btnRecarregarAlertas.addEventListener("click", () => {
+          carregarAlertasRadarBahia();
+          carregarRankingTemperaturas();
+        });
+      }
+
+      const handleRocaChange = () => {
+        sincronizarSelectComRocaAtiva();
+        carregarAlertasRadarBahia();
+      };
+      window.addEventListener("mc:roca-ativa-mudou", handleRocaChange);
+      window.addEventListener("mc:roca-changed", handleRocaChange);
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        await popularSelectFiltroCidadesSemiarido();
+        sincronizarSelectComRocaAtiva();
+        renderizarMural();
+        carregarAlertasRadarBahia();
+        carregarRankingTemperaturas();
+      });
+    })();
+  </script>
 </body>
 </html>

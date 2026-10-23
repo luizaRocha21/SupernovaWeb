@@ -1,422 +1,588 @@
-<!doctype html>
-<html lang="pt-BR" data-theme="claro">
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="sertao-claro" data-font-scale="normal">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#173d2c">
-  <title>Assistente de IA · Manejo Caatingueiro</title>
-  <meta name="description" content="Chat exclusivo com o Assistente de IA integrado aos dados climáticos da sua roça">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="manifest" href="/manifest.json">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..600&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Assistente da Sua Roça — Tire suas dúvidas sobre plantio, chuva e água com apoio por voz para agricultores do Semiárido Baiano." />
+  <title>Assistente da Sua Roça — Manejo Caatingueiro</title>
 
-  <link rel="stylesheet" href="/assets/css/global.css">
-  <link rel="stylesheet" href="/assets/css/painel.css">
+  <!-- Fontes Editoriais Sertanejas (Newsreader 400 + DM Sans) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet" />
 
-  <script src="/assets/js/acessibilidade-voz.js" defer></script>
-  <script src="/assets/js/menu.js" defer></script>
+  <!-- Bootstrap 5.3 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Design System Editorial Sertanejo (elements.css carregado por último) -->
+  <link rel="stylesheet" href="/assets/css/global.css" />
+  <link rel="stylesheet" href="/assets/css/painel.css" />
+  <link rel="stylesheet" href="/assets/css/global/elements.css" />
 </head>
 <body>
-  <!-- MENU LATERAL (CONFIGURAÇÕES DE TEMA, FONTE E NAVEGAÇÃO) -->
-  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
-  <aside class="app-sidebar" id="app-sidebar" aria-label="Menu Lateral e Configurações" aria-hidden="true">
-    <div>
-      <div class="sidebar-header">
-        <div class="brand">
-          <span class="brand-mark">
-            <img src="/assets/images/logo-mark.svg" alt="" width="24" height="24">
-          </span>
-          <span>Manejo Caatingueiro</span>
-        </div>
-        <button class="sidebar-close" id="sidebar-close" type="button" aria-label="Fechar menu">&times;</button>
-      </div>
-
-      <div class="sidebar-body">
-        <div>
-          <p class="sidebar-group-title">Navegação</p>
-          <div class="sidebar-nav-list">
-            <a class="sidebar-nav-btn" href="/">
-              <span>🌦️</span>
-              <span>Voltar ao Manejo da Roça</span>
-            </a>
-            <a class="sidebar-nav-btn active" href="/pages/assistente-ia.html">
-              <span>💬</span>
-              <span>Chat com Assistente de IA</span>
-            </a>
-          </div>
-        </div>
-
-        <div>
-          <p class="sidebar-group-title">Configurações de Tela e Leitura</p>
-          <div class="sidebar-settings-box">
-            <div>
-              <span class="small muted" style="display: block; margin-bottom: 6px; font-weight: 700;">Tema Visual</span>
-              <div class="theme-grid">
-                <button type="button" class="theme-option-btn active" data-set-theme="claro">☀️ Claro</button>
-                <button type="button" class="theme-option-btn" data-set-theme="escuro">🌙 Escuro</button>
-                <button type="button" class="theme-option-btn" data-set-theme="daltonico">👁️ Daltônico</button>
-                <button type="button" class="theme-option-btn" data-set-theme="baixa-visao">🔍 Alto Contraste</button>
-              </div>
-            </div>
-
-            <div>
-              <span class="small muted" style="display: block; margin-bottom: 6px; font-weight: 700;">Tamanho da Letra</span>
-              <div class="font-controls-row">
-                <button type="button" class="font-btn" data-font-action="dec" aria-label="Diminuir fonte">A-</button>
-                <span class="font-scale-display">100%</span>
-                <button type="button" class="font-btn" data-font-action="reset" aria-label="Tamanho padrão">Padrão</button>
-                <button type="button" class="font-btn" data-font-action="inc" aria-label="Aumentar fonte">A+</button>
-              </div>
-            </div>
-
-            <div>
-              <label class="small muted" for="sidebar-tts-speed" style="display: block; margin-bottom: 6px; font-weight: 700;">Velocidade do Áudio</label>
-              <select id="sidebar-tts-speed" data-tts-speed style="width: 100%; height: 38px; padding: 0 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-weight: 600;">
-                <option value="0.85">Mais pausada (0.85x)</option>
-                <option value="1" selected>Normal (1.0x)</option>
-                <option value="1.2">Mais rápida (1.2x)</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="sidebar-footer">
-      Território de Irecê · Bahia
-    </div>
-  </aside>
-
-  <!-- TOPBAR -->
-  <header class="topbar">
-    <div class="topbar-left">
-      <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="app-sidebar">
-        <span aria-hidden="true">&#9776;</span>
-        <span>Menu</span>
-      </button>
-
-      <a class="brand" href="/">
-        <span class="brand-mark">
-          <img src="/assets/images/logo-mark.svg" alt="Manejo Caatingueiro" width="24" height="24">
-        </span>
-        <span>Manejo<br>Caatingueiro</span>
-      </a>
-    </div>
-
-    <div style="display: flex; align-items: center; gap: 8px;">
-      <a class="button button-secondary" href="/" style="min-height: 38px; padding: 6px 14px; font-size: 0.86rem;">
-        &larr; Voltar ao Manejo da Roça
-      </a>
-    </div>
-
-    <div class="topbar-right">
-      <!-- ÍCONE DE SOM (LEITURA EM VOZ ALTA) -->
-      <button class="btn-sound-icon" id="btn-tts-icon" type="button" aria-label="Ouvir resumo em áudio desta página" title="Ouvir resumo da página">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-        </svg>
-      </button>
-
-      <!-- ÍCONE DE CHAT DO ASSISTENTE DE IA (ATIVO NESTA PÁGINA) -->
-      <button class="btn-sound-icon btn-chat-icon active" id="btn-chat-ia-icon" type="button" aria-label="Assistente de IA ativo" title="Você está no Chat com o Assistente de IA">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-        </svg>
-      </button>
-
-      <div class="account-area">
-        <span class="user-badge" id="chat-user-badge" hidden>Agricultor(a)</span>
-        <button class="button button-secondary" id="btn-chat-logout" type="button" hidden style="min-height: 38px; padding: 6px 12px; font-size: 0.85rem;">Sair</button>
-      </div>
-    </div>
+  <!-- CABEÇALHO / GAVETA RETRÁTIL UNIFICADA GERENCIADA POR MENU.JS -->
+  <header>
+    <nav id="menu" class="navbar navbar-expand-lg navbar-light shadow-sm" aria-label="Navegação Principal"></nav>
   </header>
 
-  <main class="page-content" style="max-width: 980px; margin: 0 auto;">
-    <!-- AVISO CASO O USUÁRIO TENTE ACESSAR SEM ESTAR LOGADO -->
-    <div id="chat-locked-box" class="card-box" hidden style="max-width: 540px; margin: 48px auto; text-align: center; padding: 36px 28px;">
-      <p class="eyebrow eyebrow-ochre">ACESSO EXCLUSIVO PARA USUÁRIOS CONECTADOS</p>
-      <h2 style="font-family: var(--serif); font-size: 1.9rem; margin: 8px 0 12px;">Entre na sua conta para usar o Assistente de IA</h2>
-      <p class="muted" style="margin-bottom: 22px;">
-        O Assistente de IA analisa os dados climáticos da sua localidade e o manejo da sua roça de forma personalizada. Faça login na página inicial para iniciar sua conversa.
-      </p>
-      <a class="button button-primary" href="/?aviso=login-ia">Ir para Entrar na Minha Conta</a>
-    </div>
-
-    <!-- ÁREA EXCLUSIVA DO CHAT COM O ASSISTENTE DE IA (VISÍVEL SOMENTE QUANDO LOGADO) -->
-    <div id="chat-exclusive-workspace" hidden>
-      <div class="section-header" style="margin-bottom: 18px;">
+  <main id="conteudo-principal" class="container py-4">
+    <!-- Hero Editorial do Assistente da Roça -->
+    <section class="hero-card p-4 mb-4" style="background-color: #f4eddb; border: 1px solid #d2c2a9; color: #542817;">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
         <div>
-          <p class="eyebrow eyebrow-green" id="chat-user-eyebrow">ASSISTENTE DE IA PARA O SEU MANEJO</p>
-          <h1 style="margin: 4px 0 0; font-family: var(--serif); font-size: clamp(1.65rem, 2.8vw, 2.25rem); font-weight: 500;">Seu Chat com o Assistente de Plantio</h1>
+          <span class="eyebrow hero-kicker" style="font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase; color: #5d603d;">🤖 ASSISTENTE DA SUA ROÇA</span>
+          <h1 class="h3 mt-1 mb-1" style="font-family: 'Newsreader', Georgia, serif; font-weight: 400; color: #542817;">Tire suas dúvidas sobre <em style="color: #bd7627; font-style: italic;">plantio, chuva e água</em></h1>
+          <p id="ia-intro-voz" class="mb-0" style="font-family: 'DM Sans', sans-serif; color: #6e6252; line-height: 1.55;">
+            Pergunte escrevendo ou falando pelo microfone. O assistente acompanha automaticamente os dados climáticos da sua <strong style="color: #542817;">Roça Ativa</strong> no Semiárido Baiano para orientar o cuidado com a lavoura e a cisterna.
+          </p>
         </div>
-        <button class="button button-secondary" id="btn-limpar-chat" type="button" style="min-height: 38px; padding: 6px 14px; font-size: 0.84rem;">
-          Limpar conversa
+        <button
+          type="button"
+          class="btn btn-speak"
+          style="background-color: #fffaf0; border: 1px solid #d2c2a9; color: #542817;"
+          data-speak-target="#ia-intro-voz"
+          aria-label="Ouvir apresentação do Assistente da Sua Roça"
+        >
+          🔊 Ouvir explicação
         </button>
       </div>
+    </section>
 
-      <div class="chat-window" style="min-height: 580px;">
-        <div class="chat-context-strip">
-          <span id="chat-climate-context">📍 Carregando dados climáticos da sua localidade...</span>
-          <span class="status-label status-good" id="chat-situacao-pill">Conectado ao Clima</span>
-        </div>
+    <!-- Layout de 2 Colunas no Desktop (col-lg-4 à esquerda, col-lg-8 à direita) -->
+    <div class="row g-4">
+      <!-- Coluna Esquerda: Roça Ativa, Cultura, Clima Atual e Perguntas Rápidas -->
+      <div class="col-12 col-lg-4">
+        <section class="card p-4 h-100" style="background-color: #fffaf0; border: 1px solid #d2c2a9;" aria-labelledby="titulo-contexto-roca">
+          <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+            <div>
+              <span class="eyebrow section-kicker" style="font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase; color: #5d603d;">📍 SUA TERRA E SUA LAVOURA</span>
+              <h2 id="titulo-contexto-roca" class="h5 mb-0" style="font-family: 'Newsreader', Georgia, serif; font-weight: 400; color: #542817;">Roça Ativa e <em style="color: #bd7627; font-style: italic;">Clima Agora</em></h2>
+            </div>
+            <button
+              type="button"
+              class="btn btn-speak"
+              style="background-color: #fffaf0; border: 1px solid #d2c2a9; color: #542817;"
+              data-speak-target="#ia-resumo-clima-box"
+              aria-label="Ouvir situação climática da roça selecionada"
+            >
+              🔊 Ouvir
+            </button>
+          </div>
 
-        <div class="chat-messages" id="chat-messages"></div>
+          <div class="p-3 rounded-3 mb-3" style="background-color: #f4eddb; border: 1px solid #d2c2a9;">
+            <span class="small d-block" style="color: #6e6252;">Roça ativa selecionada:</span>
+            <strong id="ia-nome-roca-ativa" class="d-block" style="color: #542817;">🌾 Roça Fazenda Baixio</strong>
+            <small id="ia-coord-roca-ativa" style="color: #6e6252;">Irecê - BA</small>
+          </div>
 
-        <div class="chat-quick-Row">
-          <button type="button" class="chat-chip" data-quick-ask="Posso plantar milho agora na minha localidade?">🌱 Posso plantar milho agora?</button>
-          <button type="button" class="chat-chip" data-quick-ask="Qual a melhor cultura para o volume de chuva atual da minha roça?">🌾 Melhor cultura para hoje</button>
-          <button type="button" class="chat-chip" data-quick-ask="Como conservar a umidade do solo na minha roça?">🌿 Como segurar umidade no solo</button>
-          <button type="button" class="chat-chip" data-quick-ask="Como economizar e proteger a água da minha cisterna ou poço?">💧 Cuidados com a cisterna e poço</button>
-        </div>
+          <div class="mb-3">
+            <label for="ia-select-localidade" class="form-label small fw-bold mb-1">Município do Semiárido Baiano:</label>
+            <select id="ia-select-localidade" class="form-select">
+              <option value="1" data-ibge="2914604" data-lat="-11.3042" data-lon="-41.8558" data-nome="Irecê">Irecê - BA</option>
+              <option value="2" data-ibge="2925709" data-lat="-11.3519" data-lon="-41.9644" data-nome="Presidente Dutra">Presidente Dutra - BA</option>
+              <option value="1" data-ibge="2919157" data-lat="-11.3839" data-lon="-41.8122" data-nome="Lapão">Lapão - BA</option>
+              <option value="1" data-ibge="2907905" data-lat="-11.3017" data-lon="-42.0736" data-nome="Central">Central - BA</option>
+              <option value="1" data-ibge="2928505" data-lat="-11.2422" data-lon="-41.9553" data-nome="São Gabriel">São Gabriel - BA</option>
+              <option value="1" data-ibge="2917359" data-lat="-11.6625" data-lon="-41.9689" data-nome="João Dourado">João Dourado - BA</option>
+              <option value="1" data-ibge="2918407" data-lat="-9.4162" data-lon="-40.5033" data-nome="Juazeiro">Juazeiro - BA</option>
+            </select>
+          </div>
 
-        <form id="form-chat-ia" class="chat-input-bar">
-          <input type="text" id="chat-input-text" placeholder="Digite sua dúvida sobre o manejo da sua roça, plantio ou chuva..." required>
-          <button class="button button-primary" type="submit" id="btn-chat-send">Enviar</button>
-        </form>
+          <div class="mb-3">
+            <label for="ia-select-cultura" class="form-label small fw-bold">Cultura ou criação principal:</label>
+            <select id="ia-select-cultura" class="form-select">
+              <option value="Feijão-Caupi (Corda) e Milho Crioulo">🫘 Feijão-Caupi e Milho Crioulo</option>
+              <option value="Mandioca / Macaxeira de Sequeiro">🌿 Mandioca / Macaxeira</option>
+              <option value="Palma Forrageira e Sorgo">🌵 Palma Forrageira e Sorgo</option>
+              <option value="Horta Familiar e Frutíferas (Umbu / Maracujá)">🌳 Quintal Produtivo e Horta</option>
+              <option value="Caprinos, Ovinos e Água de Cisterna">🐐 Criação e Água de Cisterna</option>
+            </select>
+          </div>
+
+          <div id="ia-resumo-clima-box" class="p-3 rounded-3 border bg-body-tertiary mb-3">
+            <div class="d-flex justify-content-between small mb-1">
+              <span class="text-muted">Chuva (últimos 7 dias):</span>
+              <strong id="ia-ctx-chuva">0.0 mm</strong>
+            </div>
+            <div class="d-flex justify-content-between small mb-1">
+              <span class="text-muted">Temperatura / Umidade:</span>
+              <strong id="ia-ctx-temp">28.5°C · 52%</strong>
+            </div>
+            <div class="d-flex justify-content-between small mb-2">
+              <span class="text-muted">Condição da terra:</span>
+              <strong id="ia-ctx-solo">Consultando...</strong>
+            </div>
+            <div class="small pt-2 border-top">
+              <span class="text-muted d-block">Avisos do Tempo (Bahia):</span>
+              <strong id="ia-ctx-alerta-radar">Verificando alertas...</strong>
+            </div>
+          </div>
+
+          <span class="small fw-bold d-block mb-2" style="color: #542817;">Perguntas rápidas (toque para perguntar):</span>
+          <div class="d-flex flex-wrap gap-2">
+            <button
+              type="button"
+              class="btn btn-sm rounded-pill text-start px-3 py-2 fw-semibold"
+              style="background: #fffaf0; border: 1px solid #d2c2a9; color: #542817;"
+              data-quick-ask="Com a chuva dos últimos 7 dias na minha roça, já posso plantar feijão-caupi ou é melhor esperar?"
+            >
+              🌱 Posso plantar feijão agora?
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm rounded-pill text-start px-3 py-2 fw-semibold"
+              style="background: #fffaf0; border: 1px solid #d2c2a9; color: #542817;"
+              data-quick-ask="Minha cisterna de placas está na metade. Como economizar água para a família e para os canteiros?"
+            >
+              💧 Como economizar água da cisterna?
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm rounded-pill text-start px-3 py-2 fw-semibold"
+              style="background: #fffaf0; border: 1px solid #d2c2a9; color: #542817;"
+              data-quick-ask="Como preparar cobertura morta (mulching) e adubo orgânico no roçado sem queimar a Caatinga?"
+            >
+              🌾 Proteger a terra com palhada
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm rounded-pill text-start px-3 py-2 fw-semibold"
+              style="background: #fffaf0; border: 1px solid #d2c2a9; color: #542817;"
+              data-quick-ask="Qual o melhor consórcio entre palma forrageira, sorgo e guandu para alimentar cabras e ovelhas na seca?"
+            >
+              🌵 Ração de palma e sorgo na seca
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <!-- Coluna Direita: Conversa com o Assistente + Voz e Microfone -->
+      <div class="col-12 col-lg-8">
+        <section
+          class="card p-4 h-100 d-flex flex-column"
+          style="background-color: #fffaf0; border: 1px solid #d2c2a9; border-left: 4px solid #542817;"
+          aria-labelledby="titulo-chat-ia"
+        >
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <div>
+              <span class="eyebrow section-kicker" style="font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase; color: #5d603d;">💬 CONVERSA COM O ASSISTENTE</span>
+              <h2 id="titulo-chat-ia" class="h5 mb-0" style="font-family: 'Newsreader', Georgia, serif; font-weight: 400; color: #542817;">Pergunte e ouça a resposta <em style="color: #bd7627; font-style: italic;">em voz alta</em></h2>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span id="badge-provedor-ia" class="badge" style="background-color: #e9efe2; border: 1px solid #b8c7a6; color: #3e4a26;">Pronto para ajudar</span>
+              <button
+                type="button"
+                id="btn-ouvir-ultima-ia"
+                class="btn btn-speak"
+                style="min-width: 44px; min-height: 44px; background-color: #fffaf0; border: 1px solid #d2c2a9; color: #542817;"
+                aria-label="Ouvir a última resposta do assistente em voz alta"
+              >
+                🔊 Ouvir resposta
+              </button>
+            </div>
+          </div>
+
+          <!-- Histórico de Mensagens -->
+          <div
+            id="chat-messages"
+            class="p-3 rounded-3 mb-2 flex-grow-1 overflow-auto"
+            style="min-height: 360px; max-height: 500px; background-color: #f4eddb; border: 1px solid #d2c2a9;"
+            aria-live="polite"
+          >
+            <article class="p-3 rounded-3 mb-3" id="msg-boas-vindas-ia" style="background-color: #fffaf0; border: 1px solid #d2c2a9;">
+              <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-1">
+                <strong style="color: #542817;">🌵 Assistente da Sua Roça</strong>
+                <button
+                  type="button"
+                  class="btn btn-speak btn-sm"
+                  style="min-width: 44px; min-height: 44px; background-color: #fffaf0; border: 1px solid #d2c2a9; color: #542817;"
+                  data-speak-target="#texto-boas-vindas-ia"
+                  aria-label="Ouvir mensagem de boas-vindas"
+                >
+                  🔊 Ouvir
+                </button>
+              </div>
+              <p id="texto-boas-vindas-ia" class="mb-0 small" style="font-family: 'DM Sans', sans-serif; color: #6e6252; line-height: 1.55;">
+                Olá, companheiro(a) do sertão! Já identifiquei os dados da sua Roça Ativa ao lado. Me conte sua dúvida sobre época de plantio, cuidado com a cisterna, sementes crioulas ou alimentação dos animais. Você pode escrever ou tocar no botão <strong style="color: #542817;">🎤 Falar</strong>.
+              </p>
+            </article>
+          </div>
+
+          <!-- Formulário de Pergunta e Botões Simétricos (Correção da Foto 3) -->
+          <form id="form-chat-ia" class="mt-3 pt-3 border-top" style="border-color: #d2c2a9 !important;" novalidate>
+            <label for="input-pergunta-ia" class="form-label fw-bold mb-2" style="color: #542817;">
+              Escreva ou fale sua dúvida sobre a roça:
+            </label>
+            <div class="row g-2 align-items-stretch">
+              <div class="col-12 col-md-8">
+                <textarea
+                  id="input-pergunta-ia"
+                  class="form-control h-100"
+                  rows="2"
+                  style="resize: none; overflow-y: auto; min-height: 54px; background: #fffaf0; border-color: #9fa39f;"
+                  placeholder="Ex.: Choveu pouco esta semana na minha roça, posso plantar feijão-de-corda ou é melhor esperar?"
+                  required
+                ></textarea>
+              </div>
+              <div class="col-6 col-md-2 d-flex">
+                <button
+                  type="button"
+                  id="btn-voz-microfone"
+                  class="btn w-100 d-flex align-items-center justify-content-center gap-2 fw-bold"
+                  style="min-height: 54px; background: #fffaf0; border: 1px solid #d2c2a9; color: #542817; border-radius: 8px;"
+                  data-voice-input="#input-pergunta-ia"
+                  aria-label="Falar pergunta usando o microfone"
+                >
+                  <span>🎤</span> <span>Falar</span>
+                </button>
+              </div>
+              <div class="col-6 col-md-2 d-flex">
+                <button
+                  type="submit"
+                  id="btn-enviar-ia"
+                  class="btn w-100 d-flex align-items-center justify-content-center gap-2 fw-bold"
+                  style="min-height: 54px; background: #5d603d; border: 1px solid #5d603d; color: #fffaf0; border-radius: 8px;"
+                >
+                  <span>Enviar</span> <span aria-hidden="true">&rarr;</span>
+                </button>
+              </div>
+            </div>
+            <div class="d-flex flex-wrap justify-content-between align-items-center mt-2 gap-2">
+              <small class="text-muted">
+                💡 Você pode digitar sua pergunta ou tocar em <strong>Falar</strong> para usar o microfone.
+              </small>
+              <small class="text-muted">
+                🔊 Todas as respostas possuem botão para ouvir em voz alta.
+              </small>
+            </div>
+          </form>
+        </section>
       </div>
     </div>
   </main>
 
+  <footer class="container py-4 mt-4 border-top text-center small text-muted">
+    <p class="mb-1"><strong>Manejo Caatingueiro</strong> — Assistente da Sua Roça com apoio por voz e dados climáticos do Semiárido Baiano.</p>
+  </footer>
+
+  <!-- Scripts Globais -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/assets/js/menu.js"></script>
+  <script src="/assets/js/acessibilidade-voz.js"></script>
+  <script src="/assets/js/clima-dinamico.js"></script>
   <script>
     (function () {
-      function resolveApiBase() {
-        if (typeof window === "undefined") return "";
-        if (window.MC_API_BASE_OVERRIDE) return window.MC_API_BASE_OVERRIDE;
-        if (window.location.protocol === "file:") return "http://localhost:3000";
-        if (
-          (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") &&
-          window.location.port &&
-          window.location.port !== "3000"
-        ) {
-          return "http://localhost:3000";
+      const selectLoc = document.getElementById("ia-select-localidade");
+      const selectCultura = document.getElementById("ia-select-cultura");
+      const chatMessages = document.getElementById("chat-messages");
+      const formChat = document.getElementById("form-chat-ia");
+      const inputPergunta = document.getElementById("input-pergunta-ia");
+      const btnEnviar = document.getElementById("btn-enviar-ia");
+      const btnVozMicrofone = document.getElementById("btn-voz-microfone");
+      const btnOuvirUltima = document.getElementById("btn-ouvir-ultima-ia");
+      const badgeProvedor = document.getElementById("badge-provedor-ia");
+
+      let contextoClimaAtual = {
+        rocaNome: "Roça Principal",
+        municipio: "Irecê",
+        chuva7dMm: 0,
+        temperaturaC: "28.5",
+        umidadePct: "52",
+        statusSolo: "Em análise",
+        alertasAtivos: "Sem alertas críticos"
+      };
+      let ultimaRespostaTexto = "";
+
+      function escapeHtml(str) {
+        return String(str ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function sincronizarComRocaAtiva() {
+        let roca = null;
+        if (window.MC_Menu && typeof window.MC_Menu.getRocaAtiva === "function") {
+          roca = window.MC_Menu.getRocaAtiva();
         }
-        if (window.location.hostname.includes("vercel.app") || window.location.hostname.includes("github.io")) {
-          return "https://supernovaweb-1.onrender.com";
+        if (!roca) return;
+
+        const nomeRoca = roca.nome || "Roça Principal";
+        const nomeCidade = String(roca.municipioNome || roca.municipio || "Irecê")
+          .replace(/\s*-\s*[A-Z]{2}$/i, "")
+          .trim();
+
+        contextoClimaAtual.rocaNome = nomeRoca;
+        contextoClimaAtual.municipio = nomeCidade;
+
+        const elNome = document.getElementById("ia-nome-roca-ativa");
+        const elCoord = document.getElementById("ia-coord-roca-ativa");
+        if (elNome) elNome.textContent = `🌾 ${nomeRoca}`;
+        if (elCoord) {
+          const lat = Number.isFinite(Number(roca.latitude)) ? Number(roca.latitude).toFixed(4) : "-11.3042";
+          const lon = Number.isFinite(Number(roca.longitude)) ? Number(roca.longitude).toFixed(4) : "-41.8558";
+          elCoord.textContent = `${nomeCidade} - BA (${lat}, ${lon})`;
         }
-        return "";
-      }
 
-      const API_BASE = resolveApiBase();
-
-      const AUTH_KEY = "mc_auth_session_v4";
-      let session = null;
-
-      try {
-        const raw = localStorage.getItem(AUTH_KEY);
-        if (raw) session = JSON.parse(raw);
-      } catch {}
-
-      const lockedBox = document.getElementById("chat-locked-box");
-      const chatWorkspace = document.getElementById("chat-exclusive-workspace");
-      const userBadge = document.getElementById("chat-user-badge");
-      const btnLogout = document.getElementById("btn-chat-logout");
-      const userEyebrow = document.getElementById("chat-user-eyebrow");
-      const messagesEl = document.getElementById("chat-messages");
-      const chatCtxEl = document.getElementById("chat-climate-context");
-      const situacaoPill = document.getElementById("chat-situacao-pill");
-
-      if (!session || !session.token || !session.user) {
-        if (lockedBox) lockedBox.hidden = false;
-        if (chatWorkspace) chatWorkspace.hidden = true;
-        return;
-      }
-
-      const user = session.user;
-      const token = session.token;
-      const chatStorageKey = `mc_chat_history_v4_user_${user.id}`;
-      let chatHistory = [];
-      let ultimoDiag = null;
-
-      if (lockedBox) lockedBox.hidden = true;
-      if (chatWorkspace) chatWorkspace.hidden = false;
-
-      if (userBadge) {
-        userBadge.hidden = false;
-        userBadge.textContent = `${user.nome} · ${user.localidadeNome || "Irecê"}`;
-      }
-      if (btnLogout) {
-        btnLogout.hidden = false;
-        btnLogout.addEventListener("click", () => {
-          localStorage.removeItem(AUTH_KEY);
-          window.location.href = "/";
-        });
-      }
-      if (userEyebrow) {
-        userEyebrow.textContent = `ATENDIMENTO EXCLUSIVO · ${String(user.nome || "").toUpperCase()} (${String(user.localidadeNome || "IRECÊ").toUpperCase()})`;
-      }
-
-      function renderBubble(autor, texto) {
-        if (!messagesEl) return;
-        const bubble = document.createElement("div");
-        bubble.className = `chat-bubble ${autor === "usuario" ? "user" : "bot"}`;
-
-        if (autor === "usuario") {
-          bubble.textContent = texto;
-        } else {
-          const textDiv = document.createElement("div");
-          textDiv.textContent = texto;
-          bubble.appendChild(textDiv);
-
-          const actionsDiv = document.createElement("div");
-          actionsDiv.className = "chat-bubble-actions";
-
-          const speakBtn = document.createElement("button");
-          speakBtn.type = "button";
-          speakBtn.className = "chat-speak-btn";
-          speakBtn.title = "Ouvir esta resposta em voz alta";
-          speakBtn.textContent = "🔊";
-          speakBtn.addEventListener("click", () => {
-            if (window.MC_Voz && typeof window.MC_Voz.lerTexto === "function") {
-              window.MC_Voz.lerTexto(texto);
+        if (selectLoc) {
+          for (let i = 0; i < selectLoc.options.length; i++) {
+            const opt = selectLoc.options[i];
+            const optNome = (opt.getAttribute("data-nome") || opt.textContent || "")
+              .replace(/\s*-\s*[A-Z]{2}$/i, "")
+              .trim();
+            if (optNome.toLowerCase() === nomeCidade.toLowerCase()) {
+              selectLoc.selectedIndex = i;
+              break;
             }
-          });
-
-          actionsDiv.appendChild(speakBtn);
-          bubble.appendChild(actionsDiv);
-        }
-
-        messagesEl.appendChild(bubble);
-        messagesEl.scrollTop = messagesEl.scrollHeight;
-      }
-
-      function loadUserChatHistory() {
-        if (!messagesEl) return;
-        messagesEl.innerHTML = "";
-        try {
-          const saved = localStorage.getItem(chatStorageKey);
-          if (saved) {
-            chatHistory = JSON.parse(saved) || [];
           }
-        } catch {
-          chatHistory = [];
-        }
-
-        if (chatHistory.length === 0) {
-          const welcomeMsg = `Olá, ${user.nome}! Eu sou o seu Assistente de IA do Manejo Caatingueiro. Estou acompanhando os dados de chuva, temperatura e solo de ${user.localidadeNome || "sua localidade"}. Como posso ajudar no manejo da sua roça hoje?`;
-          renderBubble("assistente", welcomeMsg);
-        } else {
-          chatHistory.forEach((item) => renderBubble(item.autor, item.texto));
         }
       }
 
-      function saveUserChatHistory() {
-        try {
-          localStorage.setItem(chatStorageKey, JSON.stringify(chatHistory.slice(-30)));
-        } catch {}
-      }
+      async function atualizarContextoClimaticoIA() {
+        if (!selectLoc) return;
+        const opt = selectLoc.options[selectLoc.selectedIndex];
+        const locId = selectLoc.value || "1";
+        const ibge = opt ? (opt.getAttribute("data-ibge") || "2914604") : "2914604";
 
-      async function carregarClimaUsuario() {
+        let roca = null;
+        if (window.MC_Menu && typeof window.MC_Menu.getRocaAtiva === "function") {
+          roca = window.MC_Menu.getRocaAtiva();
+        }
+
+        const lat =
+          opt && opt.getAttribute("data-lat")
+            ? opt.getAttribute("data-lat")
+            : String(roca?.latitude || "-11.3042");
+        const lon =
+          opt && opt.getAttribute("data-lon")
+            ? opt.getAttribute("data-lon")
+            : String(roca?.longitude || "-41.8558");
+        const nomeCidade = opt
+          ? (opt.getAttribute("data-nome") || opt.textContent.replace(/\s*-\s*BA$/i, "").trim())
+          : "Irecê";
+
+        contextoClimaAtual.municipio = nomeCidade;
+
         try {
-          const resp = await fetch(
-            `${API_BASE}/api/v1/localidades/${user.localidadeId || 1}/painel-chuva?cultura=milho`,
-            {
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`
-              }
-            }
+          const res = await fetch(
+            `/api/v1/clima/diagnostico?localidadeId=${encodeURIComponent(locId)}&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`
           );
-          if (!resp.ok) return;
-          const painel = await resp.json();
-          const diag = painel.diagnosticoSituacao;
-          ultimoDiag = {
-            localidadeNome: painel.localidadeNome,
-            acumuladoMesMm: painel.acumuladoMesMm,
-            rotuloSituacao: diag?.rotulo || "Em análise"
-          };
+          const d = await res.json();
+          const chuva = Number(d.acumuladoChuva7dMm ?? d.chuvaAcumulada7d ?? 0);
+          const tempNum = Number(d.temperaturaAtualC ?? d.temperaturaC);
+          const temp = Number.isFinite(tempNum) ? tempNum.toFixed(1) : "28.5";
+          const umidNum = Number(d.umidadeRelativaPct ?? d.umidadeAr);
+          const umid = Number.isFinite(umidNum) ? Math.round(umidNum) : 52;
+          const statusSolo =
+            chuva >= 40
+              ? "Terra úmida (favorável)"
+              : chuva >= 20
+              ? "Umidade moderada"
+              : "Terra seca (poupar água)";
 
-          if (chatCtxEl) {
-            chatCtxEl.innerHTML = `📍 Localidade: <strong>${painel.localidadeNome}</strong> · Chuva no mês: <strong>${painel.acumuladoMesMm} mm</strong> · Últimos 7 dias: <strong>${painel.acumuladoRecenteMm} mm</strong> · Temp: <strong>${painel.estacaoInmet?.temperaturaC ?? 27} °C</strong>`;
+          contextoClimaAtual.chuva7dMm = chuva;
+          contextoClimaAtual.temperaturaC = temp;
+          contextoClimaAtual.umidadePct = umid;
+          contextoClimaAtual.statusSolo = statusSolo;
+
+          document.getElementById("ia-ctx-chuva").textContent = `${chuva.toFixed(1)} mm`;
+          document.getElementById("ia-ctx-temp").textContent = `${temp}°C · ${umid}%`;
+          document.getElementById("ia-ctx-solo").textContent = statusSolo;
+        } catch (err) {
+          console.warn("Falha ao buscar diagnóstico climático para o assistente:", err);
+        }
+
+        try {
+          let alertaData = null;
+          if (window.MC_Radar && typeof window.MC_Radar.obterAlertas === "function") {
+            alertaData = await window.MC_Radar.obterAlertas("BA", ibge);
+          } else {
+            const r = await fetch(`/api/v1/clima/alertas?uf=BA&codigo_ibge=${encodeURIComponent(ibge)}`);
+            alertaData = await r.json();
           }
-          if (situacaoPill && diag) {
-            situacaoPill.textContent = diag.rotulo;
-            situacaoPill.className = `status-label ${
-              diag.codigo === "FAVORAVEL"
-                ? "status-good"
-                : diag.codigo === "ESTIAGEM"
-                ? "status-alert"
-                : "status-warn"
-            }`;
+          const lista = Array.isArray(alertaData?.alertas) ? alertaData.alertas : [];
+          const elAlerta = document.getElementById("ia-ctx-alerta-radar");
+          if (lista.length > 0) {
+            const resumoAlerta = `${lista[0].evento || "Alerta"} (${lista[0].severidade || "Atenção"})`;
+            contextoClimaAtual.alertasAtivos = resumoAlerta;
+            if (elAlerta) elAlerta.textContent = `⚠️ ${resumoAlerta}`;
+          } else {
+            contextoClimaAtual.alertasAtivos = "Nenhum alerta severo ativo hoje";
+            if (elAlerta) elAlerta.textContent = "✅ Sem alertas severos hoje";
           }
-        } catch {}
+        } catch (_) {}
       }
 
-      async function enviarPergunta(textoPergunta) {
-        const pergunta = String(textoPergunta || "").trim();
+      function adicionarMensagemNoChat(remetente, texto) {
+        if (!chatMessages) return;
+        const msgId = "msg-ia-" + Date.now() + "-" + Math.floor(Math.random() * 1000);
+        const isUser = remetente === "usuario";
+        const article = document.createElement("article");
+        article.className = `p-3 rounded-3 border mb-3 ${isUser ? "bg-body-secondary ms-md-4" : "bg-body me-md-4"}`;
+
+        if (isUser) {
+          article.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <strong class="text-success">👩‍🌾 Você (${escapeHtml(contextoClimaAtual.rocaNome)} · ${escapeHtml(contextoClimaAtual.municipio)})</strong>
+              <small class="text-muted">Agora</small>
+            </div>
+            <p class="mb-0 small">${escapeHtml(texto)}</p>
+          `;
+        } else {
+          ultimaRespostaTexto = texto;
+          article.innerHTML = `
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-1">
+              <strong class="text-success">🌵 Assistente da Sua Roça</strong>
+              <button
+                type="button"
+                class="btn btn-speak btn-sm"
+                data-speak-target="#${msgId}"
+                aria-label="Ouvir esta resposta em voz alta"
+              >
+                🔊 Ouvir resposta
+              </button>
+            </div>
+            <div id="${msgId}" class="small" style="white-space: pre-line;">${escapeHtml(texto)}</div>
+          `;
+        }
+
+        chatMessages.appendChild(article);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      async function enviarPerguntaIA(perguntaTexto) {
+        const pergunta = String(perguntaTexto || "").trim();
         if (!pergunta) return;
 
-        renderBubble("usuario", pergunta);
-        chatHistory.push({ autor: "usuario", texto: pergunta });
-        saveUserChatHistory();
-
-        const btnSend = document.getElementById("btn-chat-send");
-        if (btnSend) {
-          btnSend.disabled = true;
-          btnSend.textContent = "Consultando...";
+        adicionarMensagemNoChat("usuario", pergunta);
+        if (inputPergunta) inputPergunta.value = "";
+        if (btnEnviar) {
+          btnEnviar.disabled = true;
+          btnEnviar.innerHTML = '<span>Consultando...</span>';
         }
 
+        const locId = selectLoc ? Number(selectLoc.value || 1) : 1;
+        const culturaFoco = selectCultura ? selectCultura.value : "Lavouras do Semiárido";
+
         try {
-          const resp = await fetch(`${API_BASE}/api/v1/ia/chat`, {
+          const resp = await fetch("/api/v1/ia/chat", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              mensagem: pergunta,
-              localidadeId: user.localidadeId || 1,
-              cultura: "milho",
-              historico: chatHistory.slice(-6)
+              pergunta,
+              localidadeId: locId,
+              municipio: contextoClimaAtual.municipio,
+              cultura: culturaFoco,
+              contextoClimatico: contextoClimaAtual
             })
           });
+
           const data = await resp.json();
           const resposta =
-            data?.resposta ||
-            "Estou acompanhando os dados da sua localidade. Verifique a umidade do solo a 15 cm antes de semear.";
-          renderBubble("assistente", resposta);
-          chatHistory.push({ autor: "assistente", texto: resposta });
-          saveUserChatHistory();
-        } catch {
-          const msgOffline = ultimoDiag
-            ? `Modo offline: em ${ultimoDiag.localidadeNome}, o acumulado do mês é de ${ultimoDiag.acumuladoMesMm} mm (${ultimoDiag.rotuloSituacao}). Mantenha a cobertura do solo com palhada e ajuste o plantio conforme a umidade da terra.`
-            : "Sem conexão no momento. Verifique a umidade da terra a 15 cm de profundidade antes de semear.";
-          renderBubble("assistente", msgOffline);
+            data.resposta ||
+            data.orientacao ||
+            data.message ||
+            "Recomendo observar a umidade da terra nos primeiros 15 centímetros e manter a cobertura seca (palhada) para segurar a água da chuva.";
+
+          if (badgeProvedor) {
+            badgeProvedor.textContent = "Resposta pronta";
+          }
+
+          adicionarMensagemNoChat("ia", resposta);
+        } catch (err) {
+          adicionarMensagemNoChat(
+            "ia",
+            `Na roça ${contextoClimaAtual.rocaNome} (${contextoClimaAtual.municipio}), a chuva recente acumulada é de ${Number(
+              contextoClimaAtual.chuva7dMm || 0
+            ).toFixed(1)} mm (${contextoClimaAtual.statusSolo}). Para ${culturaFoco}, proteja o solo com palhada, evite queimar restos culturais e economize a água da cisterna de placas para o consumo da família.`
+          );
         } finally {
-          if (btnSend) {
-            btnSend.disabled = false;
-            btnSend.textContent = "Enviar";
+          if (btnEnviar) {
+            btnEnviar.disabled = false;
+            btnEnviar.innerHTML = '<span>Enviar</span> <span aria-hidden="true">&rarr;</span>';
           }
         }
       }
 
-      document.getElementById("form-chat-ia")?.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const input = document.getElementById("chat-input-text");
-        if (!input || !input.value.trim()) return;
-        const val = input.value.trim();
-        input.value = "";
-        enviarPergunta(val);
-      });
+      if (formChat) {
+        formChat.addEventListener("submit", (e) => {
+          e.preventDefault();
+          enviarPerguntaIA(inputPergunta ? inputPergunta.value : "");
+        });
+      }
 
-      document.querySelectorAll("[data-quick-ask]").forEach((chip) => {
-        chip.addEventListener("click", () => {
-          const q = chip.getAttribute("data-quick-ask");
-          if (q) enviarPergunta(q);
+      // Garante suporte direto ao botão de microfone caso não tenha sido interceptado por data-voice-input
+      if (btnVozMicrofone && inputPergunta) {
+        btnVozMicrofone.addEventListener("click", () => {
+          if (btnVozMicrofone.dataset.voiceBound === "1") return;
+          const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+          if (!SpeechRec) return;
+          try {
+            const rec = new SpeechRec();
+            rec.lang = "pt-BR";
+            rec.interimResults = false;
+            rec.maxAlternatives = 1;
+            btnVozMicrofone.innerHTML = '<span>🎙️</span> <span>Ouvindo...</span>';
+            rec.onresult = (ev) => {
+              const t = ev.results?.[0]?.[0]?.transcript || "";
+              if (t) {
+                inputPergunta.value = (inputPergunta.value ? inputPergunta.value + " " : "") + t;
+                inputPergunta.focus();
+              }
+            };
+            rec.onend = () => {
+              btnVozMicrofone.innerHTML = '<span>🎤</span> <span>Falar</span>';
+            };
+            rec.onerror = () => {
+              btnVozMicrofone.innerHTML = '<span>🎤</span> <span>Falar</span>';
+            };
+            rec.start();
+          } catch (_) {
+            btnVozMicrofone.innerHTML = '<span>🎤</span> <span>Falar</span>';
+          }
+        });
+      }
+
+      document.querySelectorAll("[data-quick-ask]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const ask = btn.getAttribute("data-quick-ask") || "";
+          enviarPerguntaIA(ask);
         });
       });
 
-      document.getElementById("btn-limpar-chat")?.addEventListener("click", () => {
-        chatHistory = [];
-        localStorage.removeItem(chatStorageKey);
-        loadUserChatHistory();
-      });
+      if (btnOuvirUltima) {
+        btnOuvirUltima.addEventListener("click", () => {
+          const textoParaLer =
+            ultimaRespostaTexto ||
+            document.getElementById("texto-boas-vindas-ia")?.textContent ||
+            "Assistente da Sua Roça pronto para ajudar.";
+          if (window.MC_Voz && typeof window.MC_Voz.falar === "function") {
+            window.MC_Voz.falar(textoParaLer, btnOuvirUltima);
+          } else if ("speechSynthesis" in window) {
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(textoParaLer);
+            u.lang = "pt-BR";
+            window.speechSynthesis.speak(u);
+          }
+        });
+      }
 
-      loadUserChatHistory();
-      carregarClimaUsuario();
+      if (selectLoc) {
+        selectLoc.addEventListener("change", atualizarContextoClimaticoIA);
+      }
+
+      const syncRocaIA = () => {
+        sincronizarComRocaAtiva();
+        atualizarContextoClimaticoIA();
+      };
+      window.addEventListener("mc:roca-ativa-mudou", syncRocaIA);
+      window.addEventListener("mc:roca-changed", syncRocaIA);
+
+      document.addEventListener("DOMContentLoaded", () => {
+        sincronizarComRocaAtiva();
+        atualizarContextoClimaticoIA();
+      });
     })();
   </script>
 </body>

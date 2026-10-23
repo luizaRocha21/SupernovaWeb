@@ -1,0 +1,1624 @@
+/* ==========================================================================
+   MANEJO CAATINGUEIRO (SUPERNOVAWEB) — DESIGN EDITORIAL SERTANEJO & TOKENS
+   Arquivo: assets/css/global/elements.css
+   Abordagem: Mobile First Estrita (< 600px base) + Acessibilidade 4 Temas
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap');
+
+/* --------------------------------------------------------------------------
+   1. VARIÁVEIS CSS — DESIGN EDITORIAL SERTANEJO & 4 TEMAS DE ACESSIBILIDADE
+   -------------------------------------------------------------------------- */
+:root,
+[data-theme="claro"],
+[data-theme="sertao-claro"] {
+  color-scheme: light;
+  --cor-fundo: #f5efdf;              /* Areia clara do fundo geral e navbar */
+  --paper: #f5efdf;
+  --story-bg: #f4eddb;               /* Painel editorial esquerdo e hero em areia quente */
+  --panel-bg: #fbf6e9;               /* Painel direito de formulários em creme suave */
+  --cor-superficie: #fffaf0;         /* Superfície marfim de cards, inputs e aba ativa */
+  --surface: #fffaf0;
+  --white: #fffaf0;
+  --cor-superficie-alt: #f4eddb;
+  --cor-fundo-secundario: #f4eddb;
+  --paper-strong: #f4eddb;
+
+  --cor-primaria: #542817;           /* Marrom-terra profundo para títulos, textos principais e logotipo */
+  --ink: #542817;
+  --cor-primaria-hover: #3e1d10;
+  --cor-primaria-suave: #f2e5d5;
+
+  --cor-secundaria: #5d603d;         /* Verde-oliva Caatinga para botões principais, destaques e eyebrows */
+  --green: #5d603d;
+  --cor-secundaria-hover: #484b2f;
+  --green-hover: #484b2f;
+  --green-deep: #484b2f;
+  --cor-secundaria-suave: #e6e7dc;
+  --green-soft: #e6e7dc;
+
+  --ochre: #bd7627;                  /* Ocre dourado para frases em itálico em títulos e símbolo solar ✳ */
+  --sun: #bd7627;
+  --ochre-soft: #f7ead7;
+  --sun-soft: #f7ead7;
+
+  --cor-texto: #542817;
+  --cor-texto-suave: #6e6252;        /* Marrom-taupe médio-escuro de alto contraste e leitura confortável */
+  --muted: #6e6252;
+  --mc-text-secondary: #6e6252;
+
+  --cor-borda: #d2c2a9;              /* Bordas de cards com border-radius: 9px */
+  --line: #d2c2a9;
+  --input-border: #9fa39f;           /* Bordas nítidas de inputs e selects idênticas às fotos de 21/10 */
+
+  --coral: #a64f2e;                  /* Terracota para alertas e erros */
+  --cor-perigo: #a64f2e;
+  --cor-perigo-suave: #f9e4dc;
+  --coral-soft: #f9e4dc;
+
+  --cor-alerta: #bd7627;
+  --cor-alerta-suave: #f7ead7;
+  --cor-info: #485e63;
+  --cor-info-suave: #e3ecee;
+  --cor-foco: #5d603d;
+  --tab-track: #eeefeb;              /* Fundo cinza-areia claro da barra de abas segmentadas */
+
+  /* Mapeamento Bootstrap 5 */
+  --bs-primary: #542817;
+  --bs-primary-rgb: 84, 40, 23;
+  --bs-success: #5d603d;
+  --bs-success-rgb: 93, 96, 61;
+  --bs-body-bg: var(--cor-fundo);
+  --bs-body-color: var(--cor-texto);
+  --bs-border-color: var(--cor-borda);
+
+  /* Tipografia Editorial Sertaneja */
+  --serif: "Newsreader", Georgia, serif;
+  --sans: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --fonte-base: var(--sans);
+  --fonte-titulo: var(--serif);
+  --font-scale: 1;
+  --raio-borda: 9px;
+  --sombra-card: 0 2px 10px rgba(84, 40, 23, 0.06);
+}
+
+/* TEMA ESCURO — Conforto noturno e economia de bateria em campo */
+[data-theme="escuro"] {
+  color-scheme: dark;
+  --cor-fundo: #14120f;
+  --paper: #14120f;
+  --story-bg: #1c1814;
+  --panel-bg: #1a1713;
+  --cor-superficie: #231f1a;
+  --surface: #231f1a;
+  --white: #231f1a;
+  --cor-superficie-alt: #2b2620;
+  --cor-fundo-secundario: #1c1814;
+  --paper-strong: #2b2620;
+  --cor-primaria: #e3b283;
+  --ink: #f4ede2;
+  --cor-primaria-hover: #efc59c;
+  --cor-primaria-suave: #3a2a1d;
+  --cor-secundaria: #8e9462;
+  --green: #8e9462;
+  --cor-secundaria-hover: #a5ab78;
+  --green-deep: #72774c;
+  --cor-secundaria-suave: #2b2e1e;
+  --green-soft: #2b2e1e;
+  --ochre: #e09846;
+  --sun: #e09846;
+  --cor-texto: #f4ede2;
+  --cor-texto-suave: #c4b7a3;
+  --muted: #c4b7a3;
+  --cor-borda: #3f362c;
+  --line: #3f362c;
+  --input-border: #5a5248;
+  --coral: #e57a54;
+  --cor-alerta: #e09846;
+  --cor-alerta-suave: #3a2b14;
+  --cor-perigo: #e57a54;
+  --cor-perigo-suave: #3d1f19;
+  --cor-info: #79b8c7;
+  --cor-info-suave: #18353d;
+  --cor-foco: #a5ab78;
+  --tab-track: #2b2620;
+  --sombra-card: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+/* TEMA DALTÔNICO — Paleta científica Okabe-Ito (segura para Deuteranopia/Protanopia/Tritanopia) */
+[data-theme="daltonico"] {
+  color-scheme: light;
+  --cor-fundo: #F7F9FB;
+  --paper: #F7F9FB;
+  --story-bg: #EBF0F5;
+  --panel-bg: #F3F6FA;
+  --cor-superficie: #FFFFFF;
+  --surface: #FFFFFF;
+  --white: #FFFFFF;
+  --cor-superficie-alt: #EBF0F5;
+  --cor-fundo-secundario: #EBF0F5;
+  --paper-strong: #EBF0F5;
+  --cor-primaria: #D55E00;           /* Vermilion Okabe-Ito */
+  --ink: #11161C;
+  --cor-primaria-hover: #AA4B00;
+  --cor-primaria-suave: #FFEBD9;
+  --cor-secundaria: #0072B2;         /* Blue Okabe-Ito */
+  --green: #0072B2;
+  --cor-secundaria-hover: #005687;
+  --green-deep: #005687;
+  --cor-secundaria-suave: #DDEFF9;
+  --green-soft: #DDEFF9;
+  --ochre: #E69F00;
+  --sun: #E69F00;
+  --cor-texto: #11161C;
+  --cor-texto-suave: #3A4654;
+  --muted: #3A4654;
+  --cor-borda: #BCC6D4;
+  --line: #BCC6D4;
+  --input-border: #7A889B;
+  --coral: #CC79A7;
+  --cor-alerta: #E69F00;             /* Orange Okabe-Ito */
+  --cor-alerta-suave: #FFF3D6;
+  --cor-perigo: #CC79A7;             /* Reddish Purple Okabe-Ito */
+  --cor-perigo-suave: #F9E5F0;
+  --cor-info: #56B4E9;               /* Sky Blue Okabe-Ito */
+  --cor-info-suave: #E3F4FD;
+  --cor-foco: #0072B2;
+  --tab-track: #E4EAF1;
+}
+
+/* TEMA BAIXA VISÃO / ALTO CONTRASTE — Bordas reforçadas e contraste máximo */
+[data-theme="baixa-visao"] {
+  color-scheme: light;
+  --cor-fundo: #FFFFFF;
+  --paper: #FFFFFF;
+  --story-bg: #F5F2EB;
+  --panel-bg: #FFFFFF;
+  --cor-superficie: #FFFFFF;
+  --surface: #FFFFFF;
+  --white: #FFFFFF;
+  --cor-superficie-alt: #F0F2EB;
+  --cor-fundo-secundario: #F0F2EB;
+  --paper-strong: #F0F2EB;
+  --cor-primaria: #3A190B;
+  --ink: #000000;
+  --cor-primaria-hover: #210D05;
+  --cor-primaria-suave: #F5E0C8;
+  --cor-secundaria: #2F3318;
+  --green: #2F3318;
+  --cor-secundaria-hover: #1B1E0C;
+  --green-deep: #1B1E0C;
+  --cor-secundaria-suave: #E2E6CE;
+  --green-soft: #E2E6CE;
+  --ochre: #7A4400;
+  --sun: #7A4400;
+  --cor-texto: #000000;
+  --cor-texto-suave: #141A16;
+  --muted: #141A16;
+  --cor-borda: #000000;
+  --line: #000000;
+  --input-border: #000000;
+  --coral: #851700;
+  --cor-alerta: #7A4400;
+  --cor-alerta-suave: #FFE6B8;
+  --cor-perigo: #851700;
+  --cor-perigo-suave: #FFD7CF;
+  --cor-info: #004459;
+  --cor-info-suave: #CDEAF0;
+  --cor-foco: #000000;
+  --tab-track: #E6E6E6;
+}
+
+/* --------------------------------------------------------------------------
+   2. BASE MOBILE FIRST ESTRITA (< 600px) E PREVENÇÃO DE OVERFLOW EM 320px
+   -------------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: calc(16px * var(--font-scale, 1));
+  scroll-behavior: smooth;
+  max-width: 100%;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Remoção Definitiva da Mensagem Acima do Cabeçalho ("Ver conteúdo principal" / "Pular para o conteúdo") */
+.skip-link,
+a.skip-link,
+a[href="#main-content"],
+a[href="#conteudo-principal"],
+a[href="#conteudo"],
+a[href="#main"] {
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  pointer-events: none !important;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  font-family: var(--sans);
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--cor-texto);
+  background-color: var(--cor-fundo);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+[data-theme="baixa-visao"] body {
+  line-height: 1.75;
+  letter-spacing: 0.015em;
+  font-weight: 600;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+body,
+p,
+span,
+li,
+label,
+input,
+select,
+textarea,
+button,
+.btn {
+  font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+/* Tipografia Editorial Sertaneja: Newsreader Regular 400 em h1 e h2 (sem negrito exagerado) */
+h1,
+h2,
+.h1,
+.h2,
+.auth-story h1,
+.auth-panel h2,
+.serif-heading,
+.serif-title {
+  font-family: "Newsreader", Georgia, serif !important;
+  font-weight: 400 !important;
+  color: var(--cor-primaria, #542817);
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+  margin-top: 0;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+
+h3,
+h4,
+h5,
+h6,
+.h3,
+.h4,
+.h5,
+.h6,
+.card-title {
+  font-family: "Newsreader", Georgia, serif !important;
+  color: var(--cor-primaria, #542817);
+  font-weight: 500 !important;
+  line-height: 1.2;
+  margin-top: 0;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+
+h1 em,
+h2 em,
+.h1 em,
+.h2 em,
+.card-title em,
+.text-ochre-italic {
+  font-family: "Newsreader", Georgia, serif !important;
+  font-style: italic !important;
+  font-weight: 400 !important;
+  color: var(--ochre, #bd7627) !important;
+}
+
+h1, .h1 {
+  font-size: 1.7rem;
+}
+
+h2, .h2 {
+  font-size: 1.38rem;
+}
+
+h3, .h3 {
+  font-size: 1.18rem;
+}
+
+label,
+.form-label {
+  font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cor-primaria, #542817);
+  margin-bottom: 0.35rem;
+}
+
+.eyebrow,
+.hero-kicker,
+.section-kicker {
+  font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--cor-secundaria, #4e5944) !important;
+  margin: 0 0 0.5rem;
+  display: block;
+}
+
+/* Garantia de Contraste no Tema Claro (Fim do texto branco invisível sobre fundo areia) */
+body:not([data-theme="escuro"]):not([data-theme="baixa-visao"]) .hero,
+body:not([data-theme="escuro"]):not([data-theme="baixa-visao"]) .hero-card,
+body:not([data-theme="escuro"]):not([data-theme="baixa-visao"]) .hero-commercial,
+body:not([data-theme="escuro"]):not([data-theme="baixa-visao"]) .auth-story,
+body:not([data-theme="escuro"]):not([data-theme="baixa-visao"]) .card {
+  color: #542817;
+}
+
+body:not([data-theme="escuro"]):not([data-theme="baixa-visao"]) .hero h1,
+body:not([data-theme="escuro"]):not([data-theme="baixa-visao"]) .hero h2,
+body:not([data-theme="escuro"]):not([data-theme="baixa-visao"]) .hero-card h1,
+body:not([data-theme="escuro"]):not([data-theme="baixa-visao"]) .hero-card h2,
+body:not([data-theme="escuro"]):not([data-theme="baixa-visao"]) .hero-commercial h1,
+body:not([data-theme="escuro"]):not([data-theme="baixa-visao"]) .auth-story h1,
+body:not([data-theme="escuro"]):not([data-theme="baixa-visao"]) .card h1,
+body:not([data-theme="escuro"]):not([data-theme="baixa-visao"]) .card h2,
+body:not([data-theme="escuro"]):not([data-theme="baixa-visao"]) .card h3 {
+  color: #542817 !important;
+}
+
+body:not([data-theme="escuro"]):not([data-theme="baixa-visao"]) .hero p,
+body:not([data-theme="escuro"]):not([data-theme="baixa-visao"]) .hero-card p,
+body:not([data-theme="escuro"]):not([data-theme="baixa-visao"]) .hero-commercial p,
+body:not([data-theme="escuro"]):not([data-theme="baixa-visao"]) .auth-story p,
+body:not([data-theme="escuro"]):not([data-theme="baixa-visao"]) .card p,
+body:not([data-theme="escuro"]):not([data-theme="baixa-visao"]) .text-muted,
+body:not([data-theme="escuro"]):not([data-theme="baixa-visao"]) .text-body-secondary {
+  color: #6e6252 !important;
+}
+
+/* Alinhamento tabular obrigatório para métricas de chuva (mm), níveis (%) e tabelas */
+.tabular-nums,
+.rain-value,
+.metric-number,
+.stat-value,
+table td,
+table th,
+input[type="number"],
+[data-metric] {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Contêiner e Cards Base Mobile First (< 768px) */
+.container,
+.container-fluid {
+  width: 100%;
+  padding-right: 1rem;
+  padding-left: 1rem;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.card {
+  background-color: var(--cor-superficie);
+  color: var(--cor-texto);
+  border: 1px solid var(--cor-borda);
+  border-radius: 9px;
+  box-shadow: var(--sombra-card);
+  word-wrap: break-word;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+[data-theme="baixa-visao"] .card,
+[data-theme="baixa-visao"] input,
+[data-theme="baixa-visao"] select,
+[data-theme="baixa-visao"] textarea,
+[data-theme="baixa-visao"] .btn {
+  border-width: 2px !important;
+}
+
+.card-body {
+  padding: 1.15rem;
+}
+
+/* --------------------------------------------------------------------------
+   3. LAYOUT SPLIT-SCREEN EDITORIAL (.auth-shell, .auth-story, .auth-panel)
+   -------------------------------------------------------------------------- */
+.auth-shell {
+  display: grid;
+  grid-template-columns: 1fr;
+  min-height: calc(100vh - 64px);
+  width: 100%;
+  background: var(--cor-fundo);
+}
+
+.auth-story {
+  background: var(--story-bg);
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 2rem;
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.brand-full-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.auth-logo {
+  max-width: 185px;
+  height: auto;
+  object-fit: contain;
+}
+
+.story-copy {
+  max-width: 440px;
+  margin: auto 0;
+}
+
+.story-copy h1 {
+  font-family: "Newsreader", Georgia, serif !important;
+  font-size: clamp(2rem, 3.6vw, 2.85rem);
+  font-weight: 400 !important;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: var(--cor-primaria, #542817);
+  margin: 0.4rem 0 1rem;
+}
+
+.story-copy p {
+  color: var(--cor-texto-suave, #6e6252);
+  font-size: 0.96rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.story-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--cor-texto-suave);
+  padding-top: 1rem;
+  border-top: 1px solid var(--cor-borda);
+}
+
+.sun-symbol {
+  color: var(--ochre);
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.auth-panel {
+  background: var(--panel-bg);
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.auth-form-wrap {
+  width: 100%;
+  max-width: 390px;
+  margin: auto 0;
+}
+
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  background: var(--tab-track);
+  border: 1px solid var(--cor-borda);
+  border-radius: 9px;
+  padding: 4px;
+  margin-bottom: 1.5rem;
+}
+
+button,
+.auth-tab,
+.escala-btn {
+  background-color: var(--cor-superficie, #fffaf0);
+  color: var(--cor-primaria, #542817);
+  border: 1px solid var(--cor-borda, #d2c2a9);
+  border-radius: 7px;
+  padding: 0.5rem 1rem;
+  font-family: var(--sans);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+button:hover:not(:disabled),
+.auth-tab:hover:not(.active),
+.escala-btn:hover:not(.active) {
+  border-color: var(--cor-secundaria, #5d603d);
+  background-color: var(--cor-secundaria-suave, #e6e7dc);
+  color: var(--cor-primaria, #542817);
+}
+
+.auth-tab {
+  min-height: 40px;
+  font-size: 0.88rem;
+}
+
+.auth-tab.active,
+.escala-btn.active {
+  background-color: var(--cor-secundaria, #5d603d) !important;
+  color: #fffaf0 !important;
+  border-color: var(--cor-secundaria, #5d603d) !important;
+  box-shadow: 0 2px 6px rgba(84, 40, 23, 0.14);
+  font-weight: 700;
+}
+
+.auth-intro {
+  font-size: 0.9rem;
+  color: var(--cor-texto-suave);
+  margin-bottom: 1.25rem;
+}
+
+.auth-copyright {
+  width: 100%;
+  max-width: 390px;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--cor-texto-suave);
+  padding-top: 1.25rem;
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--cor-borda);
+}
+
+/* Banner de Alerta Meteorológico do Radar / INMET */
+.rain-alert {
+  background-color: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-left: 4px solid var(--ochre);
+  border-radius: 9px;
+  padding: 1rem 1.25rem;
+}
+
+/* --------------------------------------------------------------------------
+   4. BARRA DE CONTROLES DE TEMA POR ÍCONES (.theme-icon-toolbar) E ABAS (.app-feature-tabs)
+   -------------------------------------------------------------------------- */
+.theme-icon-toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: nowrap;
+}
+
+.theme-icon-toolbar button,
+.theme-icon-toolbar .btn,
+.theme-icon-btn {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0;
+  border-radius: 8px;
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-superficie);
+  color: var(--cor-primaria);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
+}
+
+.theme-icon-toolbar button:hover,
+.theme-icon-toolbar .btn:hover,
+.theme-icon-btn:hover {
+  border-color: var(--cor-secundaria);
+  background: var(--cor-secundaria-suave);
+  color: var(--cor-primaria);
+}
+
+.theme-icon-toolbar button.active,
+.theme-icon-toolbar .btn.active,
+.theme-icon-btn.active,
+.theme-icon-toolbar button[aria-pressed="true"] {
+  background: var(--cor-secundaria) !important;
+  border-color: var(--cor-secundaria) !important;
+  color: #fffaf0 !important;
+}
+
+.theme-icon-toolbar svg,
+.theme-icon-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  flex-shrink: 0;
+}
+
+/* Abas de Conteúdo Limpas (.app-feature-tabs) */
+.app-feature-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  background: var(--tab-track, #eeefeb);
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid var(--cor-borda);
+}
+
+.app-feature-tabs .nav-link,
+.app-feature-tabs .app-tab-btn,
+.app-feature-tabs button {
+  min-height: 40px;
+  padding: 0.45rem 1rem;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--cor-texto-suave);
+  font-family: var(--sans);
+  font-size: 0.88rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.app-feature-tabs .nav-link:hover,
+.app-feature-tabs .app-tab-btn:hover,
+.app-feature-tabs button:hover {
+  color: var(--cor-primaria);
+}
+
+.app-feature-tabs .nav-link.active,
+.app-feature-tabs .app-tab-btn.active,
+.app-feature-tabs button.active {
+  background: var(--cor-superficie) !important;
+  color: var(--cor-primaria) !important;
+  font-weight: 700;
+  box-shadow: 0 1px 4px rgba(84, 40, 23, 0.1);
+}
+
+/* Classes Utilitárias de Layout Comercial / Dashboard */
+.desktop-dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+.hero-commercial-desktop {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+/* --------------------------------------------------------------------------
+   5. ERGONOMIA DE TOQUE, BOTÕES SEM OVERFLOW, SELECTS E LISTAS CORRIGIDAS
+   -------------------------------------------------------------------------- */
+.btn:not(.theme-icon-btn):not(.btn-close-drawer):not(#sidebar-close):not(.sidebar-close),
+button:not(.theme-icon-btn):not(.auth-tab):not(.btn-close-drawer):not(#sidebar-close):not(.sidebar-close),
+.button,
+.nav-link,
+.navbar-toggler,
+.form-control,
+.form-select,
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+a.btn {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.btn,
+button,
+a.btn {
+  max-width: 100%;
+  white-space: normal;
+  word-break: break-word;
+  text-align: center;
+  height: auto;
+  line-height: 1.35;
+}
+
+.btn:not(.theme-icon-btn),
+button.button,
+a.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.125rem;
+  font-family: var(--sans);
+  font-weight: 600;
+  border-radius: 7px;
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
+}
+
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  font-weight: 600;
+  color: var(--cor-texto);
+}
+
+.navbar-toggler {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border: 1px solid var(--cor-borda);
+  color: var(--cor-texto);
+}
+
+.form-control,
+.form-select,
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  background-color: var(--cor-superficie);
+  color: var(--cor-texto);
+  border: 1px solid var(--input-border);
+  border-radius: 7px;
+  padding: 0.55rem 0.8rem;
+  font-size: 0.95rem;
+}
+
+select,
+.form-select {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  padding-right: 2.25rem;
+}
+
+/* Correção de Listas com Bolinhas (•) e Prevenção de Texto Cortado (Foto 2) */
+ul,
+ol,
+.manejo-passos-list,
+.card ul,
+.card ol {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+#painel-passos-manejo,
+.manejo-passos-list,
+ul.border,
+ul[style*="border"] {
+  display: block;
+  padding: 1.15rem 1.25rem 1.15rem 2.15rem !important;
+  margin: 0;
+  list-style-type: disc;
+  list-style-position: outside;
+}
+
+#painel-passos-manejo li,
+.manejo-passos-list li,
+ul.border li,
+ul[style*="border"] li {
+  margin-bottom: 0.65rem;
+  line-height: 1.55;
+  word-break: break-word;
+}
+
+#painel-passos-manejo li:last-child,
+.manejo-passos-list li:last-child,
+ul.border li:last-child,
+ul[style*="border"] li:last-child {
+  margin-bottom: 0;
+}
+
+.form-control::placeholder,
+input::placeholder,
+textarea::placeholder {
+  color: var(--cor-texto-suave);
+  opacity: 0.8;
+}
+
+.form-control:focus,
+.form-select:focus,
+input:focus,
+select:focus,
+textarea:focus,
+.btn:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--cor-foco);
+  outline-offset: 2px;
+  border-color: var(--cor-secundaria);
+  background-color: var(--cor-superficie);
+  box-shadow: none;
+}
+
+/* --------------------------------------------------------------------------
+   6. SOBRESCRITAS UTILITÁRIAS COMPATÍVEIS COM BOOTSTRAP 5 (EDITORIAL SERTANEJO)
+   -------------------------------------------------------------------------- */
+
+/* Borda e Texto Primário: Marrom-Terra Profundo (#542817) */
+.border-primary {
+  border-color: var(--cor-primaria, #542817) !important;
+}
+
+.text-primary {
+  color: var(--cor-primaria) !important;
+}
+
+.bg-primary {
+  background-color: var(--cor-primaria) !important;
+  color: #fffaf0 !important;
+}
+
+/* Botões Principais (.btn-primary, .btn-success, .button-primary, .btn-cta-hero): Verde-Oliva Caatinga (#5d603d) — Fim do botão amarelo ou azul */
+.btn-primary,
+.btn-success,
+.button-primary,
+.btn-cta-hero {
+  background-color: #5d603d !important;
+  border-color: #5d603d !important;
+  color: #fffaf0 !important;
+  font-family: "DM Sans", sans-serif !important;
+  font-weight: 600 !important;
+  border-radius: 7px !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active,
+.btn-success:hover,
+.btn-success:focus,
+.btn-success:active,
+.button-primary:hover,
+.btn-cta-hero:hover,
+.btn-cta-hero:focus {
+  background-color: var(--cor-secundaria-hover, #484b2f) !important;
+  border-color: var(--cor-secundaria-hover, #484b2f) !important;
+  color: #fffaf0 !important;
+}
+
+.btn-outline-primary,
+.btn-outline-secondary,
+.button-secondary,
+.btn-speak {
+  background-color: #fffaf0 !important;
+  border: 1px solid #d2c2a9 !important;
+  color: #542817 !important;
+  font-family: "DM Sans", sans-serif !important;
+  font-weight: 600 !important;
+  border-radius: 7px !important;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus,
+.btn-outline-primary:active,
+.btn-outline-secondary:hover,
+.btn-outline-secondary:focus,
+.button-secondary:hover,
+.btn-speak:hover {
+  background-color: var(--cor-secundaria-suave, #e6e7dc) !important;
+  border-color: var(--cor-secundaria, #5d603d) !important;
+  color: var(--cor-primaria, #542817) !important;
+}
+
+/* Alinhamento consistente para grupos de formulário com botões ao lado e badges responsivas */
+.input-group,
+.form-inline-group,
+.field-with-btn {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.badge,
+.pill,
+.status-label {
+  white-space: normal;
+  text-align: center;
+  line-height: 1.3;
+  max-width: 100%;
+}
+
+/* Sucesso / Verde-Oliva (#5d603d) */
+.border-success {
+  border-color: var(--cor-secundaria) !important;
+}
+
+.text-success {
+  color: var(--cor-secundaria) !important;
+}
+
+.bg-success,
+.text-bg-success {
+  background-color: var(--cor-secundaria) !important;
+  color: #fffaf0 !important;
+}
+
+.progress-bar {
+  background-color: var(--cor-secundaria) !important;
+}
+
+.btn-outline-success {
+  color: var(--cor-secundaria) !important;
+  border-color: var(--cor-secundaria) !important;
+  background-color: transparent !important;
+}
+
+.btn-outline-success:hover,
+.btn-outline-success:focus,
+.btn-outline-success:active {
+  background-color: var(--cor-secundaria) !important;
+  border-color: var(--cor-secundaria) !important;
+  color: #fffaf0 !important;
+}
+
+/* Alertas e Perigo em Terracota (#a64f2e) e Ocre (#bd7627) */
+.text-danger {
+  color: var(--coral) !important;
+}
+
+.bg-danger,
+.text-bg-danger,
+.btn-danger {
+  background-color: var(--coral) !important;
+  border-color: var(--coral) !important;
+  color: #fffaf0 !important;
+}
+
+.text-bg-warning,
+.bg-warning {
+  background-color: var(--ochre) !important;
+  color: #fffaf0 !important;
+}
+
+/* Navbar e Tabelas adaptáveis ao Design Editorial Sertanejo */
+#menu.navbar,
+.navbar.bg-light {
+  background-color: var(--cor-fundo) !important;
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+#menu .navbar-brand,
+#menu .nav-link {
+  color: var(--cor-primaria) !important;
+}
+
+#menu .nav-link:hover,
+#menu .nav-link.active {
+  color: var(--cor-secundaria) !important;
+}
+
+.table {
+  color: var(--cor-texto);
+  border-color: var(--cor-borda);
+  --bs-table-bg: var(--cor-superficie);
+  --bs-table-striped-bg: var(--story-bg);
+}
+
+.table-dark,
+thead.table-dark th {
+  background-color: var(--cor-primaria) !important;
+  border-color: var(--cor-primaria-hover) !important;
+  color: #fffaf0 !important;
+}
+
+.text-muted {
+  color: var(--cor-texto-suave) !important;
+}
+
+/* --------------------------------------------------------------------------
+   7. RODAPÉ ALINHADO E LIMPO (CORREÇÃO IMAGEM 4)
+   -------------------------------------------------------------------------- */
+.footer,
+footer {
+  border-top: 1px solid var(--cor-borda, #d2c2a9);
+  background: var(--cor-fundo-secundario, #f4eddb);
+  padding: 1.5rem 2rem;
+  margin-top: 3rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  color: var(--cor-texto-suave, #766750);
+  font-size: 0.88rem;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+.footer-links a {
+  color: var(--cor-primaria, #542817);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.footer-links a:hover {
+  color: var(--cor-secundaria, #5d603d);
+  text-decoration: underline;
+}
+
+/* --------------------------------------------------------------------------
+   8. GAVETA LATERAL (SIDEBAR) 100% RETRÁTIL EM MOBILE, TABLET E DESKTOP
+   -------------------------------------------------------------------------- */
+.app-layout-shell {
+  display: block !important;
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-color: var(--cor-fundo, #f5efdf);
+}
+
+/* Barra Superior Sutil (.app-topbar) visível em Mobile, Tablet e Desktop */
+.app-topbar,
+.app-mobile-topbar {
+  height: 64px;
+  background: var(--cor-fundo-secundario, #f4eddb);
+  border-bottom: 1px solid var(--cor-borda, #d2c2a9);
+  padding: 0 1.25rem;
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+}
+
+/* Botão Sutil de Abrir a Gaveta Lateral */
+.btn-menu-drawer {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 42px;
+  min-height: 42px;
+  padding: 0 0.9rem;
+  border-radius: 8px;
+  background: var(--cor-superficie, #fffaf0);
+  border: 1px solid var(--cor-borda, #d2c2a9);
+  color: var(--cor-primaria, #542817);
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(84, 40, 23, 0.06);
+}
+
+.btn-menu-drawer:hover {
+  background: var(--cor-secundaria-suave, #e6e7dc);
+  border-color: var(--cor-secundaria, #5d603d);
+}
+
+/* Gaveta Flutuante Oculta por Padrão em TODAS as Resoluções */
+.app-sidebar-nav,
+#app-sidebar,
+.app-sidebar {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  height: 100vh;
+  width: min(88vw, 310px);
+  max-width: 310px;
+  background: var(--cor-fundo-secundario, #f4eddb);
+  border-right: 1px solid var(--cor-borda, #d2c2a9);
+  z-index: 1055;
+  transform: translateX(-105%);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  overflow-x: hidden !important;
+  padding: 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.25rem;
+  box-sizing: border-box;
+}
+
+.app-sidebar-nav *,
+#app-sidebar *,
+.app-sidebar * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.app-sidebar-nav.open,
+#app-sidebar.open,
+.app-sidebar.open,
+.app-sidebar-nav.is-open,
+#app-sidebar.is-open,
+.app-sidebar.is-open {
+  transform: translateX(0) !important;
+  box-shadow: 8px 0 30px rgba(84, 40, 23, 0.18);
+}
+
+/* Botão Compacto de Fechar a Gaveta (#sidebar-close / .btn-close-drawer) */
+#sidebar-close,
+.btn-close-drawer,
+.sidebar-close {
+  width: 36px;
+  height: 36px;
+  min-width: 36px !important;
+  min-height: 36px !important;
+  padding: 0;
+  flex-shrink: 0;
+  border-radius: 7px;
+  border: 1px solid var(--cor-borda, #d2c2a9);
+  background: var(--cor-superficie, #fffaf0);
+  color: var(--cor-primaria, #542817);
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Cabeçalho da Sidebar e Logo Corrigida */
+.sidebar-brand-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--cor-borda, #d2c2a9);
+  margin-bottom: 1rem;
+}
+
+.sidebar-brand-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: var(--cor-primaria, #542817);
+  min-width: 0;
+}
+
+.sidebar-brand-logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  object-fit: contain;
+  background: #fffaf0;
+  border: 1px solid #d2c2a9;
+  padding: 2px;
+  flex-shrink: 0;
+}
+
+/* Seletor de Roça Ativa na Sidebar */
+.sidebar-roca-switcher {
+  background: var(--cor-superficie, #fffaf0);
+  border: 1px solid var(--cor-borda, #d2c2a9);
+  border-radius: 8px;
+  padding: 0.85rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 2px 6px rgba(84, 40, 23, 0.04);
+}
+
+.sidebar-roca-switcher label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cor-secundaria, #5d603d);
+  margin-bottom: 0.4rem;
+}
+
+/* Links Verticais da Sidebar */
+.sidebar-nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.25rem 0;
+}
+
+.sidebar-link-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 7px;
+  color: var(--cor-texto, #2a1f18);
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid transparent;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.sidebar-link-item:hover {
+  background: var(--cor-superficie, #fffaf0);
+  color: var(--cor-primaria, #542817);
+  border-color: var(--cor-borda, #d2c2a9);
+  text-decoration: none;
+}
+
+.sidebar-link-item.active {
+  background: var(--cor-secundaria, #5d603d) !important;
+  color: #fffaf0 !important;
+  border-color: var(--cor-secundaria, #5d603d) !important;
+}
+
+/* Menu Retrátil de Configurações e Acessibilidade (Correção Fotos 4 e 8) */
+.sidebar-settings-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 7px;
+  background: var(--cor-superficie, #fffaf0);
+  color: var(--cor-primaria, #542817);
+  border: 1px solid var(--cor-borda, #d2c2a9);
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sidebar-settings-collapse {
+  margin-top: 0.5rem;
+  padding: 0.85rem;
+  border-radius: 8px;
+  background: var(--cor-superficie, #fffaf0);
+  border: 1px solid var(--cor-borda, #d2c2a9);
+  display: none;
+}
+
+.sidebar-settings-collapse.is-open,
+.sidebar-settings-collapse.open,
+.sidebar-settings-collapse.show {
+  display: block;
+}
+
+/* Grid de 3 colunas iguais para os 3 botões de Tema da Tela na Gaveta Lateral (Foto 4) */
+.sidebar-theme-grid,
+.sidebar-settings-collapse .theme-icon-toolbar {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 0.5rem !important;
+  width: 100% !important;
+}
+
+.sidebar-theme-grid .theme-icon-btn,
+.sidebar-settings-collapse .theme-icon-toolbar .theme-icon-btn,
+.sidebar-settings-collapse .theme-icon-toolbar button {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  padding: 0 !important;
+  border-radius: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: var(--cor-superficie, #fffaf0);
+  border: 1px solid var(--cor-borda, #d2c2a9);
+  color: var(--cor-primaria, #542817);
+}
+
+/* Botão "🔊 Ouvir resumo da página" retangular e harmônico na Gaveta Lateral (Fim do formato oval da Foto 4) */
+.btn-sidebar-tts,
+.sidebar-settings-collapse .btn-sound-icon {
+  border-radius: 8px !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 44px !important;
+  padding: 0.5rem 0.85rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  background: #fffaf0 !important;
+  border: 1px solid #d2c2a9 !important;
+  color: #542817 !important;
+  font-weight: 600 !important;
+}
+
+.btn-sidebar-tts:hover,
+.sidebar-settings-collapse .btn-sound-icon:hover {
+  background: var(--cor-secundaria-suave, #e6e7dc) !important;
+  border-color: var(--cor-secundaria, #5d603d) !important;
+  color: var(--cor-primaria, #542817) !important;
+  transform: none !important;
+}
+
+/* Seletor de Velocidade da Voz 100% largura sem truncar texto (Foto 4) */
+#sidebar-tts-speed,
+.sidebar-tts-speed-select {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: 40px !important;
+  border-radius: 8px !important;
+  padding: 0.4rem 2rem 0.4rem 0.7rem !important;
+  font-size: 0.86rem !important;
+  background-color: var(--cor-superficie, #fffaf0) !important;
+  border: 1px solid var(--cor-borda, #d2c2a9) !important;
+  color: var(--cor-primaria, #542817) !important;
+}
+
+/* Botão "🚪 Sair da conta" harmônico com a paleta do app (Fim da borda azul da Foto 8) */
+.btn-sidebar-logout,
+#btn-logout.btn-sidebar-logout {
+  background: #fffaf0 !important;
+  color: #a64f2e !important;
+  border: 1px solid #d2c2a9 !important;
+  border-radius: 8px !important;
+  width: 100% !important;
+  min-height: 44px !important;
+  font-weight: 700 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+}
+
+.btn-sidebar-logout:hover,
+#btn-logout.btn-sidebar-logout:hover {
+  background: var(--cor-perigo-suave, #f9e4dc) !important;
+  border-color: #a64f2e !important;
+  color: #a64f2e !important;
+}
+
+/* Backdrop Escuro Translúcido para Gaveta em Mobile, Tablet e Desktop */
+.app-sidebar-backdrop,
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(42, 31, 24, 0.52);
+  backdrop-filter: blur(2px);
+  z-index: 1050;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease;
+}
+
+.app-sidebar-backdrop.open,
+.app-sidebar-backdrop.is-open,
+.sidebar-backdrop.open,
+.sidebar-backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* --------------------------------------------------------------------------
+   9. DESIGN ADAPTATIVO PARA 3 PLATAFORMAS (100% DA LARGURA LIVRE)
+   -------------------------------------------------------------------------- */
+
+/* Versão 1 — Mobile (< 768px) */
+@media (max-width: 767.98px) {
+  .app-layout-shell {
+    display: block !important;
+    width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .app-main-workspace,
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    width: 100%;
+  }
+
+  .app-main-workspace {
+    padding-top: 1.15rem;
+    padding-bottom: 1.15rem;
+  }
+
+  h1, .h1 {
+    font-size: 1.6rem;
+  }
+
+  .card-body {
+    padding: 1.15rem;
+  }
+
+  .desktop-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mobile-full-btn,
+  .card-body > .btn-primary,
+  .card-body > .btn-success {
+    width: 100%;
+  }
+
+  .app-feature-tabs {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+
+  .footer,
+  footer {
+    padding: 1.25rem 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* Transição Intermediária (>= 601px) */
+@media (min-width: 601px) {
+  .auth-story,
+  .auth-panel {
+    padding: 2.5rem 2.25rem;
+  }
+}
+
+/* Versão 2 — Tablet (768px a 1024px): Gaveta Oculta + Pares em 2 Colunas */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .app-layout-shell {
+    display: block !important;
+    width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .app-main-workspace,
+  .container {
+    max-width: 960px;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .app-main-workspace {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+    width: 100%;
+  }
+
+  h1, .h1 {
+    font-size: 2rem;
+  }
+
+  h2, .h2 {
+    font-size: 1.5rem;
+  }
+
+  .card-body {
+    padding: 1.5rem;
+  }
+
+  .desktop-dashboard-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+
+  .hero-commercial-desktop {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  .city-selector-bar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+}
+
+/* Versão 3 — Desktop (>= 1025px): Gaveta Oculta + Workspace Amplo Centralizado */
+@media (min-width: 1025px) {
+  .app-layout-shell {
+    display: block !important;
+    width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .app-main-workspace,
+  .container {
+    max-width: 1220px !important;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .app-main-workspace {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    width: 100%;
+  }
+
+  h1, .h1 {
+    font-size: 2.45rem;
+    letter-spacing: -0.015em;
+  }
+
+  h2, .h2 {
+    font-size: 1.65rem;
+  }
+
+  h3, .h3 {
+    font-size: 1.28rem;
+  }
+
+  .card-body {
+    padding: 1.75rem;
+  }
+
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(84, 40, 23, 0.08);
+  }
+
+  .desktop-dashboard-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+
+  .desktop-dashboard-grid.cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hero-commercial-desktop {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    gap: 2rem;
+    align-items: stretch;
+  }
+
+  .auth-shell {
+    grid-template-columns: minmax(460px, 1.05fr) minmax(440px, 0.95fr);
+    min-height: 100vh;
+  }
+
+  .auth-story {
+    border-bottom: none;
+    border-right: 1px solid var(--cor-borda);
+    padding: 3.5rem 4rem;
+  }
+
+  .auth-panel {
+    padding: 3.5rem 3.5rem;
+  }
+}
+
+/* Respeito à preferência de movimento reduzido */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

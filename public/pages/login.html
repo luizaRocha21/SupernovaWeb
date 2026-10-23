@@ -1,0 +1,855 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="claro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#542817">
+  <title>Entrar ou Cadastrar Propriedade — Manejo Caatingueiro</title>
+  <meta name="description" content="Autenticação e cadastro rural para agricultores familiares, sindicatos e gestores públicos no semiárido da Bahia">
+  <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5.3 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+
+  <!-- Estilos Globais e Tokens Editorial Sertanejo -->
+  <link rel="stylesheet" href="/assets/css/global.css">
+  <link rel="stylesheet" href="/assets/css/global/elements.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous" defer></script>
+  <script src="/assets/js/acessibilidade-voz.js" defer></script>
+  <script src="/assets/js/clima-dinamico.js" defer></script>
+  <script src="/assets/js/menu.js" defer></script>
+</head>
+<body>
+  <!-- CABEÇALHO SEMÂNTICO E NAVBAR BOOTSTRAP 5 (<nav id="menu">) -->
+  <header>
+    <nav id="menu" class="navbar navbar-expand-lg navbar-light bg-light shadow-sm" aria-label="Navegação Principal">
+      <div class="container">
+        <a class="navbar-brand d-inline-flex align-items-center gap-2 fw-bold" href="/index.html">
+          <img src="/assets/images/logo.png" alt="Manejo Caatingueiro" width="32" height="32" style="object-fit: contain;">
+          <span>Manejo Caatingueiro</span>
+        </a>
+
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarConteudo"
+          aria-controls="navbarConteudo"
+          aria-expanded="false"
+          aria-label="Alternar menu de navegação"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarConteudo">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item"><a class="nav-link" href="/index.html">Início</a></li>
+            <li class="nav-item"><a class="nav-link" href="/pages/plantio.html">Plantio &amp; Clima</a></li>
+            <li class="nav-item"><a class="nav-link" href="/pages/comunidade.html">Comunidade</a></li>
+          </ul>
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <button class="btn-sound-icon" id="btn-tts-icon" type="button" aria-label="Ouvir resumo em áudio desta página" title="Ouvir resumo da página">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+              </svg>
+            </button>
+            <a href="/pages/login.html" class="btn btn-success active" aria-current="page">Entrar &rarr;</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- LAYOUT SPLIT-SCREEN EDITORIAL SERTANEJO (.auth-shell) -->
+  <main class="auth-shell" aria-label="Autenticação e Cadastro Rural">
+    <!-- COLUNA ESQUERDA: PAINEL EDITORIAL (.auth-story, #f4eddb) -->
+    <section class="auth-story" aria-label="Apresentação Manejo Caatingueiro" style="background-color: #f4eddb;">
+      <div class="brand-full-logo">
+        <img class="auth-logo" src="/assets/images/logo.png" alt="Manejo Caatingueiro">
+      </div>
+
+      <div class="story-copy">
+        <p class="eyebrow" style="color: #4e5944 !important; font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase;">TERRA, TEMPO E CUIDADO</p>
+        <h1 style="font-family: 'Newsreader', Georgia, serif !important; font-weight: 400 !important; color: #542817; line-height: 1.08; letter-spacing: -0.02em;">O seu lugar.<br><em style="font-style: italic; font-weight: 400; color: #bd7627 !important;">O tempo de plantar.</em></h1>
+        <p style="font-family: 'DM Sans', sans-serif; color: #6e6252 !important; line-height: 1.6;">Acompanhe a chuva da sua localidade e planeje o próximo passo com informação clara.</p>
+      </div>
+
+      <div class="story-footer" style="color: #6e6252; border-top: 1px solid #d2c2a9;">
+        <span class="sun-symbol" aria-hidden="true" style="color: #bd7627;">&#10035;</span>
+        <span>Feito para quem cultiva no semiárido.</span>
+      </div>
+    </section>
+
+    <!-- COLUNA DIREITA: PAINEL DE FORMULÁRIOS (.auth-panel, #fbf6e9) -->
+    <section class="auth-panel" aria-label="Formulários de Acesso e Cadastro" style="background-color: #fbf6e9;">
+      <div class="auth-form-wrap">
+        <!-- BARRA DE ABAS SEGMENTADA (.auth-tabs, #eeefeb / #fffaf0) -->
+        <div class="auth-tabs" id="auth-mode-tabs" role="tablist" aria-label="Alternar entre entrar e criar cadastro" style="background-color: #eeefeb; border: 1px solid #d2c2a9;">
+          <button
+            type="button"
+            class="auth-tab active"
+            id="tab-btn-login"
+            data-auth-tab="login"
+            data-modo="login"
+            role="tab"
+            aria-selected="true"
+          >
+            Entrar
+          </button>
+          <button
+            type="button"
+            class="auth-tab"
+            id="tab-btn-cadastro"
+            data-auth-tab="cadastro"
+            data-modo="cadastro"
+            role="tab"
+            aria-selected="false"
+          >
+            Criar cadastro
+          </button>
+        </div>
+
+        <!-- 1. ABA ENTRAR (FORMULÁRIO DE LOGIN COM VALIDAÇÃO BOOTSTRAP 5 NATIVA) -->
+        <div id="pane-auth-login">
+          <p class="eyebrow" style="color: #4e5944 !important; font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase;">BEM-VINDO DE VOLTA</p>
+          <h2 class="mb-1" id="auth-page-heading" style="font-family: 'Newsreader', Georgia, serif !important; font-weight: 400 !important; color: #542817;">Entre na sua conta</h2>
+          <p class="muted auth-intro" style="font-family: 'DM Sans', sans-serif; color: #6e6252 !important;">Acesse o painel da sua comunidade.</p>
+
+          <form
+            id="form-login-dedicado"
+            class="needs-validation"
+            novalidate
+            action="admin.html"
+            method="GET"
+          >
+            <div class="mb-3">
+              <label for="login-email" class="form-label">Telefone ou E-mail</label>
+              <input
+                type="text"
+                class="form-control"
+                id="login-email"
+                name="email"
+                placeholder="DDD + número"
+                required
+                autocomplete="username"
+              >
+              <div class="invalid-feedback">
+                Por favor, informe seu telefone (DDD + número) ou endereço de e-mail cadastrado.
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="login-senha" class="form-label">Senha</label>
+              <input
+                type="password"
+                class="form-control"
+                id="login-senha"
+                name="senha"
+                placeholder="Sua senha"
+                minlength="3"
+                required
+                autocomplete="current-password"
+              >
+              <div class="invalid-feedback">
+                Informe sua senha de acesso.
+              </div>
+            </div>
+
+            <button
+              class="btn btn-success button-primary w-100 d-flex justify-content-between align-items-center mb-3"
+              type="submit"
+              id="btn-submit-login"
+            >
+              <span>Entrar</span>
+              <span aria-hidden="true">&rarr;</span>
+            </button>
+          </form>
+
+          <div class="auth-divider">ou acesse com</div>
+
+          <!-- Botão OAuth Real do Google -->
+          <button type="button" class="button-google mb-3" id="btn-google-oauth">
+            <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            </svg>
+            <span id="google-btn-label">Entrar com Google</span>
+          </button>
+        </div>
+
+        <!-- 2. ABA CRIAR CADASTRO (FORMULÁRIO DE CADASTRO RURAL COM MUNICÍPIOS DA BAHIA) -->
+        <div id="pane-auth-cadastro" hidden>
+          <p class="eyebrow" style="color: #4e5944 !important; font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase;">PRIMEIRO ACESSO RURAL</p>
+          <h2 class="mb-1" style="font-family: 'Newsreader', Georgia, serif !important; font-weight: 400 !important; color: #542817;">Crie seu cadastro</h2>
+          <p class="muted auth-intro" style="font-family: 'DM Sans', sans-serif; color: #6e6252 !important;">Cadastre sua propriedade e acompanhe o clima do seu município no Semiárido Baiano.</p>
+
+          <form
+            id="form-cadastro-dedicado"
+            class="needs-validation"
+            novalidate
+            action="admin.html"
+            method="GET"
+          >
+            <div class="mb-3">
+              <label for="cad-nome" class="form-label">Nome completo ou Entidade</label>
+              <input
+                type="text"
+                class="form-control"
+                id="cad-nome"
+                name="nome"
+                placeholder="Seu nome completo"
+                minlength="3"
+                required
+              >
+              <div class="invalid-feedback">
+                Informe seu nome completo (mínimo de 3 caracteres).
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="cad-telefone" class="form-label">Telefone / WhatsApp</label>
+              <input
+                type="tel"
+                class="form-control"
+                id="cad-telefone"
+                name="telefone"
+                placeholder="DDD + número"
+                required
+              >
+              <div class="invalid-feedback">
+                Informe seu número de telefone ou WhatsApp com DDD.
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="cad-email" class="form-label">E-mail (com validação)</label>
+              <div class="d-flex gap-2">
+                <input
+                  type="email"
+                  class="form-control"
+                  id="cad-email"
+                  name="email"
+                  placeholder="seu.email@exemplo.com"
+                  required
+                >
+                <button
+                  type="button"
+                  class="btn btn-outline-primary flex-shrink-0"
+                  id="btn-enviar-otp"
+                  title="Enviar código de verificação por e-mail"
+                >
+                  Código
+                </button>
+              </div>
+              <div class="invalid-feedback">
+                Informe um endereço de e-mail válido para criar seu cadastro.
+              </div>
+            </div>
+
+            <!-- Caixa de confirmação OTP por e-mail -->
+            <div id="otp-verification-box" class="p-2 rounded border mb-3" style="background: var(--cor-superficie);" hidden>
+              <label for="input-otp-codigo" class="small fw-bold d-block mb-1" id="otp-status-msg">
+                Digite o código de 6 dígitos enviado para seu e-mail:
+              </label>
+              <div class="d-flex gap-2 align-items-center">
+                <input
+                  type="text"
+                  id="input-otp-codigo"
+                  class="form-control text-center fw-bold tabular-nums"
+                  maxlength="6"
+                  placeholder="000000"
+                >
+                <button type="button" class="btn btn-success btn-sm" id="btn-validar-otp">
+                  Validar
+                </button>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="cad-localidade" class="form-label mb-1">Sua cidade ou povoado no Semiárido Baiano</label>
+              <div class="row g-2 align-items-stretch">
+                <div class="col-12 col-sm-8">
+                  <select class="form-select w-100 h-100" id="cad-localidade" name="localidadeId" required>
+                    <optgroup label="Território de Irecê (Destaque)">
+                      <option value="1" data-localidade-id="1" data-ibge="2914604" data-nome="Irecê" data-lat="-11.3042" data-lon="-41.8558">Irecê - BA</option>
+                      <option value="2" data-localidade-id="2" data-ibge="2925709" data-nome="Presidente Dutra" data-lat="-11.2958" data-lon="-41.9869">Presidente Dutra - BA</option>
+                      <option value="3" data-localidade-id="3" data-ibge="2914604" data-nome="Povoado de Achado (Irecê)" data-lat="-11.2750" data-lon="-41.8210">Povoado de Achado (Irecê) - BA</option>
+                      <option value="4" data-localidade-id="4" data-ibge="2914604" data-nome="Povoado de Umbuzeiro (Irecê)" data-lat="-11.3410" data-lon="-41.8890">Povoado de Umbuzeiro (Irecê) - BA</option>
+                      <option value="5" data-localidade-id="5" data-ibge="2925709" data-nome="Povoado de Campo Formoso (Pres. Dutra)" data-lat="-11.3180" data-lon="-41.9640">Povoado de Campo Formoso (Pres. Dutra) - BA</option>
+                    </optgroup>
+                    <optgroup label="Municípios do Semiárido Baiano (A a X)" id="optgroup-cidades-radar">
+                      <option value="2919157" data-localidade-id="1" data-ibge="2919157" data-nome="Lapão" data-lat="-11.3831" data-lon="-41.8319">Lapão - BA</option>
+                      <option value="2918357" data-localidade-id="1" data-ibge="2918357" data-nome="João Dourado" data-lat="-11.3500" data-lon="-41.6639">João Dourado - BA</option>
+                    </optgroup>
+                  </select>
+                  <div class="invalid-feedback">
+                    Selecione a sua cidade ou povoado no Semiárido Baiano.
+                  </div>
+                </div>
+                <div class="col-12 col-sm-4 d-flex">
+                  <button
+                    type="button"
+                    class="btn btn-outline-success fw-bold w-100 d-flex align-items-center justify-content-center gap-1"
+                    id="btn-gps-cadastro"
+                  >
+                    <span>📍</span> <span>Minha localização</span>
+                  </button>
+                </div>
+              </div>
+              <div id="cad-gps-confirm-box" class="small mt-2 p-2 rounded border border-success-subtle bg-success-subtle text-success-emphasis" hidden></div>
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-12 col-sm-6">
+                <label for="cad-abastecimento" class="form-label">Fonte de Água</label>
+                <select class="form-select" id="cad-abastecimento" name="abastecimento" required>
+                  <option value="CISTERNA">Cisterna de Placas / Calçadão</option>
+                  <option value="POCO">Poço Tubular / Cacimba</option>
+                  <option value="ENCANADA">Água Encanada</option>
+                  <option value="MISTO">Sistema Misto (Cisterna + Poço)</option>
+                </select>
+              </div>
+              <div class="col-12 col-sm-6">
+                <label for="cad-perfil" class="form-label">Perfil</label>
+                <select class="form-select" id="cad-perfil" name="perfil" required>
+                  <option value="AGRICULTOR">Agricultor(a) Familiar</option>
+                  <option value="LIDERANCA_COMUNITARIA">Liderança Comunitária</option>
+                  <option value="SINDICATO">Sindicato Rural</option>
+                  <option value="PREFEITURA">Convênio Prefeitura</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="cad-senha" class="form-label">Crie uma Senha (mín. 6 caracteres)</label>
+              <input
+                type="password"
+                class="form-control"
+                id="cad-senha"
+                name="senha"
+                minlength="6"
+                placeholder="Sua senha"
+                required
+                autocomplete="new-password"
+              >
+              <div class="invalid-feedback">
+                A senha deve ter no mínimo 6 caracteres.
+              </div>
+            </div>
+
+            <button
+              class="btn btn-success button-primary w-100 d-flex justify-content-between align-items-center"
+              type="submit"
+              id="btn-submit-cadastro"
+            >
+              <span>Criar cadastro</span>
+              <span aria-hidden="true">&rarr;</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Banner de Feedback de Autenticação -->
+        <div id="auth-alert-box" class="alert mt-3 mb-0" role="alert" hidden></div>
+      </div>
+
+      <!-- RODAPÉ DIREITO (.auth-copyright) -->
+      <div class="auth-copyright">
+        Manejo Caatingueiro <span>&middot;</span> Bahia
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const AUTH_STORAGE_KEY = "mc_auth_session_v4";
+      const params = new URLSearchParams(window.location.search);
+      let gpsCoordsDetectadas = null;
+
+      // 1. Bloqueio de Login Duplicado: se já estiver logado (e não tiver ?trocar=1), redireciona imediatamente para /pages/painel.html
+      function verificarSessaoExistenteERedirecionar() {
+        if (params.get("trocar") === "1") return false;
+        try {
+          let sessao = null;
+          if (window.MC_Menu && typeof window.MC_Menu.getAuthSession === "function") {
+            sessao = window.MC_Menu.getAuthSession();
+          } else {
+            const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+            if (raw) sessao = JSON.parse(raw);
+          }
+          const usuario = sessao && (sessao.usuario || sessao.user);
+          if (usuario || (sessao && sessao.token)) {
+            const perfisAdmin = ["GESTOR_PUBLICO", "PREFEITURA", "SINDICATO", "ADMIN"];
+            const perfilUpper = String(
+              usuario?.perfil || usuario?.tipoPerfil || usuario?.role || ""
+            ).toUpperCase();
+            const destino = perfisAdmin.includes(perfilUpper)
+              ? "/pages/admin.html"
+              : "/pages/painel.html";
+            window.location.replace(destino);
+            return true;
+          }
+        } catch {}
+        return false;
+      }
+
+      if (verificarSessaoExistenteERedirecionar()) {
+        return;
+      }
+
+      const tabLogin = document.getElementById("tab-btn-login");
+      const tabCadastro = document.getElementById("tab-btn-cadastro");
+      const paneLogin = document.getElementById("pane-auth-login");
+      const paneCadastro = document.getElementById("pane-auth-cadastro");
+      const formLogin = document.getElementById("form-login-dedicado");
+      const formCadastro = document.getElementById("form-cadastro-dedicado");
+      const alertBox = document.getElementById("auth-alert-box");
+      const selectLocalidade = document.getElementById("cad-localidade");
+      const optgroupRadar = document.getElementById("optgroup-cidades-radar");
+      const gpsConfirmBox = document.getElementById("cad-gps-confirm-box");
+
+      function showAlert(mensagem, tipo) {
+        if (!alertBox) return;
+        alertBox.hidden = false;
+        alertBox.className = "alert mt-3 mb-0 " + (tipo === "erro" ? "alert-danger" : "alert-success");
+        alertBox.textContent = mensagem;
+      }
+
+      function hideAlert() {
+        if (!alertBox) return;
+        alertBox.hidden = true;
+      }
+
+      function mostrarConfirmacaoCidadeNoCadastro(nomeCidade, lat, lon) {
+        if (!gpsConfirmBox) return;
+        const latFmt = Number.isFinite(Number(lat)) ? Number(lat).toFixed(4) : "-11.3042";
+        const lonFmt = Number.isFinite(Number(lon)) ? Number(lon).toFixed(4) : "-41.8558";
+        gpsConfirmBox.hidden = false;
+        gpsConfirmBox.innerHTML =
+          `📍 <strong>1ª Roça vinculada a ${nomeCidade} - BA</strong> (Lat ${latFmt}, Lon ${lonFmt}).`;
+      }
+
+      function alternarModo(modo) {
+        hideAlert();
+        const isCadastro = modo === "cadastro";
+        tabLogin.classList.toggle("active", !isCadastro);
+        tabLogin.setAttribute("aria-selected", String(!isCadastro));
+        tabCadastro.classList.toggle("active", isCadastro);
+        tabCadastro.setAttribute("aria-selected", String(isCadastro));
+
+        if (paneLogin) paneLogin.hidden = isCadastro;
+        if (paneCadastro) paneCadastro.hidden = !isCadastro;
+      }
+
+      if (params.get("modo") === "cadastro") {
+        alternarModo("cadastro");
+      } else {
+        alternarModo("login");
+      }
+
+      tabLogin.addEventListener("click", () => alternarModo("login"));
+      tabCadastro.addEventListener("click", () => alternarModo("cadastro"));
+
+      // 2. Popula os municípios da Bahia via window.MC_Radar.buscarCidades({ uf: 'BA' }) com value único e rótulo 'Nome - BA'
+      async function carregarMunicipiosBahiaRadar() {
+        try {
+          let cidades = [];
+          if (window.MC_Radar && typeof window.MC_Radar.buscarCidades === "function") {
+            cidades = await window.MC_Radar.buscarCidades({ uf: "BA" });
+          } else {
+            const resp = await fetch("/api/v1/clima/cidades?uf=BA");
+            if (resp.ok) cidades = await resp.json();
+          }
+
+          if (Array.isArray(cidades) && cidades.length > 0 && optgroupRadar) {
+            const prioritarios = ["2914604", "2925709"];
+            const ordenadas = [...cidades].sort((a, b) => {
+              const aPrio = prioritarios.includes(String(a.codigo_ibge)) ? -1 : 0;
+              const bPrio = prioritarios.includes(String(b.codigo_ibge)) ? -1 : 0;
+              if (aPrio !== bPrio) return aPrio - bPrio;
+              return String(a.nome || "").localeCompare(String(b.nome || ""), "pt-BR");
+            });
+
+            optgroupRadar.innerHTML = ordenadas
+              .map((cid, index) => {
+                const codigoIbge = String(cid.codigo_ibge || "").trim();
+                const locIdVal = codigoIbge === "2925709" ? "2" : "1";
+                const uniqueValue = codigoIbge || `cid_${index + 10}`;
+                const nomePuro = String(cid.nome || "")
+                  .replace(/\s*\(?IBGE[:\s]*\d+\)?/gi, "")
+                  .trim();
+                const uf = String(cid.uf || "BA").trim().toUpperCase();
+                return `<option value="${uniqueValue}" data-localidade-id="${locIdVal}" data-ibge="${codigoIbge}" data-nome="${nomePuro}" data-lat="${cid.latitude || -11.3042}" data-lon="${cid.longitude || -41.8558}">${nomePuro} - ${uf}</option>`;
+              })
+              .join("");
+          }
+        } catch {}
+      }
+
+      if (document.readyState === "complete") {
+        void carregarMunicipiosBahiaRadar();
+      } else {
+        window.addEventListener("load", () => {
+          void carregarMunicipiosBahiaRadar();
+        });
+      }
+
+      // 3. Botão "📍 Minha localização" conectado a window.MC_Radar.detectarCidadeMaisProximaNoSelect
+      const btnGps = document.getElementById("btn-gps-cadastro");
+      if (btnGps && selectLocalidade) {
+        selectLocalidade.addEventListener("change", () => {
+          const opt = selectLocalidade.selectedOptions?.[0];
+          if (!opt) return;
+          const nome = opt.getAttribute("data-nome") || (opt.textContent || "Irecê").replace(/\s*-\s*BA$/i, "").trim();
+          const lat = parseFloat(opt.getAttribute("data-lat") || "-11.3042");
+          const lon = parseFloat(opt.getAttribute("data-lon") || "-41.8558");
+          mostrarConfirmacaoCidadeNoCadastro(nome, lat, lon);
+        });
+
+        btnGps.addEventListener("click", () => {
+          if (
+            window.MC_Radar &&
+            typeof window.MC_Radar.detectarCidadeMaisProximaNoSelect === "function"
+          ) {
+            window.MC_Radar.detectarCidadeMaisProximaNoSelect(
+              selectLocalidade,
+              btnGps,
+              (res) => {
+                if (res && res.sucesso) {
+                  const opt = selectLocalidade.selectedOptions?.[0];
+                  const lat = Number.isFinite(Number(res.latitude))
+                    ? Number(res.latitude)
+                    : parseFloat(opt?.getAttribute("data-lat") || "-11.3042");
+                  const lon = Number.isFinite(Number(res.longitude))
+                    ? Number(res.longitude)
+                    : parseFloat(opt?.getAttribute("data-lon") || "-41.8558");
+                  gpsCoordsDetectadas = { latitude: lat, longitude: lon };
+                  mostrarConfirmacaoCidadeNoCadastro(res.cidade || "Irecê", lat, lon);
+                  showAlert(
+                    `Cidade localizada e selecionada: ${res.cidade} - BA`,
+                    "sucesso"
+                  );
+                } else {
+                  const opt = selectLocalidade.selectedOptions?.[0] || selectLocalidade.options?.[0];
+                  if (opt) {
+                    selectLocalidade.value = opt.value;
+                    const cid = opt.getAttribute("data-nome") || "Irecê";
+                    const lat = parseFloat(opt.getAttribute("data-lat") || "-11.3042");
+                    const lon = parseFloat(opt.getAttribute("data-lon") || "-41.8558");
+                    gpsCoordsDetectadas = { latitude: lat, longitude: lon };
+                    mostrarConfirmacaoCidadeNoCadastro(cid, lat, lon);
+                    showAlert(
+                      `Cidade localizada e selecionada: ${cid} - BA`,
+                      "sucesso"
+                    );
+                  }
+                }
+              }
+            );
+            return;
+          }
+
+          // Fallback direto caso MC_Radar ainda esteja inicializando
+          if ("geolocation" in navigator) {
+            btnGps.disabled = true;
+            btnGps.textContent = "📍 Localizando...";
+            navigator.geolocation.getCurrentPosition(
+              async (pos) => {
+                try {
+                  const { latitude, longitude } = pos.coords;
+                  gpsCoordsDetectadas = { latitude, longitude };
+                  const resp = await fetch(
+                    `/api/v1/localidades/proxima?lat=${encodeURIComponent(latitude)}&lon=${encodeURIComponent(longitude)}`
+                  );
+                  if (resp.ok) {
+                    const data = await resp.json();
+                    const locId = data.localidade?.id || data.id;
+                    const nomeCid = data.localidade?.nome || "Irecê";
+                    if (locId && selectLocalidade) {
+                      selectLocalidade.value = String(locId);
+                      selectLocalidade.dispatchEvent(new Event("change", { bubbles: true }));
+                    }
+                    mostrarConfirmacaoCidadeNoCadastro(nomeCid, latitude, longitude);
+                    showAlert(
+                      `Cidade localizada e selecionada: ${nomeCid} - BA`,
+                      "sucesso"
+                    );
+                  }
+                } catch {
+                  showAlert("Localização obtida com sucesso.", "sucesso");
+                } finally {
+                  btnGps.disabled = false;
+                  btnGps.textContent = "📍 Minha localização";
+                }
+              },
+              () => {
+                btnGps.disabled = false;
+                btnGps.textContent = "📍 Minha localização";
+                const opt = selectLocalidade.selectedOptions?.[0] || selectLocalidade.options?.[0];
+                if (opt) {
+                  selectLocalidade.value = opt.value;
+                  const cid = opt.getAttribute("data-nome") || "Irecê";
+                  const lat = parseFloat(opt.getAttribute("data-lat") || "-11.3042");
+                  const lon = parseFloat(opt.getAttribute("data-lon") || "-41.8558");
+                  mostrarConfirmacaoCidadeNoCadastro(cid, lat, lon);
+                }
+              },
+              { enableHighAccuracy: true, timeout: 8000 }
+            );
+          }
+        });
+      }
+
+      // Envio e validação real de código OTP por e-mail
+      const btnEnviarOtp = document.getElementById("btn-enviar-otp");
+      const otpBox = document.getElementById("otp-verification-box");
+      const otpMsg = document.getElementById("otp-status-msg");
+      const btnValidarOtp = document.getElementById("btn-validar-otp");
+
+      if (btnEnviarOtp) {
+        btnEnviarOtp.addEventListener("click", async () => {
+          const emailInput = document.getElementById("cad-email");
+          const email = (emailInput?.value || "").trim();
+          if (!email || !email.includes("@")) {
+            showAlert("Digite um e-mail válido antes de solicitar o código de verificação.", "erro");
+            return;
+          }
+          try {
+            btnEnviarOtp.disabled = true;
+            const resp = await fetch("/api/v1/auth/email/enviar-codigo", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email })
+            });
+            const data = await resp.json();
+            if (otpBox) otpBox.hidden = false;
+            if (otpMsg) {
+              otpMsg.textContent =
+                data.codigoDemonstracao
+                  ? `Código enviado para ${email} (Código: ${data.codigoDemonstracao}):`
+                  : data.mensagem || "Digite o código de 6 dígitos enviado para seu e-mail:";
+            }
+          } catch {
+            showAlert("Não foi possível enviar o código no momento.", "erro");
+          } finally {
+            btnEnviarOtp.disabled = false;
+          }
+        });
+      }
+
+      if (btnValidarOtp) {
+        btnValidarOtp.addEventListener("click", async () => {
+          const email = (document.getElementById("cad-email")?.value || "").trim();
+          const codigo = (document.getElementById("input-otp-codigo")?.value || "").trim();
+          if (!codigo) return;
+          try {
+            const resp = await fetch("/api/v1/auth/email/confirmar-codigo", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email, codigo })
+            });
+            const data = await resp.json();
+            if (resp.ok) {
+              showAlert(data.mensagem || "E-mail confirmado com sucesso!", "sucesso");
+            } else {
+              showAlert(data.mensagem || "Código inválido ou expirado.", "erro");
+            }
+          } catch {
+            showAlert("Erro ao validar código de verificação.", "erro");
+          }
+        });
+      }
+
+      // Botão Google OAuth Real
+      const btnGoogle = document.getElementById("btn-google-oauth");
+      if (btnGoogle) {
+        btnGoogle.addEventListener("click", async () => {
+          try {
+            const resp = await fetch("/api/v1/auth/google/url");
+            const data = await resp.json();
+            if (data && data.url) {
+              window.location.href = data.url;
+              return;
+            }
+            showAlert(
+              data.mensagem || "Configure GOOGLE_CLIENT_ID ou utilize seu telefone/e-mail e senha.",
+              "erro"
+            );
+          } catch {
+            showAlert("Utilize seu telefone/e-mail e senha para entrar na conta.", "erro");
+          }
+        });
+      }
+
+      function salvarSessaoERedirecionar(payload) {
+        const usuario = payload.usuario || payload.user;
+        const sessao = {
+          token: payload.token,
+          tipoToken: payload.tipoToken || "Bearer",
+          usuario,
+          user: usuario,
+          salvoEm: new Date().toISOString()
+        };
+        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(sessao));
+
+        if (usuario && Array.isArray(usuario.rocas) && usuario.rocas.length > 0) {
+          try {
+            localStorage.setItem("mc_rocas_lista_v1", JSON.stringify(usuario.rocas));
+            localStorage.setItem("mc_roca_ativa_v1", JSON.stringify(usuario.rocas[0]));
+          } catch {}
+        }
+
+        if (window.MC_Menu && typeof window.MC_Menu.refreshNavbarState === "function") {
+          window.MC_Menu.refreshNavbarState();
+        }
+
+        const perfisAdmin = ["GESTOR_PUBLICO", "PREFEITURA", "SINDICATO", "ADMIN"];
+        const destino =
+          usuario && perfisAdmin.includes(String(usuario.perfil).toUpperCase())
+            ? "/pages/admin.html"
+            : "/pages/painel.html";
+
+        showAlert(
+          `Bem-vindo(a), ${usuario?.nome || "Agricultor(a)"}! Redirecionando para o Painel da Roça...`,
+          "sucesso"
+        );
+        setTimeout(() => {
+          window.location.href = destino;
+        }, 400);
+      }
+
+      // Submissão Real do Login com Validação Bootstrap 5
+      formLogin.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        formLogin.classList.add("was-validated");
+
+        if (!formLogin.checkValidity()) {
+          return;
+        }
+
+        const identificador = document.getElementById("login-email").value.trim();
+        const senha = document.getElementById("login-senha").value.trim();
+        const submitBtn = document.getElementById("btn-submit-login");
+
+        try {
+          submitBtn.disabled = true;
+          hideAlert();
+
+          let resp = await fetch("/api/v1/usuario/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: identificador, identificador, senha })
+          });
+
+          if (!resp.ok) {
+            const respFallback = await fetch("/api/v1/auth/login", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ telefone: identificador, email: identificador, senha })
+            });
+            if (respFallback.ok) {
+              resp = respFallback;
+            }
+          }
+
+          const data = await resp.json();
+          if (!resp.ok) {
+            showAlert(
+              data.mensagem || "Credenciais inválidas. Verifique seu telefone/e-mail e senha.",
+              "erro"
+            );
+            return;
+          }
+
+          salvarSessaoERedirecionar(data);
+        } catch {
+          showAlert("Erro de conexão ao autenticar. Tente novamente.", "erro");
+        } finally {
+          submitBtn.disabled = false;
+        }
+      });
+
+      // Submissão Real do Cadastro Rural com Validação Bootstrap 5 (salva a cidade selecionada como 1ª roça)
+      formCadastro.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        formCadastro.classList.add("was-validated");
+
+        if (!formCadastro.checkValidity()) {
+          return;
+        }
+
+        const optLoc = selectLocalidade?.selectedOptions?.[0];
+        const nomeLocalidade =
+          optLoc?.getAttribute("data-nome") ||
+          (optLoc?.textContent || "Irecê").replace(/\s*-\s*BA$/i, "").trim();
+        const localidadeIdNum =
+          Number(
+            optLoc?.getAttribute("data-localidade-id") ||
+              (Number(selectLocalidade.value) <= 5 ? selectLocalidade.value : 1)
+          ) || 1;
+        const latRoca =
+          gpsCoordsDetectadas?.latitude ??
+          (parseFloat(optLoc?.getAttribute("data-lat") || "-11.3042") || -11.3042);
+        const lonRoca =
+          gpsCoordsDetectadas?.longitude ??
+          (parseFloat(optLoc?.getAttribute("data-lon") || "-41.8558") || -41.8558);
+
+        const payload = {
+          nome: document.getElementById("cad-nome").value.trim(),
+          telefone: document.getElementById("cad-telefone").value.trim(),
+          email: document.getElementById("cad-email").value.trim(),
+          localidadeId: localidadeIdNum,
+          localidade: nomeLocalidade,
+          municipioNome: nomeLocalidade,
+          latitude: latRoca,
+          longitude: lonRoca,
+          nomeRoca: `Roça ${nomeLocalidade}`,
+          abastecimento: document.getElementById("cad-abastecimento").value,
+          perfil: document.getElementById("cad-perfil").value,
+          senha: document.getElementById("cad-senha").value.trim(),
+          consentimentoLocalizacao: true
+        };
+
+        const submitBtn = document.getElementById("btn-submit-cadastro");
+        try {
+          submitBtn.disabled = true;
+          hideAlert();
+
+          const resp = await fetch("/api/v1/usuario", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+
+          const data = await resp.json();
+          if (!resp.ok) {
+            showAlert(
+              data.mensagem || "Não foi possível concluir o cadastro. Verifique os dados informados.",
+              "erro"
+            );
+            return;
+          }
+
+          salvarSessaoERedirecionar(data);
+        } catch {
+          showAlert("Erro de conexão ao salvar seu cadastro.", "erro");
+        } finally {
+          submitBtn.disabled = false;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
+

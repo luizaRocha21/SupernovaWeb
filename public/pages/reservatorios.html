@@ -1,107 +1,509 @@
-<!doctype html>
-<html lang="pt-BR" data-theme="claro">
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="sertao-claro" data-font-scale="normal">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Poço, Cisterna e Água · Manejo Caatingueiro</title>
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/css/global.css">
-  <link rel="stylesheet" href="/assets/css/comunidade.css">
-  <script src="/assets/js/acessibilidade-voz.js" defer></script>
-  <script src="/assets/js/menu.js" defer></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Cuidado com a Água e Cisternas — Acompanhe o nível da sua cisterna, calcule a duração da reserva familiar e veja a situação da água na comunidade." />
+  <title>Água e Cisternas — Manejo Caatingueiro</title>
+
+  <!-- Fontes Editoriais Sertanejas (Newsreader 400 + DM Sans) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet" />
+
+  <!-- Bootstrap 5.3 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Design System Editorial Sertanejo (elements.css carregado após Bootstrap) -->
+  <link rel="stylesheet" href="/assets/css/global.css" />
+  <link rel="stylesheet" href="/assets/css/painel.css" />
+  <link rel="stylesheet" href="/assets/css/global/elements.css" />
 </head>
 <body>
-  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
-  <aside class="app-sidebar" id="app-sidebar" aria-label="Menu Lateral e Configurações" aria-hidden="true">
-    <div>
-      <div class="sidebar-header">
-        <div class="brand">
-          <span class="brand-mark"><img src="/assets/images/logo-mark.svg" alt="" width="24" height="24"></span>
-          <span>Manejo Caatingueiro</span>
-        </div>
-        <button class="sidebar-close" id="sidebar-close" type="button" aria-label="Fechar menu">&times;</button>
-      </div>
-      <div class="sidebar-body">
-        <div>
-          <p class="sidebar-group-title">Navegação</p>
-          <div class="sidebar-nav-list">
-            <a class="sidebar-nav-btn" href="/">🌦️ Painel Inicial</a>
-            <a class="sidebar-nav-btn" href="/pages/plantio.html">🌱 Critérios de Plantio</a>
-            <a class="sidebar-nav-btn active" href="/pages/reservatorios.html">💧 Poço e Cisterna</a>
-            <a class="sidebar-nav-btn" href="/pages/comunidade.html">📢 Alertas e Mural</a>
-          </div>
-        </div>
-        <div>
-          <p class="sidebar-group-title">Configurações de Tela</p>
-          <div class="sidebar-settings-box">
-            <div class="theme-grid">
-              <button type="button" class="theme-option-btn active" data-set-theme="claro">☀️ Claro</button>
-              <button type="button" class="theme-option-btn" data-set-theme="escuro">🌙 Escuro</button>
-              <button type="button" class="theme-option-btn" data-set-theme="daltonico">👁️ Daltônico</button>
-              <button type="button" class="theme-option-btn" data-set-theme="baixa-visao">🔍 Contraste</button>
-            </div>
-            <div class="font-controls-row">
-              <button type="button" class="font-btn" data-font-action="dec">A-</button>
-              <span class="font-scale-display">100%</span>
-              <button type="button" class="font-btn" data-font-action="reset">Padrão</button>
-              <button type="button" class="font-btn" data-font-action="inc">A+</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </aside>
-
-  <header class="topbar">
-    <div class="topbar-left">
-      <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="app-sidebar">
-        <span aria-hidden="true">&#9776;</span>
-        <span>Menu</span>
-      </button>
-      <a class="brand" href="/">
-        <span class="brand-mark"><img src="/assets/images/logo-mark.svg" alt="" width="24" height="24"></span>
-        <span>Manejo<br>Caatingueiro</span>
-      </a>
-    </div>
-    <nav class="main-nav" aria-label="Navegação entre páginas">
-      <a class="nav-link" href="/">Painel Inicial</a>
-      <a class="nav-link" href="/pages/plantio.html">Critérios de Plantio</a>
-      <a class="nav-link active" href="/pages/reservatorios.html">Poço e Cisterna</a>
-      <a class="nav-link" href="/pages/comunidade.html">Alertas e Mural</a>
-    </nav>
-    <div class="topbar-right">
-      <button class="btn-sound-icon" id="btn-tts-icon" type="button" aria-label="Ouvir resumo em áudio desta página" title="Ouvir resumo da página">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-        </svg>
-      </button>
-      <button class="btn-sound-icon btn-chat-icon" id="btn-chat-ia-icon" type="button" aria-label="Abrir Assistente de IA" title="Assistente de IA">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-        </svg>
-      </button>
-      <a class="button button-primary" href="/" style="min-height: 38px; padding: 6px 14px; font-size: 0.85rem;">Abrir Painel</a>
-    </div>
+  <!-- CABEÇALHO / GAVETA RETRÁTIL UNIFICADA GERENCIADA POR MENU.JS -->
+  <header>
+    <nav id="menu" class="navbar navbar-expand-lg navbar-light shadow-sm" aria-label="Navegação Principal"></nav>
   </header>
 
-  <main class="page-content">
-    <p class="eyebrow eyebrow-green">SEGURANÇA HÍDRICA FAMILIAR E COMUNITÁRIA</p>
-    <h1 style="font-family: var(--serif); font-size: clamp(1.8rem, 3.2vw, 2.4rem); font-weight: 500; margin: 0 0 18px;">Monitoramento de Poços e Cisternas</h1>
-    <div class="two-col-grid">
-      <article class="card-box">
-        <h3>Escala de Nível e Lençol Freático</h3>
-        <p class="muted">O agricultor registra o volume em porcentagem ou por escala visual rápida: <strong>Cheio (≥75%)</strong>, <strong>Médio (40–74%)</strong>, <strong>Baixo (15–39%)</strong> ou <strong>Crítico (&lt;15%)</strong>.</p>
-      </article>
-      <article class="card-box">
-        <h3>Privacidade e Agregação Comunitária</h3>
-        <p class="muted">Nenhuma família tem o nível da sua cisterna ou poço exposto individualmente aos vizinhos. O Monitor Comunitário exibe somente a média agregada do povoado.</p>
-      </article>
+  <main id="conteudo-principal" class="container py-4">
+    <!-- Hero Editorial de Segurança Hídrica -->
+    <section class="hero-card p-4 mb-4" style="background-color: #f4eddb; border: 1px solid #d2c2a9; color: #542817;">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+          <span class="eyebrow hero-kicker" style="font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase; color: #5d603d;">💧 CUIDADO COM A ÁGUA DA FAMÍLIA E DO POVOADO</span>
+          <h1 class="h3 mt-1 mb-1" style="font-family: 'Newsreader', Georgia, serif; font-weight: 400; color: #542817;">Controle de Cisternas, Barreiros <em style="color: #bd7627; font-style: italic;">e Aguadas</em></h1>
+          <p id="resumo-hidrico-voz" class="mb-0" style="font-family: 'DM Sans', sans-serif; color: #6e6252; line-height: 1.55;">
+            Acompanhe quanta água ainda resta na sua cisterna de placas ou de enxurrada e veja como está a reserva coletiva da sua comunidade no Semiárido Baiano.
+          </p>
+        </div>
+        <button
+          type="button"
+          class="btn btn-speak"
+          style="background-color: #fffaf0; border: 1px solid #d2c2a9; color: #542817;"
+          data-speak-target="#resumo-hidrico-voz"
+          aria-label="Ouvir orientação sobre o cuidado com a água"
+        >
+          🔊 Ouvir orientação
+        </button>
+      </div>
+    </section>
+
+    <!-- Navegação em 2 Abas Limpas com Largura Proporcional e Mesma Altura -->
+    <div class="auth-tabs d-flex flex-wrap align-items-stretch gap-2 mb-4" role="tablist" aria-label="Seções de Água e Cisternas" style="background-color: #eeefeb; border: 1px solid #d2c2a9; border-radius: 10px; padding: 0.25rem;">
+      <button
+        type="button"
+        class="auth-tab auth-tab-btn active flex-fill d-flex align-items-center justify-content-center py-2"
+        id="tab-btn-minha-cisterna"
+        data-res-tab="aba-minha-cisterna"
+        role="tab"
+        aria-selected="true"
+        aria-controls="aba-minha-cisterna"
+      >
+        💧 Minha Cisterna ou Poço
+      </button>
+      <button
+        type="button"
+        class="auth-tab auth-tab-btn flex-fill d-flex align-items-center justify-content-center py-2"
+        id="tab-btn-agua-comunidade"
+        data-res-tab="aba-agua-comunidade"
+        role="tab"
+        aria-selected="false"
+        aria-controls="aba-agua-comunidade"
+      >
+        🤝 Água na Comunidade
+      </button>
     </div>
+
+    <!-- ===================================================================
+         ABA 1: MINHA CISTERNA OU POÇO
+         =================================================================== -->
+    <section id="aba-minha-cisterna" role="tabpanel" aria-labelledby="tab-btn-minha-cisterna">
+      <div class="row g-4 mb-4">
+        <!-- Formulário de Registro de Nível alinhado pela base (row g-3 align-items-end) -->
+        <div class="col-12 col-lg-6">
+          <section
+            class="card h-100 p-3 p-md-4"
+            style="background-color: #fffaf0; border: 1px solid #d2c2a9; border-left: 4px solid #542817;"
+            aria-labelledby="titulo-form-nivel"
+          >
+            <span class="eyebrow section-kicker" style="font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase; color: #5d603d;">📏 ATUALIZAR VOLUME DA SUA CISTERNA</span>
+            <h2 id="titulo-form-nivel" class="h5 mb-2" style="font-family: 'Newsreader', Georgia, serif; font-weight: 400; color: #542817;">Quanto de água tem hoje no <em style="color: #bd7627; font-style: italic;">seu reservatório?</em></h2>
+            <p class="small mb-3" style="font-family: 'DM Sans', sans-serif; color: #6e6252; line-height: 1.55;">
+              Escolha o reservatório e marque a faixa aproximada de água para sabermos por quantos dias a reserva dá conta.
+            </p>
+
+            <form id="form-nivel-reservatorio" class="row g-3 align-items-end" novalidate>
+              <div class="col-12 col-md-6">
+                <label for="select-reservatorio-id" class="form-label fw-semibold mb-1" style="color: #542817;">Qual cisterna ou aguada você está medindo?</label>
+                <select id="select-reservatorio-id" class="form-select w-100" required>
+                  <option value="1">Cisterna de Placas (Água de Beber — 16.000 L)</option>
+                  <option value="2">Cisterna Calçadão / Enxurrada (Produção — 52.000 L)</option>
+                </select>
+              </div>
+
+              <div class="col-12 col-md-6">
+                <label for="input-volume-litros" class="form-label fw-semibold mb-1" style="color: #542817;">Volume estimado (Litros)</label>
+                <input
+                  type="number"
+                  id="input-volume-litros"
+                  class="form-control w-100"
+                  min="0"
+                  max="120000"
+                  step="100"
+                  value="9500"
+                  required
+                />
+              </div>
+
+              <div class="col-12 col-md-6">
+                <label for="select-faixa-rapida" class="form-label fw-semibold mb-1" style="color: #542817;">Escala rápida visual</label>
+                <select id="select-faixa-rapida" class="form-select w-100">
+                  <option value="14500">Cheia / Sangrando (85% a 100%)</option>
+                  <option value="9500" selected>Acima da metade (55% a 75%)</option>
+                  <option value="5200">Abaixo da metade — Poupar água (30%)</option>
+                  <option value="2200">No fundo — Reserva crítica (&lt; 15%)</option>
+                </select>
+              </div>
+
+              <div class="col-12 col-md-6">
+                <label for="input-obs-nivel" class="form-label fw-semibold mb-1" style="color: #542817;">Anote como está a água (opcional)</label>
+                <input
+                  type="text"
+                  id="input-obs-nivel"
+                  class="form-control w-100"
+                  placeholder="Ex.: Desviamos a primeira água do telhado"
+                />
+              </div>
+
+              <div class="col-12 d-flex flex-wrap gap-2 pt-1">
+                <button type="submit" class="btn fw-bold" style="background-color: #5d603d; border: 1px solid #5d603d; color: #fffaf0;">
+                  💧 Salvar medição da cisterna
+                </button>
+                <button type="button" id="btn-recarregar-niveis" class="btn" style="background-color: #fffaf0; border: 1px solid #d2c2a9; color: #542817;">
+                  🔄 Atualizar dados
+                </button>
+              </div>
+            </form>
+
+            <div id="feedback-nivel-msg" class="alert d-none mt-3 mb-0" role="status" aria-live="polite"></div>
+          </section>
+        </div>
+
+        <!-- Checklist Sanitário de Cisterna -->
+        <div class="col-12 col-lg-6">
+          <section class="card h-100 p-4" style="background-color: #fffaf0; border: 1px solid #d2c2a9;" aria-labelledby="titulo-checklist-agua">
+            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+              <div>
+                <span class="eyebrow section-kicker" style="font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase; color: #5d603d;">🛡️ ÁGUA LIMPA E SAUDÁVEL</span>
+                <h2 id="titulo-checklist-agua" class="h5 mb-0" style="font-family: 'Newsreader', Georgia, serif; font-weight: 400; color: #542817;">Cuidados com a cisterna <em style="color: #bd7627; font-style: italic;">e as bicas</em></h2>
+              </div>
+              <button
+                type="button"
+                class="btn btn-speak"
+                style="background-color: #fffaf0; border: 1px solid #d2c2a9; color: #542817;"
+                data-speak-target="#lista-cuidados-cisterna"
+                aria-label="Ouvir cuidados com a água da cisterna"
+              >
+                🔊 Ouvir
+              </button>
+            </div>
+            <p class="small mb-3" style="font-family: 'DM Sans', sans-serif; color: #6e6252; line-height: 1.55;">
+              Cuidados simples que evitam sujeira na cisterna e protegem a saúde das crianças e idosos:
+            </p>
+
+            <div id="lista-cuidados-cisterna" class="d-flex flex-column gap-2">
+              <div class="form-check p-3 border rounded-3 bg-body-tertiary">
+                <input class="form-check-input ms-0 me-2" type="checkbox" id="chk-agua-1" data-agua-chk="desvio_primeira_agua" />
+                <label class="form-check-label fw-semibold" for="chk-agua-1">
+                  Desviar a primeira água da chuva que lava a poeira do telhado antes de ligar na cisterna
+                </label>
+              </div>
+              <div class="form-check p-3 border rounded-3 bg-body-tertiary">
+                <input class="form-check-input ms-0 me-2" type="checkbox" id="chk-agua-2" data-agua-chk="hipoclorito_beber" />
+                <label class="form-check-label fw-semibold" for="chk-agua-2">
+                  Usar 2 gotas de hipoclorito de sódio (2,5%) para cada litro de água de beber e aguardar 30 minutos
+                </label>
+              </div>
+              <div class="form-check p-3 border rounded-3 bg-body-tertiary">
+                <input class="form-check-input ms-0 me-2" type="checkbox" id="chk-agua-3" data-agua-chk="tela_ralos_calhas" />
+                <label class="form-check-label fw-semibold" for="chk-agua-3">
+                  Manter a tampa fechada com cadeado e telinha nos canos para não entrar mosquito nem folhas
+                </label>
+              </div>
+              <div class="form-check p-3 border rounded-3 bg-body-tertiary">
+                <input class="form-check-input ms-0 me-2" type="checkbox" id="chk-agua-4" data-agua-chk="separar_agua_beber" />
+                <label class="form-check-label fw-semibold" for="chk-agua-4">
+                  Guardar a cisterna de 16 mil litros só para beber e cozinhar quando a seca apertar
+                </label>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         ABA 2: ÁGUA NA COMUNIDADE
+         =================================================================== -->
+    <section id="aba-agua-comunidade" class="d-none" role="tabpanel" aria-labelledby="tab-btn-agua-comunidade">
+      <div class="row g-4 mb-4">
+        <!-- Painel Coletivo da Comunidade -->
+        <div class="col-12 col-lg-5">
+          <section class="card h-100 p-4" style="background-color: #fffaf0; border: 1px solid #d2c2a9;" aria-labelledby="titulo-painel-coletivo">
+            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+              <div>
+                <span class="eyebrow section-kicker" style="font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase; color: #5d603d;">🤝 VISÃO COLETIVA DO POVOADO</span>
+                <h2 id="titulo-painel-coletivo" class="h5 mb-0" style="font-family: 'Newsreader', Georgia, serif; font-weight: 400; color: #542817;">Situação da Água <em style="color: #bd7627; font-style: italic;">na Comunidade</em></h2>
+              </div>
+              <button
+                type="button"
+                class="btn btn-speak"
+                style="background-color: #fffaf0; border: 1px solid #d2c2a9; color: #542817;"
+                data-speak-target="#box-resumo-coletivo"
+                aria-label="Ouvir situação coletiva das cisternas"
+              >
+                🔊 Ouvir
+              </button>
+            </div>
+            <p class="small mb-3" style="font-family: 'DM Sans', sans-serif; color: #6e6252; line-height: 1.55;">
+              Média geral das cisternas e aguadas da comunidade (sem expor o nome nem os dados pessoais de nenhum vizinho):
+            </p>
+
+            <div id="box-resumo-coletivo" class="p-3 rounded-3 mb-3" style="background-color: #f4eddb; border: 1px solid #d2c2a9;">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="small" style="color: #6e6252;">Nível Médio das Cisternas</span>
+                <strong id="coletivo-media-pct" class="fs-4" style="color: #542817;">--%</strong>
+              </div>
+              <div class="progress mb-2" style="height: 12px; background-color: #eeefeb;">
+                <div
+                  id="coletivo-progress-bar"
+                  class="progress-bar"
+                  role="progressbar"
+                  style="width: 50%; background-color: #5d603d;"
+                  aria-valuenow="50"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                ></div>
+              </div>
+              <p id="coletivo-orientacao-texto" class="small mb-0" style="color: #6e6252;">
+                Consultando o nível médio de água das famílias da comunidade...
+              </p>
+            </div>
+
+            <div class="p-3 rounded-3 border" style="background-color: #fffaf0; border-color: #d2c2a9 !important; height: auto; overflow: visible;">
+              <h3 class="h6 mb-2" style="font-family: 'Newsreader', Georgia, serif; font-weight: 500; color: #542817;">📋 Como economizar água na estiagem</h3>
+              <ul class="small mb-0 ps-3" style="line-height: 1.6; color: #542817;">
+                <li class="mb-2"><strong>Acima de 60%:</strong> Uso normal para beber, cozinhar e regar hortas de tempero com gotejamento.</li>
+                <li class="mb-2"><strong>Entre 30% e 60%:</strong> Poupe a água limpa da cisterna de placas; use água de barreiro ou reúso nas plantas.</li>
+                <li class="mb-0"><strong>Abaixo de 30%:</strong> Reserva exclusiva para beber e cozinhar; avise a associação para organizar o carro-pipa.</li>
+              </ul>
+            </div>
+          </section>
+        </div>
+
+        <!-- Lista de Reservatórios Monitorados -->
+        <div class="col-12 col-lg-7">
+          <section
+            class="card h-100 p-4"
+            style="background-color: #fffaf0; border: 1px solid #d2c2a9; border-left: 4px solid #542817;"
+            aria-labelledby="titulo-lista-reservatorios"
+          >
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+              <div>
+                <span class="eyebrow section-kicker" style="font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase; color: #5d603d;">🏺 RESERVATÓRIOS CADASTRADOS</span>
+                <h2 id="titulo-lista-reservatorios" class="h5 mb-0" style="font-family: 'Newsreader', Georgia, serif; font-weight: 400; color: #542817;">Cisternas, Barreiros e <em style="color: #bd7627; font-style: italic;">Aguadas Acompanhadas</em></h2>
+              </div>
+              <button
+                type="button"
+                id="btn-atualizar-comunidade-agua"
+                class="btn btn-sm fw-bold"
+                style="background-color: #5d603d; border: 1px solid #5d603d; color: #fffaf0;"
+              >
+                🔄 Atualizar lista
+              </button>
+            </div>
+
+            <div id="grid-reservatorios-lista" class="row g-3">
+              <div class="col-12">
+                <div class="p-3 rounded-3" style="background-color: #f4eddb; border: 1px solid #d2c2a9; color: #6e6252;">
+                  Carregando reservatórios acompanhados...
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
   </main>
+
+  <footer class="container py-4 mt-4 border-top text-center small text-muted">
+    <p class="mb-1"><strong>Manejo Caatingueiro</strong> — Segurança hídrica familiar e comunitária no Semiárido Baiano.</p>
+  </footer>
+
+  <!-- Scripts Globais -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/assets/js/menu.js"></script>
+  <script src="/assets/js/acessibilidade-voz.js"></script>
+  <script>
+    (function () {
+      const formNivel = document.getElementById("form-nivel-reservatorio");
+      const selectResId = document.getElementById("select-reservatorio-id");
+      const inputLitros = document.getElementById("input-volume-litros");
+      const selectFaixa = document.getElementById("select-faixa-rapida");
+      const feedbackMsg = document.getElementById("feedback-nivel-msg");
+      const btnRecarregar = document.getElementById("btn-recarregar-niveis");
+      const btnAtualizarComunidade = document.getElementById("btn-atualizar-comunidade-agua");
+
+      // Alternância entre as 2 abas (.auth-tabs)
+      const tabButtons = document.querySelectorAll("[data-res-tab]");
+      tabButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const targetId = btn.getAttribute("data-res-tab");
+          tabButtons.forEach((b) => {
+            const ativo = b === btn;
+            b.classList.toggle("active", ativo);
+            b.setAttribute("aria-selected", ativo ? "true" : "false");
+          });
+          ["aba-minha-cisterna", "aba-agua-comunidade"].forEach((id) => {
+            const painel = document.getElementById(id);
+            if (painel) {
+              painel.classList.toggle("d-none", id !== targetId);
+            }
+          });
+        });
+      });
+
+      function escapeHtml(str) {
+        return String(str ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      if (selectFaixa && inputLitros) {
+        selectFaixa.addEventListener("change", () => {
+          inputLitros.value = selectFaixa.value;
+        });
+      }
+
+      async function carregarReservatorios() {
+        const grid = document.getElementById("grid-reservatorios-lista");
+        try {
+          const res = await fetch("/api/v1/reservatorio");
+          const data = await res.json();
+          const lista = Array.isArray(data) ? data : (data.reservatorios || []);
+
+          if (selectResId && lista.length > 0) {
+            selectResId.innerHTML = lista
+              .map((r) => {
+                const id = Number(r.id || r.reservatorioId || 1);
+                const nome = escapeHtml(r.nome || r.identificacao || `Reservatório #${id}`);
+                const cap = Number(r.capacidadeLitros || r.capacidadeMaximaLitros || 16000);
+                return `<option value="${id}" data-cap="${cap}">${nome} (Capacidade: ${cap.toLocaleString("pt-BR")} L)</option>`;
+              })
+              .join("");
+          }
+
+          let somaPct = 0;
+          let contPct = 0;
+
+          if (grid) {
+            if (lista.length === 0) {
+              grid.innerHTML = `<div class="col-12"><div class="p-3 border rounded-3 bg-body-tertiary">Nenhum reservatório cadastrado ainda.</div></div>`;
+            } else {
+              grid.innerHTML = lista
+                .map((r) => {
+                  const nome = escapeHtml(r.nome || r.identificacao || "Cisterna Familiar");
+                  const tipo = escapeHtml(r.tipo || "Cisterna de Placas");
+                  const cap = Number(r.capacidadeLitros || r.capacidadeMaximaLitros || 16000);
+                  const atual = Number(r.volumeAtualLitros ?? r.nivelAtualLitros ?? Math.round(cap * 0.58));
+                  const pct = cap > 0 ? Math.min(100, Math.max(0, Math.round((atual / cap) * 100))) : 50;
+                  somaPct += pct;
+                  contPct += 1;
+
+                  const badgeClass = pct >= 60 ? "text-bg-success" : pct >= 30 ? "text-bg-warning" : "text-bg-danger";
+                  const barClass = pct >= 60 ? "bg-success" : pct >= 30 ? "bg-warning" : "bg-danger";
+                  const statusLabel = pct >= 60 ? "Reserva Segura" : pct >= 30 ? "Atenção: Poupar Água" : "Nível Crítico";
+
+                  return `
+                    <div class="col-12 col-md-6">
+                      <article class="p-3 border rounded-3 bg-body-tertiary h-100">
+                        <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                          <div>
+                            <span class="small text-muted d-block">${tipo}</span>
+                            <h3 class="h6 fw-bold mb-0">${nome}</h3>
+                          </div>
+                          <span class="badge ${badgeClass}">${pct}% · ${statusLabel}</span>
+                        </div>
+                        <div class="progress my-2" style="height: 10px;">
+                          <div class="progress-bar ${barClass}" style="width: ${pct}%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between small text-muted">
+                          <span>Disponível: <strong>${atual.toLocaleString("pt-BR")} L</strong></span>
+                          <span>Capacidade: ${cap.toLocaleString("pt-BR")} L</span>
+                        </div>
+                      </article>
+                    </div>
+                  `;
+                })
+                .join("");
+            }
+          }
+
+          const mediaPct = contPct > 0 ? Math.round(somaPct / contPct) : 58;
+          const mediaEl = document.getElementById("coletivo-media-pct");
+          const barEl = document.getElementById("coletivo-progress-bar");
+          const orientEl = document.getElementById("coletivo-orientacao-texto");
+
+          if (mediaEl) mediaEl.textContent = `${mediaPct}%`;
+          if (barEl) {
+            barEl.style.width = `${mediaPct}%`;
+            barEl.setAttribute("aria-valuenow", String(mediaPct));
+            barEl.className = "progress-bar " + (mediaPct >= 60 ? "bg-success" : mediaPct >= 30 ? "bg-warning" : "bg-danger");
+          }
+          if (orientEl) {
+            orientEl.textContent =
+              mediaPct >= 60
+                ? `Média comunitária de ${mediaPct}%: boa reserva de água nas cisternas. Continue cuidando das calhas e evitando desperdício.`
+                : mediaPct >= 30
+                ? `Média comunitária de ${mediaPct}%: época de poupar a água de beber e usar gotejamento ou cobertura seca nos canteiros.`
+                : `Média comunitária de ${mediaPct}%: nível baixo na comunidade. Guarde a cisterna de placas apenas para beber e cozinhar.`;
+          }
+        } catch (err) {
+          console.warn("Erro ao carregar reservatórios:", err);
+        }
+      }
+
+      if (formNivel) {
+        formNivel.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const resId = selectResId ? selectResId.value : "1";
+          const opt = selectResId && selectResId.options[selectResId.selectedIndex];
+          const capMax = opt ? Number(opt.getAttribute("data-cap") || 16000) : 16000;
+          const volumeAtualLitros = Number(inputLitros.value || 0);
+          const percentual = capMax > 0 ? Math.min(100, Math.round((volumeAtualLitros / capMax) * 100)) : 50;
+          const obs = document.getElementById("input-obs-nivel")?.value || "";
+
+          try {
+            const resp = await fetch(`/api/v1/reservatorios/${encodeURIComponent(resId)}/niveis`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                volumeLitros: volumeAtualLitros,
+                volumeAtualLitros,
+                percentual,
+                observacao: obs
+              })
+            });
+
+            if (resp.ok) {
+              feedbackMsg.className = "alert alert-success mt-3 mb-0";
+              feedbackMsg.textContent = `✅ Medição salva! Volume registrado: ${volumeAtualLitros.toLocaleString("pt-BR")} L (${percentual}% da capacidade).`;
+              carregarReservatorios();
+            } else {
+              const errData = await resp.json().catch(() => ({}));
+              feedbackMsg.className = "alert alert-warning mt-3 mb-0";
+              feedbackMsg.textContent = errData.message || errData.erro || "Não foi possível salvar a medição agora.";
+            }
+          } catch (err) {
+            feedbackMsg.className = "alert alert-danger mt-3 mb-0";
+            feedbackMsg.textContent = "Falha de conexão ao salvar o nível da cisterna.";
+          }
+        });
+      }
+
+      if (btnRecarregar) {
+        btnRecarregar.addEventListener("click", carregarReservatorios);
+      }
+      if (btnAtualizarComunidade) {
+        btnAtualizarComunidade.addEventListener("click", carregarReservatorios);
+      }
+
+      // Persistência do checklist sanitário
+      const STORAGE_AGUA = "mc_agua_checklist_v1";
+      function inicializarChecklistAgua() {
+        let salvo = {};
+        try {
+          salvo = JSON.parse(localStorage.getItem(STORAGE_AGUA) || "{}");
+        } catch (e) {
+          salvo = {};
+        }
+        document.querySelectorAll("[data-agua-chk]").forEach((chk) => {
+          const k = chk.getAttribute("data-agua-chk");
+          chk.checked = Boolean(salvo[k]);
+          chk.addEventListener("change", () => {
+            salvo[k] = chk.checked;
+            localStorage.setItem(STORAGE_AGUA, JSON.stringify(salvo));
+          });
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        inicializarChecklistAgua();
+        carregarReservatorios();
+      });
+    })();
+  </script>
 </body>
 </html>

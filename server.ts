@@ -7,6 +7,15 @@ import nodemailer from 'nodemailer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { GoogleGenAI } from '@google/genai';
+import { ApiExceptionHandler } from './src/infrastructure/exception/ApiExceptionHandler.js';
+import { usuarioController } from './src/domain/usuario/controller/UsuarioController.js';
+import { usuarioRepository } from './src/domain/usuario/repository/UsuarioRepository.js';
+import { climaController } from './src/domain/clima/controller/ClimaController.js';
+import { pluviometroController } from './src/domain/pluviometro/controller/PluviometroController.js';
+import { plantioController } from './src/domain/plantio/controller/PlantioController.js';
+import { reservatorioController } from './src/domain/reservatorio/controller/ReservatorioController.js';
+import { comunidadeController } from './src/domain/comunidade/controller/ComunidadeController.js';
+import { iaController } from './src/domain/ia/controller/IaController.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -789,9 +798,64 @@ async function dispararEmailVerificacaoReal(email: string, nome: string, baseUrl
   }
 }
 
-// --- MIDDLEWARE DE AUTENTICAÇÃO ---
+// --- MIDDLEWARE DE AUTENTICAÇÃO (SINCRONIZADO COM src/domain/usuario/) ---
 interface AuthenticatedRequest extends Request {
   usuario?: Usuario;
+}
+
+function sincronizarComRepositorioDominio(repoUser: ReturnType<typeof usuarioRepository.buscarPorId>): Usuario | undefined {
+  if (!repoUser) return undefined;
+  let local = usuarios.find(u => u.id === repoUser.id);
+  if (!local) {
+    local = {
+      id: repoUser.id,
+      nome: repoUser.nome,
+      telefone: repoUser.telefone,
+      email: repoUser.email,
+      emailVerificado: repoUser.emailVerificado,
+      provedorAuth: repoUser.provedorAuth,
+      googleSub: repoUser.googleSub,
+      fotoUrl: repoUser.fotoUrl,
+      senhaHash: repoUser.senhaHash,
+      perfil: repoUser.perfil,
+      abastecimento: repoUser.abastecimento,
+      localidadeId: repoUser.localidadeId,
+      consentimentoLocalizacao: repoUser.consentimentoLocalizacao
+    };
+    usuarios.push(local);
+  } else {
+    local.nome = repoUser.nome;
+    local.telefone = repoUser.telefone;
+    local.email = repoUser.email;
+    local.emailVerificado = repoUser.emailVerificado;
+    local.provedorAuth = repoUser.provedorAuth;
+    local.fotoUrl = repoUser.fotoUrl;
+    local.senhaHash = repoUser.senhaHash;
+    local.perfil = repoUser.perfil;
+    local.abastecimento = repoUser.abastecimento;
+    local.localidadeId = repoUser.localidadeId;
+    local.consentimentoLocalizacao = repoUser.consentimentoLocalizacao;
+  }
+  return local;
+}
+
+function resolverUsuarioSincronizado(payload: { id?: number; email?: string; telefone?: string }): Usuario | undefined {
+  if (payload.id) {
+    const repoById = usuarioRepository.buscarPorId(Number(payload.id));
+    if (repoById) return sincronizarComRepositorioDominio(repoById);
+  }
+  if (payload.email) {
+    const repoByEmail = usuarioRepository.buscarPorEmail(payload.email);
+    if (repoByEmail) return sincronizarComRepositorioDominio(repoByEmail);
+  }
+  if (payload.telefone) {
+    const repoByTel = usuarioRepository.buscarPorTelefone(payload.telefone);
+    if (repoByTel) return sincronizarComRepositorioDominio(repoByTel);
+  }
+  if (payload.id) {
+    return usuarios.find(u => u.id === Number(payload.id));
+  }
+  return undefined;
 }
 
 function authMiddleware(req: AuthenticatedRequest, res: Response, next: NextFunction) {
@@ -801,8 +865,8 @@ function authMiddleware(req: AuthenticatedRequest, res: Response, next: NextFunc
   }
   const token = authHeader.substring(7);
   try {
-    const payload = jwt.verify(token, JWT_SECRET) as { id: number };
-    const user = usuarios.find(u => u.id === payload.id);
+    const payload = jwt.verify(token, JWT_SECRET) as { id?: number; email?: string; telefone?: string };
+    const user = resolverUsuarioSincronizado(payload);
     if (!user) return res.status(401).json({ mensagem: "Usuário não encontrado." });
     req.usuario = user;
     next();
@@ -816,8 +880,8 @@ function optionalAuth(req: AuthenticatedRequest, _res: Response, next: NextFunct
   if (authHeader && authHeader.startsWith("Bearer ")) {
     try {
       const token = authHeader.substring(7);
-      const payload = jwt.verify(token, JWT_SECRET) as { id: number };
-      req.usuario = usuarios.find(u => u.id === payload.id);
+      const payload = jwt.verify(token, JWT_SECRET) as { id?: number; email?: string; telefone?: string };
+      req.usuario = resolverUsuarioSincronizado(payload);
     } catch {}
   }
   next();
@@ -831,6 +895,7 @@ function formatarRespostaAuth(user: Usuario) {
   );
   const localidade = localidades.find(l => l.id === user.localidadeId);
   const localidadeNome = localidade ? localidade.nome : "Irecê";
+  const rocas = usuarioRepository.listarRocas(user.id);
   return {
     token,
     tipo: "Bearer",
@@ -848,6 +913,7 @@ function formatarRespostaAuth(user: Usuario) {
     localidadeId: user.localidadeId,
     localidadeNome,
     consentimentoLocalizacao: Boolean(user.consentimentoLocalizacao),
+    rocas,
     usuario: {
       id: user.id,
       nome: user.nome,
@@ -860,7 +926,8 @@ function formatarRespostaAuth(user: Usuario) {
       abastecimento: user.abastecimento,
       localidadeId: user.localidadeId,
       localidadeNome,
-      consentimentoLocalizacao: Boolean(user.consentimentoLocalizacao)
+      consentimentoLocalizacao: Boolean(user.consentimentoLocalizacao),
+      rocas
     }
   };
 }
@@ -876,7 +943,7 @@ app.get('/api/v1/health', (_req: Request, res: Response) => {
   });
 });
 
-// 1. Login tradicional por Telefone OU E-mail (RF02) com Rate Limiting
+// 1. Login tradicional por Telefone OU E-mail (RF02) com Rate Limiting (Sincronizado com src/domain/usuario/)
 app.post('/api/v1/auth/login', loginRateLimiter, (req: Request, res: Response) => {
   const { telefone, email, identificador, senha } = req.body;
   const loginInput = String(identificador || telefone || email || "").trim();
@@ -885,7 +952,10 @@ app.post('/api/v1/auth/login', loginRateLimiter, (req: Request, res: Response) =
   }
 
   let user: Usuario | undefined;
-  if (loginInput.includes("@")) {
+  const repoUser = usuarioRepository.buscarPorIdentificador(loginInput);
+  if (repoUser) {
+    user = sincronizarComRepositorioDominio(repoUser);
+  } else if (loginInput.includes("@")) {
     user = usuarios.find(u => u.email && u.email.toLowerCase() === loginInput.toLowerCase());
   } else {
     const cleanTelefone = loginInput.replace(/\D/g, "");
@@ -1305,8 +1375,7 @@ app.post('/api/v1/usuarios', optionalAuth, async (req: AuthenticatedRequest, res
 
   const jaVerificado = cleanEmail ? Boolean(verificacoesEmailMap.get(cleanEmail)?.verificado) : false;
 
-  const newUser: Usuario = {
-    id: usuarios.length + 1,
+  const repoCreated = usuarioRepository.criar({
     nome: String(nome).trim(),
     telefone: cleanPhone,
     email: cleanEmail,
@@ -1317,8 +1386,8 @@ app.post('/api/v1/usuarios', optionalAuth, async (req: AuthenticatedRequest, res
     abastecimento,
     localidadeId: Number(localidadeId),
     consentimentoLocalizacao: Boolean(consentimentoLocalizacao)
-  };
-  usuarios.push(newUser);
+  });
+  const newUser = sincronizarComRepositorioDominio(repoCreated)!;
 
   if (abastecimento !== 'ENCANADA') {
     reservatorios.push({
@@ -1349,6 +1418,8 @@ app.post('/api/v1/usuarios', optionalAuth, async (req: AuthenticatedRequest, res
     };
   }
 
+  const rocas = usuarioRepository.listarRocas(newUser.id);
+
   return res.status(201).json({
     id: newUser.id,
     nome: newUser.nome,
@@ -1360,6 +1431,7 @@ app.post('/api/v1/usuarios', optionalAuth, async (req: AuthenticatedRequest, res
     localidadeId: newUser.localidadeId,
     localidadeNome: loc.nome,
     consentimentoLocalizacao: newUser.consentimentoLocalizacao,
+    rocas,
     verificacaoEmail
   });
 });
@@ -1367,6 +1439,7 @@ app.post('/api/v1/usuarios', optionalAuth, async (req: AuthenticatedRequest, res
 app.get('/api/v1/usuarios/me', authMiddleware, (req: AuthenticatedRequest, res: Response) => {
   const user = req.usuario!;
   const loc = localidades.find(l => l.id === user.localidadeId);
+  const rocas = usuarioRepository.listarRocas(user.id);
   res.json({
     id: user.id,
     nome: user.nome,
@@ -1379,7 +1452,8 @@ app.get('/api/v1/usuarios/me', authMiddleware, (req: AuthenticatedRequest, res: 
     abastecimento: user.abastecimento,
     localidadeId: user.localidadeId,
     localidadeNome: loc ? loc.nome : "Irecê",
-    consentimentoLocalizacao: user.consentimentoLocalizacao
+    consentimentoLocalizacao: user.consentimentoLocalizacao,
+    rocas
   });
 });
 
@@ -1426,6 +1500,16 @@ app.put('/api/v1/usuarios/me', authMiddleware, (req: AuthenticatedRequest, res: 
   if (novaSenha && String(novaSenha).trim().length >= 6) {
     user.senhaHash = bcrypt.hashSync(String(novaSenha).trim(), 10);
   }
+
+  usuarioRepository.atualizar(user.id, {
+    nome: user.nome,
+    telefone: user.telefone,
+    email: user.email,
+    localidadeId: user.localidadeId,
+    abastecimento: user.abastecimento,
+    consentimentoLocalizacao: user.consentimentoLocalizacao,
+    senhaHash: user.senhaHash
+  });
 
   return res.json({
     ...formatarRespostaAuth(user),
@@ -2499,9 +2583,53 @@ app.get('/baixar', (_req: Request, res: Response) => {
 </html>`);
 });
 
-// Serve os arquivos estáticos de /public e /supernovaweb
+// --- ROTAS MODULARES EM CAMADAS (PADRÃO FINDPET) ---
+app.use('/api/v1/usuario/login', loginRateLimiter);
+app.use('/api/v1/usuario', usuarioController.router);
+app.use('/api/v1/usuarios', usuarioController.router);
+app.use('/api/v1/clima', climaController.router);
+app.use('/api/v1/pluviometro', pluviometroController.router);
+app.use('/api/v1/plantio', plantioController.router);
+app.use('/api/v1/reservatorio', reservatorioController.router);
+app.use('/api/v1/comunidade', comunidadeController.router);
+app.use('/api/v1/ia', iaController.router);
+
+// Redirecionamento de compatibilidade para index.html oficial na raiz
+app.get('/pages/index.html', (_req: Request, res: Response) => {
+  res.redirect(301, '/index.html');
+});
+
+// Rotas estáticas amigáveis para páginas dedicadas em public/pages/
+app.get('/login.html', (_req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, 'public', 'pages', 'login.html'));
+});
+app.get('/painel.html', (_req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, 'public', 'pages', 'painel.html'));
+});
+app.get('/perfil.html', (_req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, 'public', 'pages', 'perfil.html'));
+});
+app.get('/admin.html', (_req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, 'public', 'pages', 'admin.html'));
+});
+app.get('/assistente-ia.html', (_req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, 'public', 'pages', 'assistente-ia.html'));
+});
+app.get('/plantio.html', (_req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, 'public', 'pages', 'plantio.html'));
+});
+app.get('/reservatorios.html', (_req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, 'public', 'pages', 'reservatorios.html'));
+});
+app.get('/comunidade.html', (_req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, 'public', 'pages', 'comunidade.html'));
+});
+
+// Serve os arquivos estáticos oficiais de /public
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(path.join(__dirname, 'supernovaweb')));
+
+// Middleware global de tratamento de exceções (BusinessException -> ErrorResponseDTO)
+app.use(ApiExceptionHandler);
 
 app.get('*', (req: Request, res: Response) => {
   if (req.path.startsWith('/api/')) {

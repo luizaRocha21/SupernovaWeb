@@ -1,8 +1,7 @@
 /* ==========================================================================
-   MANEJO CAATINGUEIRO — ACESSIBILIDADE, MENU DE TEMAS E LEITURA POR IA (VOZ)
-   - Temas no menu lateral: Claro, Escuro, Daltônico e Baixa Visão
-   - Ajuste de fonte (A-, 100%, A+) persistido localmente
-   - Botão único de som (🔊) com resumo natural gerado por IA (/api/v1/ia/resumo-voz)
+   MANEJO CAATINGUEIRO — ACESSIBILIDADE, TEMAS E LEITURA EM VOZ ALTA
+   Sincronizado com o Menu Retrátil de Configurações (#btn-toggle-sidebar-settings)
+   da Aba Lateral Unificada (.app-sidebar-nav) e com a Roça Ativa (MC_Menu.getRocaAtiva)
    ========================================================================== */
 
 (function () {
@@ -23,28 +22,62 @@
 
   let currentAudio = null;
   let isReading = false;
+  let delegatedEventsBound = false;
 
-  function applyTheme(theme) {
-    currentTheme = theme;
-    localStorage.setItem(STORAGE_THEME_KEY, theme);
-    document.documentElement.setAttribute("data-theme", theme);
+  function syncThemeButtonsUI() {
+    const isLight = currentTheme === "claro";
+    const toggleIcon = isLight ? "🌙" : "☀️";
+    const toggleTitle = isLight
+      ? "Mudar para tema escuro"
+      : "Mudar para tema claro";
 
-    if (theme === "baixa-visao" && currentFontPct < 125) {
-      applyFontScale(130);
-    }
+    document.querySelectorAll("#btn-theme-toggle-light-dark").forEach((btn) => {
+      btn.innerHTML = `<span aria-hidden="true">${toggleIcon}</span>`;
+      btn.setAttribute("title", toggleTitle);
+      btn.setAttribute("aria-label", toggleTitle);
+      const isDarkActive = currentTheme === "escuro";
+      btn.classList.toggle("active", isDarkActive);
+      btn.setAttribute("aria-pressed", String(isDarkActive));
+    });
 
     document.querySelectorAll("[data-set-theme]").forEach((btn) => {
-      const active = btn.getAttribute("data-set-theme") === theme;
+      const targetTheme = btn.getAttribute("data-set-theme");
+      const active = targetTheme === currentTheme;
       btn.classList.toggle("active", active);
       btn.setAttribute("aria-pressed", String(active));
     });
+
+    document.querySelectorAll(".font-scale-display").forEach((el) => {
+      el.textContent = `${currentFontPct}%`;
+    });
+
+    document.querySelectorAll("[data-tts-speed]").forEach((sel) => {
+      sel.value = String(ttsConfig.velocidade || 1.0);
+    });
+
+    updateSoundButtonsState(isReading);
+  }
+
+  function applyTheme(theme) {
+    currentTheme = theme || "claro";
+    localStorage.setItem(STORAGE_THEME_KEY, currentTheme);
+    document.documentElement.setAttribute("data-theme", currentTheme);
+
+    if (currentTheme === "baixa-visao" && currentFontPct < 125) {
+      applyFontScale(130);
+    }
+
+    syncThemeButtonsUI();
   }
 
   function applyFontScale(pct) {
     const clamped = Math.min(145, Math.max(90, Number(pct) || 100));
     currentFontPct = clamped;
     localStorage.setItem(STORAGE_FONT_KEY, String(clamped));
-    document.documentElement.style.setProperty("--font-scale", String(clamped / 100));
+    document.documentElement.style.setProperty(
+      "--font-scale",
+      String(clamped / 100)
+    );
 
     document.querySelectorAll(".font-scale-display").forEach((el) => {
       el.textContent = `${clamped}%`;
@@ -53,17 +86,29 @@
 
   function updateSoundButtonsState(reading) {
     isReading = reading;
-    document.querySelectorAll("#btn-tts-icon, .btn-sound-icon:not(.btn-chat-icon)").forEach((btn) => {
-      btn.classList.toggle("is-speaking", reading);
-      btn.setAttribute(
-        "aria-label",
-        reading ? "Parar leitura em voz alta" : "Ouvir resumo em áudio desta página"
-      );
-      btn.setAttribute(
-        "title",
-        reading ? "Clique para parar o áudio" : "Ouvir resumo da página"
-      );
-    });
+    document
+      .querySelectorAll("#btn-tts-icon, .btn-sound-icon:not(.btn-chat-icon)")
+      .forEach((btn) => {
+        btn.classList.toggle("is-speaking", reading);
+        btn.classList.toggle("active", reading);
+        const isFullButton =
+          btn.textContent && btn.textContent.trim().length > 4;
+        if (isFullButton) {
+          btn.innerHTML = reading
+            ? "⏹️ Parar leitura em voz alta"
+            : "🔊 Ouvir resumo da página";
+        }
+        btn.setAttribute(
+          "aria-label",
+          reading
+            ? "Parar leitura em voz alta"
+            : "Ouvir resumo desta página"
+        );
+        btn.setAttribute(
+          "title",
+          reading ? "Clique para parar o áudio" : "Ouvir resumo desta página"
+        );
+      });
   }
 
   function stopReading() {
@@ -104,7 +149,10 @@
         if (data && data.audioBase64) {
           const mime = data.mimeType || "audio/mp3";
           currentAudio = new Audio(`data:${mime};base64,${data.audioBase64}`);
-          currentAudio.volume = Math.min(1, Math.max(0.1, Number(ttsConfig.volume) || 1.0));
+          currentAudio.volume = Math.min(
+            1,
+            Math.max(0.1, Number(ttsConfig.volume) || 1.0)
+          );
           currentAudio.onended = () => updateSoundButtonsState(false);
           currentAudio.onerror = () => fallbackBrowserSpeech(texto);
           await currentAudio.play();
@@ -125,12 +173,20 @@
       window.speechSynthesis.cancel();
       const utter = new SpeechSynthesisUtterance(texto);
       utter.lang = "pt-BR";
-      utter.rate = Math.min(2.0, Math.max(0.6, Number(ttsConfig.velocidade) || 1.0));
+      utter.rate = Math.min(
+        2.0,
+        Math.max(0.6, Number(ttsConfig.velocidade) || 1.0)
+      );
       utter.volume = 1.0;
 
       const voices = window.speechSynthesis.getVoices();
       const ptVoice =
-        voices.find((v) => v.lang && v.lang.toLowerCase().includes("pt-br") && v.name.toLowerCase().includes("google")) ||
+        voices.find(
+          (v) =>
+            v.lang &&
+            v.lang.toLowerCase().includes("pt-br") &&
+            v.name.toLowerCase().includes("google")
+        ) ||
         voices.find((v) => v.lang && v.lang.toLowerCase().includes("pt-br")) ||
         voices.find((v) => v.lang && v.lang.toLowerCase().startsWith("pt"));
       if (ptVoice) utter.voice = ptVoice;
@@ -150,10 +206,19 @@
     }
 
     updateSoundButtonsState(true);
+    const rocaAtiva =
+      window.MC_Menu && typeof window.MC_Menu.getRocaAtiva === "function"
+        ? window.MC_Menu.getRocaAtiva()
+        : null;
     const locSelect = document.querySelector("#select-localidade");
-    const localidadeId = locSelect && locSelect.value ? Number(locSelect.value) : 1;
+    const localidadeId =
+      locSelect && locSelect.value
+        ? Number(locSelect.value)
+        : Number(rocaAtiva?.localidadeId) || 1;
     const activeCropBtn = document.querySelector(".crop-tab.active");
-    const cultura = activeCropBtn ? activeCropBtn.dataset.crop || "milho" : "milho";
+    const cultura = activeCropBtn
+      ? activeCropBtn.dataset.crop || "milho"
+      : "milho";
     const activeView = document.querySelector(".view-section.active");
     const secao = activeView ? activeView.id : "painel";
 
@@ -187,31 +252,85 @@
       }
     } catch {}
 
-    // Fallback caso offline
     if (!authToken) {
       await playSpeechText(
         "Bem-vindo ao Manejo Caatingueiro! Aqui você pode acompanhar o manejo da sua roça, tirar dúvidas com seu assistente de inteligência artificial e cuidar da água da sua propriedade. Entre na sua conta para começar."
       );
       return;
     }
-    const locName = locSelect?.options?.[locSelect.selectedIndex]?.text || "Irecê";
-    const rainMonth = document.querySelector("#metric-month")?.textContent || "--";
-    const statusTitle = document.querySelector("#decision-title")?.textContent || "em análise";
-    const statusCopy = document.querySelector("#decision-copy")?.textContent || "";
-    const fallbackText = `Resumo da sua roça em ${locName}. Acumulado do mês: ${rainMonth}. Situação atual: ${statusTitle}. ${statusCopy}`;
+
+    const locName =
+      rocaAtiva?.nome
+        ? `${rocaAtiva.nome} em ${rocaAtiva.municipioNome}`
+        : locSelect?.options?.[locSelect.selectedIndex]?.text || "Irecê";
+    const rainMonth =
+      document.querySelector("#metric-month")?.textContent || "--";
+    const statusTitle =
+      document.querySelector("#decision-title")?.textContent || "em análise";
+    const statusCopy =
+      document.querySelector("#decision-copy")?.textContent || "";
+    const fallbackText = `Resumo da sua ${locName}. Acumulado do mês: ${rainMonth}. Situação atual: ${statusTitle}. ${statusCopy}`;
     await playSpeechText(fallbackText);
   }
 
   function bindAccessibilityControls() {
-    document.querySelectorAll("[data-set-theme]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        applyTheme(btn.getAttribute("data-set-theme") || "claro");
-      });
+    syncThemeButtonsUI();
+
+    if (delegatedEventsBound) return;
+    delegatedEventsBound = true;
+
+    // Delegação global para controles de velocidade da fala (incluindo o da Sidebar)
+    document.addEventListener("change", (e) => {
+      const speedSel = e.target.closest("[data-tts-speed]");
+      if (speedSel) {
+        ttsConfig.velocidade = Number(speedSel.value) || 1.0;
+        localStorage.setItem(STORAGE_TTS_KEY, JSON.stringify(ttsConfig));
+        document.querySelectorAll("[data-tts-speed]").forEach((s) => {
+          if (s !== speedSel) s.value = String(ttsConfig.velocidade);
+        });
+      }
     });
 
-    document.querySelectorAll("[data-font-action]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const action = btn.getAttribute("data-font-action");
+    // Delegação global de cliques para temas, fonte e leitura em voz alta
+    document.addEventListener("click", (e) => {
+      const toggleLightDarkBtn = e.target.closest(
+        "#btn-theme-toggle-light-dark"
+      );
+      if (toggleLightDarkBtn) {
+        e.preventDefault();
+        if (currentTheme === "claro") {
+          applyTheme("escuro");
+        } else {
+          applyTheme("claro");
+        }
+        return;
+      }
+
+      const setThemeBtn = e.target.closest("[data-set-theme]");
+      if (setThemeBtn) {
+        e.preventDefault();
+        const targetTheme =
+          setThemeBtn.getAttribute("data-set-theme") || "claro";
+        const isIconToggle =
+          setThemeBtn.id === "btn-theme-daltonico" ||
+          setThemeBtn.id === "btn-theme-contraste" ||
+          setThemeBtn.classList.contains("theme-icon-btn");
+
+        if (isIconToggle && currentTheme === targetTheme) {
+          if (targetTheme === "baixa-visao") {
+            applyFontScale(100);
+          }
+          applyTheme("claro");
+        } else {
+          applyTheme(targetTheme);
+        }
+        return;
+      }
+
+      const fontBtn = e.target.closest("[data-font-action]");
+      if (fontBtn) {
+        e.preventDefault();
+        const action = fontBtn.getAttribute("data-font-action");
         if (action === "reset") {
           applyFontScale(100);
           return;
@@ -221,42 +340,21 @@
         if (action === "dec") {
           applyFontScale(FONT_STEPS[Math.max(0, currentIdx - 1)]);
         } else if (action === "inc") {
-          applyFontScale(FONT_STEPS[Math.min(FONT_STEPS.length - 1, currentIdx + 1)]);
+          applyFontScale(
+            FONT_STEPS[Math.min(FONT_STEPS.length - 1, currentIdx + 1)]
+          );
         }
-      });
-    });
-
-    document.querySelectorAll("[data-tts-speed]").forEach((sel) => {
-      sel.value = String(ttsConfig.velocidade || 1.0);
-      sel.addEventListener("change", (e) => {
-        ttsConfig.velocidade = Number(e.target.value) || 1.0;
-        localStorage.setItem(STORAGE_TTS_KEY, JSON.stringify(ttsConfig));
-      });
-    });
-
-    document.querySelectorAll("#btn-tts-icon, .btn-sound-icon:not(.btn-chat-icon)").forEach((btn) => {
-      btn.addEventListener("click", togglePageSummaryAudio);
-    });
-
-    if (window.location.pathname.includes("/pages/") && !window.location.pathname.includes("assistente-ia.html")) {
-      const chatBtn = document.querySelector("#btn-chat-ia-icon");
-      if (chatBtn) {
-        let hasAuth = false;
-        try {
-          const raw = localStorage.getItem("mc_auth_session_v4");
-          const parsed = raw ? JSON.parse(raw) : null;
-          hasAuth = Boolean(parsed && parsed.token && parsed.user);
-        } catch {}
-        chatBtn.classList.toggle("is-locked", !hasAuth);
-        chatBtn.addEventListener("click", () => {
-          if (!hasAuth) {
-            window.location.href = "/?aviso=login-ia";
-          } else {
-            window.location.href = "/pages/assistente-ia.html";
-          }
-        });
+        return;
       }
-    }
+
+      const ttsBtn = e.target.closest(
+        "#btn-tts-icon, .btn-sound-icon:not(.btn-chat-icon)"
+      );
+      if (ttsBtn) {
+        e.preventDefault();
+        togglePageSummaryAudio();
+      }
+    });
   }
 
   function init() {
@@ -276,6 +374,7 @@
     parar: stopReading,
     ouvirResumoIa: togglePageSummaryAudio,
     aplicarTema: applyTheme,
-    aplicarFonte: applyFontScale
+    aplicarFonte: applyFontScale,
+    sincronizarBotoes: syncThemeButtonsUI
   };
 })();

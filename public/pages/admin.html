@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="sertao-claro" data-font-scale="normal">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Painel de Gestão de Cadastros — Acompanhamento de agricultores familiares, associações e entidades parceiras no Manejo Caatingueiro." />
+  <title>Gestão de Cadastros — Manejo Caatingueiro</title>
+
+  <!-- Fontes Editoriais Sertanejas (Newsreader 400 + DM Sans) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet" />
+
+  <!-- Bootstrap 5.3 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Design System Editorial Sertanejo -->
+  <link rel="stylesheet" href="/assets/css/global.css" />
+  <link rel="stylesheet" href="/assets/css/painel.css" />
+  <link rel="stylesheet" href="/assets/css/global/elements.css" />
+</head>
+<body>
+  <!-- CABEÇALHO DINÂMICO GERENCIADO POR MENU.JS -->
+  <header>
+    <nav id="menu" class="navbar navbar-expand-lg navbar-light shadow-sm" aria-label="Navegação Principal"></nav>
+  </header>
+
+  <main id="conteudo-principal" class="container py-4" style="max-width: 1280px;">
+    <!-- Hero Editorial do Painel Administrativo -->
+    <section class="hero-card p-4 mb-4" style="background-color: #f4eddb; border: 1px solid #d2c2a9; color: #542817;">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+          <span class="eyebrow hero-kicker" style="font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase; color: #5d603d;">🛡️ GESTÃO COMUNITÁRIA E CONVÊNIOS</span>
+          <h1 class="h3 mt-1 mb-1" style="font-family: 'Newsreader', Georgia, serif; font-weight: 400; color: #542817;">Administração de Cadastros <em style="color: #bd7627; font-style: italic;">da Comunidade</em></h1>
+          <p id="admin-resumo-voz" class="mb-0" style="font-family: 'DM Sans', sans-serif; color: #6e6252; line-height: 1.55;">
+            Consulte, atualize ou cadastre agricultores familiares, associações comunitárias e entidades parceiras do território.
+          </p>
+        </div>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <button
+            type="button"
+            class="btn btn-speak"
+            style="background-color: #fffaf0; border: 1px solid #d2c2a9; color: #542817;"
+            data-speak-target="#admin-resumo-voz"
+            aria-label="Ouvir resumo do painel de gestão"
+          >
+            🔊 Ouvir resumo
+          </button>
+          <a href="/pages/login.html" class="btn btn-sm fw-bold" style="background-color: #fffaf0; border: 1px solid #d2c2a9; color: #542817;">
+            + Novo Cadastro
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Aviso para visitantes não autenticados -->
+    <div id="admin-aviso-visitante" class="alert alert-warning d-none mb-4" role="alert">
+      <strong>🔒 Acesso de Gestão:</strong> Para editar ou remover cadastros, entre com sua conta de Administrador ou Entidade na página <a href="/pages/login.html" class="alert-link">Entrar / Cadastrar</a>.
+    </div>
+
+    <!-- 3 Cards de Resumo no Topo (col-12 col-md-4 d-flex) -->
+    <section class="row g-4 mb-4 align-items-stretch" aria-label="Indicadores de cadastros">
+      <div class="col-12 col-md-4 d-flex">
+        <div class="card p-3 h-100 w-100" style="background-color: #fffaf0; border: 1px solid #d2c2a9; border-left: 4px solid #542817;">
+          <span class="small" style="color: #6e6252;">Total de Cadastros</span>
+          <strong id="stat-total-usuarios" class="fs-3" style="color: #542817;">0</strong>
+          <small style="color: #6e6252;">Famílias e parceiros registrados</small>
+        </div>
+      </div>
+      <div class="col-12 col-md-4 d-flex">
+        <div class="card p-3 h-100 w-100" style="background-color: #fffaf0; border: 1px solid #d2c2a9; border-left: 4px solid #5d603d;">
+          <span class="small" style="color: #6e6252;">Agricultores Familiares</span>
+          <strong id="stat-total-produtores" class="fs-3" style="color: #5d603d;">0</strong>
+          <small style="color: #6e6252;">Produtores e guardiões de sementes</small>
+        </div>
+      </div>
+      <div class="col-12 col-md-4 d-flex">
+        <div class="card p-3 h-100 w-100" style="background-color: #fffaf0; border: 1px solid #d2c2a9; border-left: 4px solid #542817;">
+          <span class="small" style="color: #6e6252;">Entidades e Convênios</span>
+          <strong id="stat-total-institucional" class="fs-3" style="color: #5d603d;">0</strong>
+          <small style="color: #6e6252;">Associações, cooperativas e técnicos</small>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tabela de Usuários e Formulário de Edição -->
+    <div class="row g-4">
+      <div class="col-12 col-lg-8">
+        <section class="card p-4 h-100" style="background-color: #fffaf0; border: 1px solid #d2c2a9; border-left: 4px solid #542817;" aria-labelledby="titulo-tabela-usuarios">
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <div>
+              <span class="eyebrow section-kicker" style="font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase; color: #5d603d;">📋 LISTA DE CADASTRADOS</span>
+              <h2 id="titulo-tabela-usuarios" class="h5 mb-0" style="font-family: 'Newsreader', Georgia, serif; font-weight: 400; color: #542817;">Agricultores e <em style="color: #bd7627; font-style: italic;">Entidades Registradas</em></h2>
+            </div>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              <input
+                type="search"
+                id="input-busca-usuarios"
+                class="form-control form-control-sm"
+                style="min-width: 210px;"
+                placeholder="Buscar por nome, e-mail ou perfil..."
+                aria-label="Buscar cadastros"
+              />
+              <button id="btn-recarregar-usuarios" type="button" class="btn btn-sm fw-bold" style="background-color: #5d603d; border: 1px solid #5d603d; color: #fffaf0;">
+                🔄 Atualizar
+              </button>
+            </div>
+          </div>
+
+          <div id="admin-feedback-box" class="alert d-none mb-3" role="status" aria-live="polite"></div>
+
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead>
+                <tr>
+                  <th scope="col" style="color: #542817;">#</th>
+                  <th scope="col" style="color: #542817;">Nome / Identificação</th>
+                  <th scope="col" style="color: #542817;">E-mail / Contato</th>
+                  <th scope="col" style="color: #542817;">Perfil</th>
+                  <th scope="col" class="text-end" style="color: #542817;">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-usuarios-admin">
+                <tr>
+                  <td colspan="5" class="text-center py-4" style="color: #6e6252;">Carregando cadastros...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <!-- Painel Lateral de Edição Rápida -->
+      <div class="col-12 col-lg-4">
+        <section class="card p-4 h-100" style="background-color: #fffaf0; border: 1px solid #d2c2a9;" aria-labelledby="titulo-form-edicao">
+          <span class="eyebrow section-kicker" style="font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase; color: #5d603d;">✏️ ATUALIZAR OU CRIAR CADASTRO</span>
+          <h2 id="titulo-form-edicao" class="h5 mb-2" style="font-family: 'Newsreader', Georgia, serif; font-weight: 400; color: #542817;">Dados do Agricultor <em style="color: #bd7627; font-style: italic;">ou Entidade</em></h2>
+          <p class="small mb-3" style="font-family: 'DM Sans', sans-serif; color: #6e6252; line-height: 1.55;">
+            Clique em <strong style="color: #542817;">Editar</strong> na tabela ao lado para alterar um registro existente ou preencha abaixo para criar um novo cadastro.
+          </p>
+
+          <form id="form-admin-usuario" class="row g-3" novalidate>
+            <input type="hidden" id="edit-user-id" value="" />
+
+            <div class="col-12">
+              <label for="edit-user-nome" class="form-label small fw-bold" style="color: #542817;">Nome Completo ou Entidade</label>
+              <input
+                type="text"
+                id="edit-user-nome"
+                class="form-control"
+                placeholder="Ex.: Maria do Socorro Silva"
+                required
+              />
+            </div>
+
+            <div class="col-12">
+              <label for="edit-user-email" class="form-label small fw-bold" style="color: #542817;">E-mail de Acesso</label>
+              <input
+                type="email"
+                id="edit-user-email"
+                class="form-control"
+                placeholder="Ex.: maria.socorro@comunidade.org.br"
+                required
+              />
+            </div>
+
+            <div class="col-12 col-sm-6">
+              <label for="edit-user-perfil" class="form-label small fw-bold" style="color: #542817;">Tipo de Vínculo</label>
+              <select id="edit-user-perfil" class="form-select">
+                <option value="PRODUTOR">👩‍🌾 Agricultor(a) Familiar</option>
+                <option value="CONVENIO">🤝 Convênio / Associação</option>
+                <option value="ADMIN">🛡️ Administração / Técnico</option>
+              </select>
+            </div>
+
+            <div class="col-12 col-sm-6">
+              <label for="edit-user-localidade" class="form-label small fw-bold" style="color: #542817;">Comunidade / Cidade</label>
+              <select id="edit-user-localidade" class="form-select">
+                <option value="1">Irecê - BA</option>
+                <option value="2">Presidente Dutra - BA</option>
+              </select>
+            </div>
+
+            <div class="col-12">
+              <label for="edit-user-documento" class="form-label small fw-bold" style="color: #542817;">CPF, CNPJ ou CAF/DAP (opcional)</label>
+              <input
+                type="text"
+                id="edit-user-documento"
+                class="form-control"
+                placeholder="Ex.: 000.000.000-00"
+              />
+            </div>
+
+            <div class="col-12" id="box-senha-novo-cadastro">
+              <label for="edit-user-senha" class="form-label small fw-bold" style="color: #542817;">Senha (para novo cadastro ou redefinição)</label>
+              <input
+                type="password"
+                id="edit-user-senha"
+                class="form-control"
+                placeholder="Mínimo de 6 caracteres"
+              />
+            </div>
+
+            <div class="col-12 d-flex flex-wrap gap-2 pt-1">
+              <button type="submit" id="btn-salvar-usuario" class="btn fw-bold flex-fill" style="background-color: #5d603d; border: 1px solid #5d603d; color: #fffaf0;">
+                💾 Salvar Cadastro
+              </button>
+              <button type="button" id="btn-limpar-form-admin" class="btn" style="background-color: #fffaf0; border: 1px solid #d2c2a9; color: #542817;">
+                Limpar
+              </button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="container py-4 mt-4 border-top text-center small text-muted" style="max-width: 1280px;">
+    <p class="mb-1"><strong>Manejo Caatingueiro</strong> — Gestão comunitária transparente e apoio às famílias do Semiárido.</p>
+  </footer>
+
+  <!-- Scripts Globais -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/assets/js/menu.js"></script>
+  <script src="/assets/js/acessibilidade-voz.js"></script>
+  <script>
+    (function () {
+      const tbody = document.getElementById("tbody-usuarios-admin");
+      const inputBusca = document.getElementById("input-busca-usuarios");
+      const btnRecarregar = document.getElementById("btn-recarregar-usuarios");
+      const feedbackBox = document.getElementById("admin-feedback-box");
+      const formAdmin = document.getElementById("form-admin-usuario");
+      const btnLimpar = document.getElementById("btn-limpar-form-admin");
+
+      let listaUsuariosCache = [];
+
+      // Higienização anti-XSS obrigatória (auditada pelo code-agent.js)
+      function escapeHtml(str) {
+        return String(str ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function obterTokenSessao() {
+        try {
+          if (window.MC_Menu && typeof window.MC_Menu.getAuthSession === "function") {
+            const s = window.MC_Menu.getAuthSession();
+            if (s && s.token) return s.token;
+          }
+          const raw = localStorage.getItem("mc_auth_session_v4");
+          if (!raw) return "";
+          const parsed = JSON.parse(raw);
+          return parsed?.token || "";
+        } catch (_) {
+          return "";
+        }
+      }
+
+      function mostrarFeedback(texto, tipo = "info") {
+        if (!feedbackBox) return;
+        feedbackBox.className = `alert alert-${tipo} mb-3`;
+        feedbackBox.textContent = texto;
+      }
+
+      function atualizarIndicadores(lista) {
+        const total = lista.length;
+        const produtores = lista.filter((u) => {
+          const p = String(u.perfil || u.role || "PRODUTOR").toUpperCase();
+          return p === "PRODUTOR" || p === "AGRICULTOR";
+        }).length;
+        const institucionais = total - produtores;
+
+        document.getElementById("stat-total-usuarios").textContent = String(total);
+        document.getElementById("stat-total-produtores").textContent = String(produtores);
+        document.getElementById("stat-total-institucional").textContent = String(institucionais);
+
+        const resumoVoz = document.getElementById("admin-resumo-voz");
+        if (resumoVoz) {
+          resumoVoz.textContent = `Painel de gestão com ${total} cadastros ativos, sendo ${produtores} agricultores familiares e ${institucionais} entidades ou técnicos.`;
+        }
+      }
+
+      function formatarRotuloPerfil(perfilBruto) {
+        const p = String(perfilBruto || "PRODUTOR").toUpperCase();
+        if (p === "ADMIN") return "Administração";
+        if (p === "CONVENIO") return "Associação / Convênio";
+        return "Agricultor(a)";
+      }
+
+      function renderizarTabelaUsuarios(filtro = "") {
+        if (!tbody) return;
+        const termo = String(filtro || "").trim().toLowerCase();
+        const filtrados = listaUsuariosCache.filter((u) => {
+          if (!termo) return true;
+          const nome = String(u.nome || u.name || "").toLowerCase();
+          const email = String(u.email || "").toLowerCase();
+          const perfil = String(u.perfil || u.role || "").toLowerCase();
+          return nome.includes(termo) || email.includes(termo) || perfil.includes(termo);
+        });
+
+        if (filtrados.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="5" class="text-center text-muted py-4">Nenhum cadastro encontrado para o filtro informado.</td>
+            </tr>
+          `;
+          return;
+        }
+
+        tbody.innerHTML = filtrados
+          .map((u) => {
+            const id = Number(u.id || 0);
+            const nome = escapeHtml(u.nome || u.name || "Agricultor(a)");
+            const email = escapeHtml(u.email || "sem-email@manejo.local");
+            const perfilCodigo = escapeHtml((u.perfil || u.role || "PRODUTOR").toUpperCase());
+            const perfilRotulo = escapeHtml(formatarRotuloPerfil(perfilCodigo));
+            const badgeCls =
+              perfilCodigo === "ADMIN"
+                ? "text-bg-danger"
+                : perfilCodigo === "CONVENIO"
+                ? "text-bg-primary"
+                : "text-bg-success";
+
+            return `
+              <tr>
+                <td class="fw-bold">#${id}</td>
+                <td>${nome}</td>
+                <td class="small">${email}</td>
+                <td><span class="badge ${badgeCls}">${perfilRotulo}</span></td>
+                <td class="text-end">
+                  <div class="d-inline-flex gap-2">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-primary"
+                      data-action="edit"
+                      data-id="${id}"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-danger"
+                      data-action="delete"
+                      data-id="${id}"
+                    >
+                      Excluir
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            `;
+          })
+          .join("");
+      }
+
+      async function carregarUsuarios() {
+        const token = obterTokenSessao();
+        const avisoVisitante = document.getElementById("admin-aviso-visitante");
+        if (avisoVisitante) {
+          avisoVisitante.classList.toggle("d-none", Boolean(token));
+        }
+
+        try {
+          const headers = { Accept: "application/json" };
+          if (token) headers.Authorization = `Bearer ${token}`;
+
+          const resp = await fetch("/api/v1/usuarios", { headers });
+          const data = await resp.json();
+          const lista = Array.isArray(data)
+            ? data
+            : Array.isArray(data.usuarios)
+            ? data.usuarios
+            : Array.isArray(data.data)
+            ? data.data
+            : [];
+
+          listaUsuariosCache = lista;
+          atualizarIndicadores(listaUsuariosCache);
+          renderizarTabelaUsuarios(inputBusca ? inputBusca.value : "");
+        } catch (err) {
+          mostrarFeedback("Não foi possível carregar a lista de cadastros agora.", "warning");
+        }
+      }
+
+      function preencherFormularioEdicao(usuario) {
+        if (!usuario) return;
+        document.getElementById("edit-user-id").value = String(usuario.id || "");
+        document.getElementById("edit-user-nome").value = usuario.nome || usuario.name || "";
+        document.getElementById("edit-user-email").value = usuario.email || "";
+        document.getElementById("edit-user-perfil").value = (usuario.perfil || usuario.role || "PRODUTOR").toUpperCase();
+        document.getElementById("edit-user-localidade").value = String(usuario.localidadeId || usuario.localidade_id || 1);
+        document.getElementById("edit-user-documento").value = usuario.documento || usuario.cpfCnpj || "";
+        document.getElementById("edit-user-senha").value = "";
+        document.getElementById("btn-salvar-usuario").textContent = `💾 Atualizar Cadastro #${usuario.id}`;
+      }
+
+      function limparFormulario() {
+        if (formAdmin) formAdmin.reset();
+        document.getElementById("edit-user-id").value = "";
+        document.getElementById("btn-salvar-usuario").textContent = "💾 Salvar Cadastro";
+      }
+
+      if (tbody) {
+        tbody.addEventListener("click", async (e) => {
+          const btn = e.target.closest("button[data-action]");
+          if (!btn) return;
+          const action = btn.getAttribute("data-action");
+          const id = Number(btn.getAttribute("data-id") || 0);
+          if (!id) return;
+
+          if (action === "edit") {
+            const encontrado = listaUsuariosCache.find((u) => Number(u.id) === id);
+            if (encontrado) {
+              preencherFormularioEdicao(encontrado);
+              mostrarFeedback(`Editando o cadastro #${id} (${encontrado.nome || encontrado.email}).`, "info");
+            }
+          } else if (action === "delete") {
+            const token = obterTokenSessao();
+            try {
+              const headers = { "Content-Type": "application/json" };
+              if (token) headers.Authorization = `Bearer ${token}`;
+              const resp = await fetch(`/api/v1/usuarios/${encodeURIComponent(id)}`, {
+                method: "DELETE",
+                headers
+              });
+              if (resp.ok) {
+                mostrarFeedback(`✅ Cadastro #${id} removido com sucesso.`, "success");
+                limparFormulario();
+                carregarUsuarios();
+              } else {
+                const err = await resp.json().catch(() => ({}));
+                mostrarFeedback(err.message || err.erro || "Não foi possível excluir este registro.", "warning");
+              }
+            } catch (_) {
+              mostrarFeedback("Erro de comunicação ao tentar excluir o cadastro.", "danger");
+            }
+          }
+        });
+      }
+
+      if (formAdmin) {
+        formAdmin.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const idEdicao = document.getElementById("edit-user-id").value.trim();
+          const nome = document.getElementById("edit-user-nome").value.trim();
+          const email = document.getElementById("edit-user-email").value.trim();
+          const perfil = document.getElementById("edit-user-perfil").value;
+          const localidadeId = Number(document.getElementById("edit-user-localidade").value || 1);
+          const documento = document.getElementById("edit-user-documento").value.trim();
+          const senha = document.getElementById("edit-user-senha").value;
+
+          if (!nome || !email) {
+            mostrarFeedback("Preencha pelo menos o nome e o e-mail.", "warning");
+            return;
+          }
+
+          const token = obterTokenSessao();
+          const headers = { "Content-Type": "application/json" };
+          if (token) headers.Authorization = `Bearer ${token}`;
+
+          const payload = {
+            nome,
+            email,
+            perfil,
+            localidadeId,
+            documento
+          };
+          if (senha && senha.trim().length > 0) {
+            payload.senha = senha.trim();
+          }
+
+          try {
+            const url = idEdicao
+              ? `/api/v1/usuarios/${encodeURIComponent(idEdicao)}`
+              : "/api/v1/usuarios";
+            const method = idEdicao ? "PUT" : "POST";
+
+            const resp = await fetch(url, {
+              method,
+              headers,
+              body: JSON.stringify(payload)
+            });
+
+            const data = await resp.json().catch(() => ({}));
+            if (resp.ok) {
+              mostrarFeedback(
+                idEdicao
+                  ? `✅ Cadastro #${idEdicao} atualizado com sucesso!`
+                  : "✅ Novo cadastro registrado com sucesso!",
+                "success"
+              );
+              limparFormulario();
+              carregarUsuarios();
+            } else {
+              mostrarFeedback(data.message || data.erro || "Não foi possível salvar os dados.", "warning");
+            }
+          } catch (err) {
+            mostrarFeedback("Erro de conexão ao salvar o cadastro.", "danger");
+          }
+        });
+      }
+
+      if (btnLimpar) {
+        btnLimpar.addEventListener("click", limparFormulario);
+      }
+      if (btnRecarregar) {
+        btnRecarregar.addEventListener("click", carregarUsuarios);
+      }
+      if (inputBusca) {
+        inputBusca.addEventListener("input", () => {
+          renderizarTabelaUsuarios(inputBusca.value);
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", carregarUsuarios);
+    })();
+  </script>
+</body>
+</html>
