@@ -4,6 +4,9 @@
   "description": "Painel de chuva hiperlocal e sugestão consultiva de plantio para o semiárido",
   "main": "server.ts",
   "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "dev": "tsx server.ts",
     "build": "echo 'Build OK'",
@@ -11,6 +14,7 @@
     "agent": "tsx scripts/code-agent.js"
   },
   "dependencies": {
+    "@google-cloud/firestore": "^9.4.0",
     "@google/genai": "^2.30.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
@@ -18,7 +22,8 @@
     "express": "^4.21.2",
     "firebase-admin": "^14.5.0",
     "jsonwebtoken": "^9.0.2",
-    "nodemailer": "^10.1.7"
+    "nodemailer": "^10.1.7",
+    "tsx": "^4.23.15"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -27,7 +32,6 @@
     "@types/jsonwebtoken": "^9.0.8",
     "@types/node": "^22.10.2",
     "@types/nodemailer": "^8.0.2",
-    "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   }
 }
