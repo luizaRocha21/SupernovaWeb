@@ -29,6 +29,8 @@ export class FirebaseClient {
   private isFirestoreConnected = false;
   private projectId: string | null = null;
   private ultimaSincronizacao: string | null = null;
+  private pausadoAteTimestamp = 0;
+  private avisoApiDesativadaExibido = false;
 
   /**
    * Espelho rápido em memória que permite operação 100% transparente
@@ -130,7 +132,26 @@ export class FirebaseClient {
   }
 
   public estaConectadoNaNuvem(): boolean {
-    return this.isFirestoreConnected && this.firestore !== null;
+    return this.isFirestoreConnected && this.firestore !== null && this.pausadoAteTimestamp <= Date.now();
+  }
+
+  private tratarErroNuvem(contexto: string, erro: unknown): void {
+    const msg = erro instanceof Error ? erro.message : String(erro);
+    if (
+      msg.includes('PERMISSION_DENIED') ||
+      msg.includes('Cloud Firestore API has not been used') ||
+      msg.includes('NOT_FOUND')
+    ) {
+      this.pausadoAteTimestamp = Date.now() + 60_000;
+      if (!this.avisoApiDesativadaExibido) {
+        this.avisoApiDesativadaExibido = true;
+        console.warn(
+          `[FirebaseClient] Cloud Firestore ainda não ativado no projeto "${this.projectId}". Operando com espelho em memória e tentando reconectar automaticamente a cada 60s. Detalhe: ${msg}`
+        );
+      }
+      return;
+    }
+    console.warn(`[FirebaseClient] ${contexto}:`, msg);
   }
 
   public async salvarDocumento<T extends Record<string, unknown>>(
@@ -151,16 +172,17 @@ export class FirebaseClient {
     mapa.set(idNormalizado, mesclado);
     this.ultimaSincronizacao = new Date().toISOString();
 
-    if (this.isFirestoreConnected && this.firestore) {
+    if (this.estaConectadoNaNuvem() && this.firestore) {
       try {
         await this.firestore
           .collection(colecao)
           .doc(idNormalizado)
           .set(mesclado, { merge: true });
+        this.avisoApiDesativadaExibido = false;
       } catch (erro) {
-        console.warn(
-          `[FirebaseClient] Falha ao gravar em ${colecao}/${idNormalizado} no Cloud Firestore (mantido no espelho local):`,
-          erro instanceof Error ? erro.message : String(erro)
+        this.tratarErroNuvem(
+          `Falha ao gravar em ${colecao}/${idNormalizado} no Cloud Firestore (mantido no espelho local)`,
+          erro
         );
       }
     }
@@ -177,13 +199,14 @@ export class FirebaseClient {
     const existia = mapa.delete(idNormalizado);
     this.ultimaSincronizacao = new Date().toISOString();
 
-    if (this.isFirestoreConnected && this.firestore) {
+    if (this.estaConectadoNaNuvem() && this.firestore) {
       try {
         await this.firestore.collection(colecao).doc(idNormalizado).delete();
+        this.avisoApiDesativadaExibido = false;
       } catch (erro) {
-        console.warn(
-          `[FirebaseClient] Falha ao remover ${colecao}/${idNormalizado} no Cloud Firestore:`,
-          erro instanceof Error ? erro.message : String(erro)
+        this.tratarErroNuvem(
+          `Falha ao remover ${colecao}/${idNormalizado} no Cloud Firestore`,
+          erro
         );
       }
     }
@@ -198,18 +221,19 @@ export class FirebaseClient {
     const idNormalizado = String(docId).trim();
     const mapa = this.obterMapaColecao(colecao);
 
-    if (this.isFirestoreConnected && this.firestore) {
+    if (this.estaConectadoNaNuvem() && this.firestore) {
       try {
         const snap = await this.firestore.collection(colecao).doc(idNormalizado).get();
+        this.avisoApiDesativadaExibido = false;
         if (snap.exists) {
           const data = snap.data() as Record<string, unknown>;
           mapa.set(idNormalizado, data);
           return data as T;
         }
       } catch (erro) {
-        console.warn(
-          `[FirebaseClient] Falha ao ler ${colecao}/${idNormalizado} do Cloud Firestore (usando cache):`,
-          erro instanceof Error ? erro.message : String(erro)
+        this.tratarErroNuvem(
+          `Falha ao ler ${colecao}/${idNormalizado} do Cloud Firestore (usando cache)`,
+          erro
         );
       }
     }
@@ -223,9 +247,10 @@ export class FirebaseClient {
   ): Promise<T[]> {
     const mapa = this.obterMapaColecao(colecao);
 
-    if (this.isFirestoreConnected && this.firestore) {
+    if (this.estaConectadoNaNuvem() && this.firestore) {
       try {
         const snapshot = await this.firestore.collection(colecao).get();
+        this.avisoApiDesativadaExibido = false;
         if (!snapshot.empty) {
           snapshot.docs.forEach((docSnap) => {
             mapa.set(docSnap.id, docSnap.data() as Record<string, unknown>);
@@ -233,9 +258,9 @@ export class FirebaseClient {
           this.ultimaSincronizacao = new Date().toISOString();
         }
       } catch (erro) {
-        console.warn(
-          `[FirebaseClient] Falha ao listar coleção ${colecao} do Cloud Firestore (usando espelho em memória):`,
-          erro instanceof Error ? erro.message : String(erro)
+        this.tratarErroNuvem(
+          `Falha ao listar coleção ${colecao} do Cloud Firestore (usando espelho em memória)`,
+          erro
         );
       }
     }
