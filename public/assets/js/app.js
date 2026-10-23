@@ -497,20 +497,6 @@ function updateAuthUI() {
 
   const isLogged = Boolean(state.user && state.token);
 
-  if (loggedManejoWorkspace) {
-    loggedManejoWorkspace.hidden = false;
-    loggedManejoWorkspace.removeAttribute("hidden");
-  }
-  if (btnLogout) {
-    btnLogout.hidden = false;
-  }
-  if (mainNav) mainNav.hidden = false;
-  if (sidebarNavLogged) sidebarNavLogged.hidden = false;
-  if (btnChatIcon) {
-    btnChatIcon.classList.remove("is-locked");
-    btnChatIcon.title = "Abrir página do seu Chat com o Assistente de IA";
-  }
-
   if (isLogged) {
     if (userBadge) {
       userBadge.hidden = false;
@@ -519,7 +505,18 @@ function updateAuthUI() {
       }
     }
     if (btnOpenAuth) btnOpenAuth.hidden = true;
+    if (btnLogout) btnLogout.hidden = false;
     if (guestHomeSection) guestHomeSection.hidden = true;
+    if (loggedManejoWorkspace) {
+      loggedManejoWorkspace.hidden = false;
+      loggedManejoWorkspace.removeAttribute("hidden");
+    }
+    if (mainNav) mainNav.hidden = false;
+    if (sidebarNavLogged) sidebarNavLogged.hidden = false;
+    if (btnChatIcon) {
+      btnChatIcon.classList.remove("is-locked");
+      btnChatIcon.title = "Abrir página do seu Chat com o Assistente de IA";
+    }
     if (loggedWelcomeTitle) {
       loggedWelcomeTitle.textContent = `Olá, ${state.user.nome}! Acompanhe o manejo da sua roça em ${state.user.localidadeNome || "sua localidade"}.`;
     }
@@ -527,9 +524,18 @@ function updateAuthUI() {
       formAlerta.hidden = state.user.perfil === "AGRICULTOR";
     }
   } else {
+    if (userBadge) userBadge.hidden = true;
     if (btnOpenAuth) btnOpenAuth.hidden = false;
+    if (btnLogout) btnLogout.hidden = true;
     if (guestHomeSection) guestHomeSection.hidden = false;
-    if (formAlerta) formAlerta.hidden = false;
+    if (loggedManejoWorkspace) loggedManejoWorkspace.hidden = true;
+    if (mainNav) mainNav.hidden = true;
+    if (sidebarNavLogged) sidebarNavLogged.hidden = true;
+    if (btnChatIcon) {
+      btnChatIcon.classList.add("is-locked");
+      btnChatIcon.title = "Entre na sua conta para acessar o Assistente de IA";
+    }
+    if (formAlerta) formAlerta.hidden = true;
   }
 }
 

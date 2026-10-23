@@ -1188,24 +1188,46 @@ footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  padding-bottom: 1rem;
+  gap: 10px;
+  padding-bottom: 14px;
   border-bottom: 1px solid var(--cor-borda, #d2c2a9);
-  margin-bottom: 1rem;
+  margin-bottom: 4px;
 }
 
 .sidebar-brand-link {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 10px;
   text-decoration: none;
   color: var(--cor-primaria, #542817);
   min-width: 0;
+  flex: 1;
+}
+
+.sidebar-brand-title {
+  min-width: 0;
+  flex: 1;
+}
+
+.sidebar-brand-title strong {
+  font-size: 17px !important;
+  line-height: 1.15 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-brand-title span {
+  font-size: 12.5px !important;
+  line-height: 1.2 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sidebar-brand-logo {
-  width: 42px;
-  height: 42px;
+  width: 38px;
+  height: 38px;
   border-radius: 8px;
   object-fit: contain;
   background: #fffaf0;
@@ -1219,44 +1241,48 @@ footer {
   background: var(--cor-superficie, #fffaf0);
   border: 1px solid var(--cor-borda, #d2c2a9);
   border-radius: 8px;
-  padding: 0.85rem;
-  margin-bottom: 1.25rem;
+  padding: 12px;
+  margin-bottom: 8px;
   box-shadow: 0 2px 6px rgba(84, 40, 23, 0.04);
 }
 
 .sidebar-roca-switcher label {
   display: block;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--cor-secundaria, #5d603d);
-  margin-bottom: 0.4rem;
+  margin-bottom: 6px;
 }
 
 /* Links Verticais da Sidebar */
 .sidebar-nav-links {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 6px;
   list-style: none;
   padding: 0;
-  margin: 0 0 1.25rem 0;
+  margin: 0 0 12px 0;
 }
 
 .sidebar-link-item {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.7rem 0.9rem;
-  border-radius: 7px;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
   color: var(--cor-texto, #2a1f18);
+  font-size: 14.5px !important;
   font-weight: 600;
   text-decoration: none;
   border: 1px solid transparent;
   background: transparent;
   width: 100%;
   text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
@@ -1273,27 +1299,27 @@ footer {
   border-color: var(--cor-secundaria, #5d603d) !important;
 }
 
-/* Menu Retrátil de Configurações e Acessibilidade (Correção Fotos 4 e 8) */
+/* Menu Retrátil de Configurações e Acessibilidade */
 .sidebar-settings-toggle {
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.65rem 0.85rem;
-  border-radius: 7px;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
   background: var(--cor-superficie, #fffaf0);
   color: var(--cor-primaria, #542817);
   border: 1px solid var(--cor-borda, #d2c2a9);
-  font-size: 0.86rem;
+  font-size: 14px !important;
   font-weight: 600;
   cursor: pointer;
 }
 
 .sidebar-settings-collapse {
-  margin-top: 0.5rem;
-  padding: 0.85rem;
-  border-radius: 8px;
+  margin-top: 8px;
+  padding: 14px;
+  border-radius: 10px;
   background: var(--cor-superficie, #fffaf0);
   border: 1px solid var(--cor-borda, #d2c2a9);
   display: none;
@@ -1305,12 +1331,31 @@ footer {
   display: block;
 }
 
-/* Grid de 3 colunas iguais para os 3 botões de Tema da Tela na Gaveta Lateral (Foto 4) */
+/* Card de Opções da Gaveta Lateral (Visitante / Index) */
+.sidebar-guest-card {
+  background: var(--cor-superficie, #fffaf0);
+  border: 1px solid var(--cor-borda, #d2c2a9);
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 2px 8px rgba(84, 40, 23, 0.05);
+}
+
+.sidebar-section-label {
+  display: block;
+  font-family: var(--sans, "DM Sans", sans-serif);
+  font-size: 12.5px !important;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--cor-primaria, #542817);
+  margin-bottom: 8px;
+}
+
+/* Grid de 3 colunas iguais para os 3 botões de Tema da Tela na Gaveta Lateral (Apenas Ícones) */
 .sidebar-theme-grid,
 .sidebar-settings-collapse .theme-icon-toolbar {
   display: grid !important;
-  grid-template-columns: repeat(3, 1fr) !important;
-  gap: 0.5rem !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 8px !important;
   width: 100% !important;
 }
 
@@ -1319,16 +1364,103 @@ footer {
 .sidebar-settings-collapse .theme-icon-toolbar button {
   width: 100% !important;
   min-width: 0 !important;
-  height: 42px !important;
-  min-height: 42px !important;
+  height: 44px !important;
+  min-height: 44px !important;
   padding: 0 !important;
   border-radius: 8px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  background: var(--cor-superficie, #fffaf0);
+  font-size: 18px !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  word-break: normal !important;
+  background: var(--cor-fundo-secundario, #f4eddb);
   border: 1px solid var(--cor-borda, #d2c2a9);
   color: var(--cor-primaria, #542817);
+}
+
+/* Grid de 3 colunas iguais para Tamanho da Letra (A-, 100%, A+) sem quebrar linha */
+.sidebar-font-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+.sidebar-font-btn,
+button.sidebar-font-btn {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  padding: 0 !important;
+  border-radius: 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+  font-family: var(--sans, "DM Sans", sans-serif) !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  background: var(--cor-fundo-secundario, #f4eddb) !important;
+  border: 1px solid var(--cor-borda, #d2c2a9) !important;
+  color: var(--cor-primaria, #542817) !important;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sidebar-font-btn:hover,
+button.sidebar-font-btn:hover {
+  background: var(--cor-secundaria-suave, #e6e7dc) !important;
+  border-color: var(--cor-secundaria, #5d603d) !important;
+}
+
+/* Botões de Acesso (Entrar / Cadastrar) na Gaveta Lateral */
+.sidebar-auth-btn {
+  width: 100%;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 14px !important;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--sans, "DM Sans", sans-serif);
+  font-size: 15px !important;
+  font-weight: 700;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  word-break: normal !important;
+  transition: all 0.16s ease;
+}
+
+.sidebar-auth-btn-primary {
+  background-color: var(--cor-secundaria, #5d603d);
+  border: 1px solid var(--cor-secundaria, #5d603d);
+  color: #fffaf0 !important;
+}
+
+.sidebar-auth-btn-primary:hover {
+  background-color: var(--cor-secundaria-hover, #484b2f);
+  border-color: var(--cor-secundaria-hover, #484b2f);
+  color: #fffaf0 !important;
+}
+
+.sidebar-auth-btn-secondary {
+  background-color: var(--cor-superficie, #fffaf0);
+  border: 1px solid var(--cor-borda, #d2c2a9);
+  color: var(--cor-primaria, #542817) !important;
+}
+
+.sidebar-auth-btn-secondary:hover {
+  background-color: var(--cor-secundaria-suave, #e6e7dc);
+  border-color: var(--cor-secundaria, #5d603d);
+  color: var(--cor-primaria, #542817) !important;
 }
 
 /* Botão "🔊 Ouvir resumo da página" retangular e harmônico na Gaveta Lateral (Fim do formato oval da Foto 4) */

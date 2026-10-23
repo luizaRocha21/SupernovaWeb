@@ -679,7 +679,8 @@
      ========================================================================== */
   function buildLoggedTopbarHtml(rocaAtiva, loggedIn) {
     const onIndex = isIndexPage();
-    const brandHref = loggedIn ? "/pages/painel.html" : "/index.html?ver=inicio";
+    const showLoggedControls = Boolean(loggedIn && !onIndex);
+    const brandHref = loggedIn ? "/pages/painel.html" : "/index.html";
 
     return `
       <div class="d-flex align-items-center gap-2 flex-wrap">
@@ -688,7 +689,7 @@
           class="btn-menu-drawer"
           id="btn-open-drawer"
           data-open-sidebar
-          aria-label="Abrir menu de navegação e opções"
+          aria-label="Abrir menu de opções"
           aria-controls="menu"
           aria-expanded="false"
           style="background-color: #fffaf0; border: 1px solid #d2c2a9; color: #542817; font-family: 'DM Sans', sans-serif; font-weight: 600;"
@@ -709,7 +710,7 @@
 
       <div class="d-flex align-items-center gap-2">
         ${
-          !onIndex
+          showLoggedControls
             ? `<a
                 href="/pages/perfil.html"
                 class="d-none d-md-inline-flex align-items-center gap-1 px-2 py-1 rounded-2 small fw-semibold text-decoration-none"
@@ -734,7 +735,7 @@
         </button>
 
         ${
-          loggedIn || !onIndex
+          showLoggedControls
             ? `<button
                 type="button"
                 class="btn btn-sm"
@@ -752,15 +753,8 @@
   }
 
   function buildUnifiedSidebarHtml(session) {
-    const loggedIn = Boolean(session && session.usuario);
-    const usuario = session?.usuario || {
-      nome: "Visitante Sertanejo",
-      perfil: "AGRICULTOR"
-    };
-    const primeiroNome = loggedIn ? getFirstName(usuario.nome) : "Visitante";
-    const nomeCompleto = loggedIn ? usuario.nome || "Agricultor(a)" : "Visitante (Acesso Livre)";
-    const rocas = getRocasUsuario();
-    const rocaAtiva = getRocaAtiva();
+    const loggedIn = Boolean(session && (session.usuario || session.user));
+    const onIndex = isIndexPage();
 
     const currentTheme =
       document.documentElement.getAttribute("data-theme") ||
@@ -775,15 +769,118 @@
     const isContraste = currentTheme === "baixa-visao";
     const currentFontPct =
       Number(localStorage.getItem("mc_acessibilidade_fonte_pct_v2")) || 100;
+
+    // 1. MODO INDEX / VISITANTE DESLOGADO:
+    // Exibe SOMENTE os botões de ícone (Claro/Escuro, Daltônico, Alto Contraste), Tamanho de Letra (A-, 100%, A+) e Entrar / Cadastrar.
+    if (onIndex || !loggedIn) {
+      return `
+        <div class="sidebar-brand-header">
+          <a href="/index.html" class="sidebar-brand-link d-inline-flex align-items-center gap-2 text-decoration-none">
+            <img src="/assets/images/logo.png" class="sidebar-brand-logo" alt="Manejo Caatingueiro" width="38" height="38">
+            <div class="sidebar-brand-title">
+              <strong style="font-family: 'Newsreader', Georgia, serif; font-weight: 500; color: #542817; font-size: 1.05rem; line-height: 1.15; display: block;">Manejo Caatingueiro</strong>
+              <span style="font-family: 'DM Sans', sans-serif; color: #6e6252; font-size: 0.78rem; display: block;">Acessibilidade e Conta</span>
+            </div>
+          </a>
+          <button
+            type="button"
+            id="sidebar-close"
+            class="btn-close-drawer"
+            data-close-sidebar
+            aria-label="Fechar menu lateral"
+            title="Fechar menu"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div class="sidebar-guest-card">
+          <div class="mb-3">
+            <span class="sidebar-section-label">Tema da Tela</span>
+            <div
+              class="sidebar-theme-grid theme-icon-toolbar"
+              role="toolbar"
+              aria-label="Tema da Tela"
+            >
+              <button
+                type="button"
+                class="theme-icon-btn ${currentTheme === "escuro" ? "active" : ""}"
+                id="btn-theme-toggle-light-dark"
+                title="${toggleTitle}"
+                aria-label="${toggleTitle}"
+                aria-pressed="${currentTheme === "escuro" ? "true" : "false"}"
+              >
+                <span aria-hidden="true">${toggleIcon}</span>
+              </button>
+              <button
+                type="button"
+                class="theme-icon-btn ${isDaltonico ? "active" : ""}"
+                id="btn-theme-daltonico"
+                data-set-theme="daltonico"
+                title="Modo para daltônicos"
+                aria-label="Modo para daltônicos"
+                aria-pressed="${isDaltonico ? "true" : "false"}"
+              >
+                <span aria-hidden="true">👁️</span>
+              </button>
+              <button
+                type="button"
+                class="theme-icon-btn ${isContraste ? "active" : ""}"
+                id="btn-theme-contraste"
+                data-set-theme="baixa-visao"
+                title="Modo alto contraste"
+                aria-label="Modo alto contraste"
+                aria-pressed="${isContraste ? "true" : "false"}"
+              >
+                <span aria-hidden="true">◐</span>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <span class="sidebar-section-label">Tamanho da Letra</span>
+            <div class="sidebar-font-grid" role="group" aria-label="Definir tamanho de letra">
+              <button type="button" class="sidebar-font-btn" data-font-action="dec" title="Diminuir tamanho da letra" aria-label="Diminuir letra">A-</button>
+              <button type="button" class="sidebar-font-btn font-scale-display" data-font-action="reset" title="Tamanho padrão da letra (100%)" aria-label="Tamanho padrão da letra">${currentFontPct}%</button>
+              <button type="button" class="sidebar-font-btn" data-font-action="inc" title="Aumentar tamanho da letra" aria-label="Aumentar letra">A+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-auto pt-3 sidebar-footer">
+          <div class="sidebar-footer-actions d-grid gap-2">
+            <a
+              href="/pages/login.html"
+              class="sidebar-auth-btn sidebar-auth-btn-primary"
+              title="Entrar na sua conta"
+            >
+              <span aria-hidden="true">🔑</span>
+              <span>Entrar</span>
+            </a>
+            <a
+              href="/pages/login.html?modo=cadastro"
+              class="sidebar-auth-btn sidebar-auth-btn-secondary"
+              title="Criar novo cadastro"
+            >
+              <span aria-hidden="true">🌱</span>
+              <span>Cadastrar</span>
+            </a>
+          </div>
+        </div>
+      `;
+    }
+
+    // 2. MODO USUÁRIO LOGADO NA SUA CONTA:
+    // Exibe as abas completas do painel, seletor de roça, configurações e botão Sair.
+    const usuario = session.usuario || session.user || {};
+    const primeiroNome = getFirstName(usuario.nome);
+    const nomeCompleto = usuario.nome || "Agricultor(a)";
+    const rocas = getRocasUsuario();
+    const rocaAtiva = getRocaAtiva();
     const settingsOpen =
       localStorage.getItem(SETTINGS_OPEN_STORAGE_KEY) === "true";
 
     const navItems = [
-      {
-        href: "/index.html?ver=inicio",
-        icon: "🏡",
-        label: "Apresentação (Início)"
-      },
       {
         href: "/pages/painel.html",
         icon: "🏠",
@@ -813,13 +910,16 @@
         href: "/pages/assistente-ia.html",
         icon: "💬",
         label: "Assistente da Roça"
-      },
-      {
+      }
+    ];
+
+    if (isAdminProfile(usuario)) {
+      navItems.push({
         href: "/pages/admin.html",
         icon: "🏛️",
         label: "Administração"
-      }
-    ];
+      });
+    }
 
     const linksHtml = navItems
       .map((item) => {
@@ -854,8 +954,8 @@
         <a href="/pages/painel.html" class="sidebar-brand-link d-inline-flex align-items-center gap-2 text-decoration-none">
           <img src="/assets/images/logo.png" class="sidebar-brand-logo" alt="Manejo Caatingueiro" width="38" height="38">
           <div class="sidebar-brand-title">
-            <strong style="font-family: 'Newsreader', Georgia, serif; font-weight: 500; color: #542817; font-size: 1.1rem;">Manejo Caatingueiro</strong>
-            <span style="font-family: 'DM Sans', sans-serif; color: #6e6252;">Sabedoria do Sertão</span>
+            <strong style="font-family: 'Newsreader', Georgia, serif; font-weight: 500; color: #542817; font-size: 1.05rem; line-height: 1.15; display: block;">Manejo Caatingueiro</strong>
+            <span style="font-family: 'DM Sans', sans-serif; color: #6e6252; font-size: 0.78rem; display: block;">Sabedoria do Sertão</span>
           </div>
         </a>
         <button
@@ -865,7 +965,6 @@
           data-close-sidebar
           aria-label="Fechar menu lateral"
           title="Fechar menu"
-          style="background-color: #fffaf0; border: 1px solid #d2c2a9; color: #542817;"
         >
           ✕
         </button>
@@ -922,12 +1021,11 @@
           style="background-color: #fffaf0; border: 1px solid #d2c2a9; color: #542817;"
         >
           <div class="mb-3">
-            <span class="d-block small fw-bold mb-2" style="color: #542817; font-family: 'DM Sans', sans-serif;">Tema da Tela</span>
+            <span class="sidebar-section-label">Tema da Tela</span>
             <div
               class="sidebar-theme-grid theme-icon-toolbar"
               role="toolbar"
               aria-label="Tema da Tela"
-              style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; width: 100%;"
             >
               <button
                 type="button"
@@ -936,7 +1034,6 @@
                 title="${toggleTitle}"
                 aria-label="${toggleTitle}"
                 aria-pressed="${currentTheme === "escuro" ? "true" : "false"}"
-                style="height: 42px; width: 100%; min-width: 0; border-radius: 8px; display: flex; align-items: center; justify-content: center;"
               >
                 <span aria-hidden="true">${toggleIcon}</span>
               </button>
@@ -948,7 +1045,6 @@
                 title="Modo para daltônicos"
                 aria-label="Modo para daltônicos"
                 aria-pressed="${isDaltonico ? "true" : "false"}"
-                style="height: 42px; width: 100%; min-width: 0; border-radius: 8px; display: flex; align-items: center; justify-content: center;"
               >
                 <span aria-hidden="true">👁️</span>
               </button>
@@ -960,7 +1056,6 @@
                 title="Modo baixa visão e alto contraste"
                 aria-label="Modo baixa visão e alto contraste"
                 aria-pressed="${isContraste ? "true" : "false"}"
-                style="height: 42px; width: 100%; min-width: 0; border-radius: 8px; display: flex; align-items: center; justify-content: center;"
               >
                 <span aria-hidden="true">◐</span>
               </button>
@@ -968,22 +1063,21 @@
           </div>
 
           <div class="mb-3">
-            <span class="d-block small fw-bold mb-2" style="color: #542817; font-family: 'DM Sans', sans-serif;">Tamanho da Letra</span>
-            <div class="d-flex align-items-center gap-1" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; width: 100%;">
-              <button type="button" class="btn btn-outline-secondary btn-sm flex-fill" data-font-action="dec" aria-label="Diminuir letra" style="height: 40px; min-height: 40px; border-radius: 8px; background: #fffaf0; border: 1px solid #d2c2a9; color: #542817;">A-</button>
-              <button type="button" class="btn btn-outline-secondary btn-sm flex-fill font-scale-display" data-font-action="reset" aria-label="Tamanho padrão da letra" style="height: 40px; min-height: 40px; border-radius: 8px; background: #fffaf0; border: 1px solid #d2c2a9; color: #542817;">${currentFontPct}%</button>
-              <button type="button" class="btn btn-outline-secondary btn-sm flex-fill" data-font-action="inc" aria-label="Aumentar letra" style="height: 40px; min-height: 40px; border-radius: 8px; background: #fffaf0; border: 1px solid #d2c2a9; color: #542817;">A+</button>
+            <span class="sidebar-section-label">Tamanho da Letra</span>
+            <div class="sidebar-font-grid" role="group" aria-label="Definir tamanho de letra">
+              <button type="button" class="sidebar-font-btn" data-font-action="dec" title="Diminuir tamanho da letra" aria-label="Diminuir letra">A-</button>
+              <button type="button" class="sidebar-font-btn font-scale-display" data-font-action="reset" title="Tamanho padrão da letra (100%)" aria-label="Tamanho padrão da letra">${currentFontPct}%</button>
+              <button type="button" class="sidebar-font-btn" data-font-action="inc" title="Aumentar tamanho da letra" aria-label="Aumentar letra">A+</button>
             </div>
           </div>
 
           <div>
-            <span class="d-block small fw-bold mb-2" style="color: #542817; font-family: 'DM Sans', sans-serif;">Leitura em Voz Alta</span>
+            <span class="sidebar-section-label">Leitura em Voz Alta</span>
             <button
               type="button"
               class="btn-sidebar-tts btn-sound-icon w-100 mb-2"
               title="Ouvir resumo desta página"
               aria-label="Ouvir resumo desta página"
-              style="border-radius: 8px !important; width: 100%; min-height: 44px; padding: 0.5rem 0.85rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; background: #fffaf0; border: 1px solid #d2c2a9; color: #542817; font-weight: 600; font-family: 'DM Sans', sans-serif;"
             >
               <span aria-hidden="true">🔊</span>
               <span>Ouvir resumo da página</span>
@@ -1005,23 +1099,11 @@
         </div>
 
         <div class="sidebar-footer-actions mt-2 d-grid gap-2">
-          ${
-            !loggedIn
-              ? `<a
-                  href="/pages/login.html"
-                  class="btn btn-sm w-100"
-                  style="background: #5d603d; color: #fffaf0; border: 1px solid #5d603d; border-radius: 8px; width: 100%; min-height: 44px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-family: 'DM Sans', sans-serif; text-decoration: none;"
-                >
-                  🔑 Entrar ou Cadastrar Conta
-                </a>`
-              : ""
-          }
           <button
             type="button"
             class="btn btn-sm w-100 btn-sidebar-logout"
             id="btn-logout"
             data-action="logout"
-            style="background: #fffaf0; color: #8c3719; border: 1px solid #d2c2a9; border-radius: 8px; width: 100%; min-height: 44px; font-weight: 700; font-family: 'DM Sans', sans-serif;"
           >
             🚪 Sair da conta
           </button>
@@ -1212,12 +1294,15 @@
   }
 
   function syncSessionVisibility(loggedIn, session) {
-    // Mantém todas as áreas de trabalho e abas acessíveis (sem ocultar #logged-manejo-workspace ou #btn-logout)
     const workspaceEl = document.getElementById("logged-manejo-workspace");
     if (workspaceEl) {
-      workspaceEl.hidden = false;
-      workspaceEl.removeAttribute("hidden");
-      workspaceEl.classList.remove("d-none");
+      if (loggedIn && !isIndexPage()) {
+        workspaceEl.hidden = false;
+        workspaceEl.removeAttribute("hidden");
+        workspaceEl.classList.remove("d-none");
+      } else {
+        workspaceEl.hidden = true;
+      }
     }
 
     const userBadge = document.getElementById("user-badge");
@@ -1232,7 +1317,7 @@
   function refreshNavbarState() {
     removeSkipLinksFromDom();
     const session = getAuthSession();
-    const loggedIn = Boolean(session && session.usuario);
+    const loggedIn = Boolean(session && (session.usuario || session.user));
     const forceHome = window.location.search.includes("ver=inicio");
 
     // 1. Se o usuário estiver em /index.html e já tiver sessão ativa (sem ?ver=inicio), redireciona para /pages/painel.html
@@ -1241,10 +1326,18 @@
       return;
     }
 
-    // 2. Injeta a Barra Superior Sutil (.app-topbar) + Gaveta Lateral Retrátil (.app-sidebar-nav) em TODAS as páginas (incluindo index.html)
+    // 2. Se o usuário NÃO estiver logado e tentar acessar uma aba exclusiva da conta, redireciona para /pages/login.html
+    if (!loggedIn && isLoggedPanelPage()) {
+      window.location.replace("/pages/login.html");
+      return;
+    }
+
+    // 3. Injeta a Barra Superior Sutil (.app-topbar) + Gaveta Lateral Retrátil (.app-sidebar-nav)
     ensureUnifiedSidebarShell(session);
 
-    populateSidebarRocaSelector();
+    if (loggedIn && !isIndexPage()) {
+      populateSidebarRocaSelector();
+    }
     syncSessionVisibility(loggedIn, session);
     bindLogoutButtons();
     bindUserBadgeClick();
